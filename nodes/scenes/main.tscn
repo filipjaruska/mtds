@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3 uid="uid://n36pcq02ew6"]
+
+[ext_resource type="Script" path="res://scripts/scene_manager.gd" id="1_11pgr"]
+[ext_resource type="PackedScene" uid="uid://qgub06sgnvml" path="res://nodes/player/player.tscn" id="2_c1wiw"]
+[ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://icon.svg" id="3_ympha"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_11pgr")
+playerScene = ExtResource("2_c1wiw")
+
+[node name="SpawnLocations" type="Node2D" parent="."]
+
+[node name="0" type="Node2D" parent="SpawnLocations" groups=["PlayerSpawnLocation"]]
+position = Vector2(438, 260)
+
+[node name="1" type="Node2D" parent="SpawnLocations" groups=["PlayerSpawnLocation"]]
+position = Vector2(810, 265)
+
+[node name="2" type="Node2D" parent="SpawnLocations" groups=["PlayerSpawnLocation"]]
+position = Vector2(446, 445)
+
+[node name="3" type="Node2D" parent="SpawnLocations" groups=["PlayerSpawnLocation"]]
+position = Vector2(806, 449)
+
+[node name="reference point" type="Sprite2D" parent="."]
+position = Vector2(637, 93)
+texture = ExtResource("3_ympha")
