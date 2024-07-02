@@ -25,3 +25,5 @@ position = Vector2(806, 449)
 [node name="reference point" type="Sprite2D" parent="."]
 position = Vector2(637, 93)
 texture = ExtResource("3_ympha")
+
+[node name="hitbox_component" type="Area2D" parent="."]

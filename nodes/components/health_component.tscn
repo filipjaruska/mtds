@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://i2rvom7p2l2f"]
+
+[node name="HealthComponent" type="Node2D"]
