@@ -5,6 +5,7 @@ var can_switch: bool = true
 
 @onready var switch_cooldown_timer = $"../WeaponManager/SwitchCooldownTimer"
 @onready var multiplayer_sync = $"../../MultiplayerSynchronizer"
+@onready var UI = $"../../Camera2D/UI"
 
 func _ready():
 	var pistol_scene: PackedScene = preload("res://nodes/weapons/pistol.tscn")
@@ -19,6 +20,8 @@ func _ready():
 	shotgun.name = "Shotgun"
 	add_child(shotgun)
 	shotgun.hide()
+	
+	update_hud()
 
 func switch_weapon():
 	if not can_switch:
@@ -42,13 +45,18 @@ func network_switch_weapon(weapon_name: String):
 	current_weapon.show()
 	print("Switched to: ", current_weapon.name)
 
+func update_hud():
+	UI.update_ammo(current_weapon.AMMO, current_weapon.MAX_AMMO)
+
 func _process(_delta):
 	if multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id():
 		if Input.is_action_just_pressed("shoot"):
 			current_weapon.shoot()
+			update_hud()
 
 		if Input.is_action_just_pressed("reload"):
 			current_weapon.reload()
+			update_hud()
 
 		if Input.is_action_just_pressed("switch_weapon"):
 			switch_weapon()

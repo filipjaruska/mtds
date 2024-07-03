@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://qgub06sgnvml"]
+[gd_scene load_steps=7 format=3 uid="uid://qgub06sgnvml"]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_bpepw"]
 [ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://icon.svg" id="2_krkth"]
 [ext_resource type="Script" path="res://scripts/weapons/weapon_manager.gd" id="3_8meis"]
+[ext_resource type="Script" path="res://scripts/UI.gd" id="4_vdean"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b7jsc"]
 radius = 26.0192
@@ -43,6 +44,24 @@ text = "Name"
 shape = SubResource("CircleShape2D_b7jsc")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="UI" type="Control" parent="Camera2D"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -574.0
+offset_top = -328.0
+offset_right = 575.0
+offset_bottom = 325.0
+script = ExtResource("4_vdean")
+
+[node name="Ammo" type="Label" parent="Camera2D/UI"]
+layout_mode = 0
+offset_left = 1086.0
+offset_top = 614.0
+offset_right = 1119.0
+offset_bottom = 645.0
+theme_override_font_sizes/font_size = 20
+text = "15"
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_i0rdp")
