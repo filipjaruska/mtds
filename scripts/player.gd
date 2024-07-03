@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 @export var speed: float = 200.0
 var sync_position  = Vector2(0,0) #alternative way to synchorinze movement, not currently used
+@onready var weapon_manager = $WeaponManager
 
 func _ready():
 	$MultiplayerSynchronizer.set_multiplayer_authority(str(name).to_int())
@@ -18,6 +19,7 @@ func _process(delta):
 	).normalized() * speed
 	velocity = input_vector
 	move_and_slide()
+	weapon_manager._process(delta)
 	
 func set_player_name(player_name: String):
 	$Label.text = player_name

@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3 uid="uid://b7r7dn2ffb7d8"]
+
+[ext_resource type="Script" path="res://scripts/weapons/shotgun.gd" id="1_b2bdx"]
+[ext_resource type="PackedScene" uid="uid://xcnabvtbwikx" path="res://nodes/weapons/bullet.tscn" id="2_3ha8g"]
+[ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://icon.svg" id="2_rr0ap"]
+
+[node name="Shotgun" type="Node2D"]
+script = ExtResource("1_b2bdx")
+bullet_scene = ExtResource("2_3ha8g")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(32.5, -11.5)
+scale = Vector2(0.492188, 0.820312)
+texture = ExtResource("2_rr0ap")
