@@ -27,17 +27,22 @@ func switch_weapon():
 	can_switch = false
 	switch_cooldown_timer.start()
 
-	print("Current Weapon: ", current_weapon.name)
 	if current_weapon.name == "Pistol":
-		current_weapon.hide()
-		current_weapon = get_node("Shotgun")
+		rpc("network_switch_weapon", "Shotgun")
 	elif current_weapon.name == "Shotgun":
-		current_weapon.hide()
-		current_weapon = get_node("Pistol")
+		rpc("network_switch_weapon", "Pistol")
+
+@rpc("any_peer", "call_local")
+func network_switch_weapon(weapon_name: String):
+	if current_weapon.name == weapon_name:
+		return
+	
+	current_weapon.hide()
+	current_weapon = get_node(weapon_name)
 	current_weapon.show()
 	print("Switched to: ", current_weapon.name)
 
-func _process(delta):
+func _process(_delta):
 	if multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id():
 		if Input.is_action_just_pressed("shoot"):
 			current_weapon.shoot()
