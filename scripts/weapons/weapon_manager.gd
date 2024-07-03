@@ -4,6 +4,7 @@ var current_weapon: RangedWeapon
 var can_switch: bool = true
 
 @onready var switch_cooldown_timer = $"../WeaponManager/SwitchCooldownTimer"
+@onready var multiplayer_sync = $"../MultiplayerSynchronizer"
 
 func _ready():
 	var pistol_scene: PackedScene = preload("res://nodes/weapons/pistol.tscn")
@@ -37,14 +38,15 @@ func switch_weapon():
 	print("Switched to: ", current_weapon.name)
 
 func _process(delta):
-	if Input.is_action_just_pressed("shoot"):
-		current_weapon.shoot()
+	if multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id():
+		if Input.is_action_just_pressed("shoot"):
+			current_weapon.shoot()
 
-	if Input.is_action_just_pressed("reload"):
-		current_weapon.reload()
+		if Input.is_action_just_pressed("reload"):
+			current_weapon.reload()
 
-	if Input.is_action_just_pressed("switch_weapon"):
-		switch_weapon()
+		if Input.is_action_just_pressed("switch_weapon"):
+			switch_weapon()
 
 func _on_switch_cooldown_timer_timeout():
 	can_switch = true
