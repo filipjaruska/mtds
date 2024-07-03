@@ -21,5 +21,10 @@ func _process(delta):
 	move_and_slide()
 	weapon_manager._process(delta)
 	
+func _physics_process(delta):
+	if $MultiplayerSynchronizer.get_multiplayer_authority() == multiplayer.get_unique_id():
+		var direction = (get_global_mouse_position() - global_position).normalized()
+		rotation = direction.angle()
+
 func set_player_name(player_name: String):
 	$Label.text = player_name
