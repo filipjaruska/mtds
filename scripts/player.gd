@@ -3,7 +3,6 @@ extends CharacterBody2D
 @export var speed: float = 200.0
 var sync_position = Vector2(0, 0) # Alternative way to synchronize movement, not currently used
 @onready var weapon_manager = $Node2D/WeaponManager
-@onready var moew = $"../../Camera2D/UI"
 
 func _ready():
 	$MultiplayerSynchronizer.set_multiplayer_authority(str(name).to_int())
@@ -11,6 +10,7 @@ func _ready():
 		$Camera2D.enabled = true
 	else:
 		$Camera2D.enabled = false
+		$Camera2D/UI/Ammo.visible = false
 
 func _process(delta):
 	if $MultiplayerSynchronizer.get_multiplayer_authority() != multiplayer.get_unique_id():

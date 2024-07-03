@@ -60,6 +60,7 @@ func _process(_delta):
 
 		if Input.is_action_just_pressed("switch_weapon"):
 			switch_weapon()
+			update_hud()
 
 func _on_switch_cooldown_timer_timeout():
 	can_switch = true
