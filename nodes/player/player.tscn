@@ -11,12 +11,26 @@ radius = 26.0192
 properties/0/path = NodePath(".:position")
 properties/0/spawn = true
 properties/0/replication_mode = 1
-properties/1/path = NodePath(".:rotation")
+properties/1/path = NodePath("Node2D:rotation")
 properties/1/spawn = true
 properties/1/replication_mode = 1
 
 [node name="Player" type="CharacterBody2D" groups=["Player"]]
 script = ExtResource("1_bpepw")
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="WeaponManager" type="Node2D" parent="Node2D"]
+position = Vector2(38, 0)
+script = ExtResource("3_8meis")
+
+[node name="SwitchCooldownTimer" type="Timer" parent="Node2D/WeaponManager"]
+wait_time = 0.3
+
+[node name="Sprite2D" type="Sprite2D" parent="Node2D"]
+position = Vector2(3.09944e-06, 3.58711e-06)
+scale = Vector2(0.40176, 0.374369)
+texture = ExtResource("2_krkth")
 
 [node name="Label" type="Label" parent="."]
 offset_left = -23.0
@@ -24,11 +38,6 @@ offset_top = -49.0
 offset_right = 24.0
 offset_bottom = -26.0
 text = "Name"
-
-[node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(3.09944e-06, 3.58711e-06)
-scale = Vector2(0.40176, 0.374369)
-texture = ExtResource("2_krkth")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_b7jsc")
@@ -38,11 +47,4 @@ shape = SubResource("CircleShape2D_b7jsc")
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_i0rdp")
 
-[node name="WeaponManager" type="Node2D" parent="."]
-position = Vector2(38, 0)
-script = ExtResource("3_8meis")
-
-[node name="SwitchCooldownTimer" type="Timer" parent="WeaponManager"]
-wait_time = 0.3
-
-[connection signal="timeout" from="WeaponManager/SwitchCooldownTimer" to="WeaponManager" method="_on_switch_cooldown_timer_timeout"]
+[connection signal="timeout" from="Node2D/WeaponManager/SwitchCooldownTimer" to="Node2D/WeaponManager" method="_on_switch_cooldown_timer_timeout"]

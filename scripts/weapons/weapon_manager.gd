@@ -4,7 +4,7 @@ var current_weapon: RangedWeapon
 var can_switch: bool = true
 
 @onready var switch_cooldown_timer = $"../WeaponManager/SwitchCooldownTimer"
-@onready var multiplayer_sync = $"../MultiplayerSynchronizer"
+@onready var multiplayer_sync = $"../../MultiplayerSynchronizer"
 
 func _ready():
 	var pistol_scene: PackedScene = preload("res://nodes/weapons/pistol.tscn")

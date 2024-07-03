@@ -1,4 +1,3 @@
-
 extends Node2D
 class_name RangedWeapon
 
@@ -17,6 +16,7 @@ func shoot():
     if Time.get_ticks_msec() - last_shot_time >= 1000 / fire_rate:
         if AMMO > 0:
             _shoot_bullet()
+            rpc("network_shoot")
             last_shot_time = Time.get_ticks_msec()
             AMMO -= 1
         else:
@@ -24,8 +24,11 @@ func shoot():
     else:
         print("Weapon on cooldown!")
 
+@rpc("any_peer")
+func network_shoot():
+    _shoot_bullet()
+
 func _shoot_bullet():
-	# for children
     pass
 
 func reload():
