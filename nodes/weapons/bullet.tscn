@@ -7,6 +7,7 @@
 size = Vector2(52, 14)
 
 [node name="Bullet" type="RigidBody2D"]
+top_level = true
 script = ExtResource("1_6ha7u")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

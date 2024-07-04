@@ -3,17 +3,25 @@ class_name HealthComponent
 
 @export var MAX_HEALTH: float = 10.0
 var currentHealth: float
-# Called when the node enters the scene tree for the first time.
+
+@export var physical_resist: float = 0.0 # Percentage
+@export var resist_penetration: float = 0.0 # 0.0 to 1.0
+
 func _ready():
-	currentHealth = MAX_HEALTH
+    currentHealth = MAX_HEALTH
 
-func damage(dmg: float):
-	currentHealth -= dmg
+func damage(dmg: float, penetration: float = 0.0):
+    var final_dmg: float = dmg
+    
+    var effective_resist: float = max(physical_resist - penetration, 0.0)
+    final_dmg = dmg * (1.0 - effective_resist)
 
-	if currentHealth <= 0:
-		get_parent().queue_free()
+    currentHealth -= final_dmg
+
+    if currentHealth <= 0:
+        get_parent().queue_free()
 
 func heal(amount: float):
-	currentHealth += amount
-	if currentHealth > MAX_HEALTH:
-		currentHealth = MAX_HEALTH
+    currentHealth += amount
+    if currentHealth > MAX_HEALTH:
+        currentHealth = MAX_HEALTH
