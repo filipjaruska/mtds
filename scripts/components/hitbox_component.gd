@@ -2,7 +2,7 @@ extends Area2D
 
 @export var health_component: HealthComponent
 
-func damage():
+func damage() -> void:
 	if !health_component:
 		return
 	

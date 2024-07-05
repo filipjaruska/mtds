@@ -1,7 +1,7 @@
 extends Control
 
-var address = "0.0.0.0"
-@export var port = 8080
+var address: String = "0.0.0.0"
+@export var port: int = 8080
 var peer
 
 func _ready():
@@ -48,7 +48,7 @@ func _update_player_list():
 
 @rpc("any_peer", "call_local")
 func start_game():
-	var scene = load("res://nodes/scenes/main.tscn").instantiate()
+	var scene: Node = load("res://nodes/scenes/main.tscn").instantiate()
 	get_tree().root.add_child(scene)
 	self.hide()
 

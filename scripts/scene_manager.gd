@@ -3,9 +3,9 @@ extends Node2D
 @export var playerScene: PackedScene
 
 func _ready():
-	var index = 0
+	var index: int = 0
 	for i in GameManager.players:
-		var currentPlayer = playerScene.instantiate()
+		var currentPlayer: Node = playerScene.instantiate()
 		currentPlayer.name = str(GameManager.players[i].id)
 		currentPlayer.set_player_name(str(GameManager.players[i].name))
 		add_child(currentPlayer)
