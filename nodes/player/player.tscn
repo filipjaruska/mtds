@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://qgub06sgnvml"]
+[gd_scene load_steps=9 format=3 uid="uid://qgub06sgnvml"]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_bpepw"]
 [ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://icon.svg" id="2_krkth"]
 [ext_resource type="Script" path="res://scripts/weapons/weapon_manager.gd" id="3_8meis"]
 [ext_resource type="Script" path="res://scripts/UI.gd" id="4_vdean"]
+[ext_resource type="PackedScene" uid="uid://i2rvom7p2l2f" path="res://nodes/components/health_component.tscn" id="5_uqubr"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b7jsc"]
 radius = 26.0192
@@ -15,6 +16,9 @@ properties/0/replication_mode = 1
 properties/1/path = NodePath("Node2D:rotation")
 properties/1/spawn = true
 properties/1/replication_mode = 1
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_e31mc"]
+radius = 45.0444
 
 [node name="Player" type="CharacterBody2D" groups=["Player"]]
 script = ExtResource("1_bpepw")
@@ -48,9 +52,9 @@ shape = SubResource("CircleShape2D_b7jsc")
 [node name="UI" type="Control" parent="Camera2D"]
 layout_mode = 3
 anchors_preset = 0
-offset_left = -574.0
+offset_left = -569.0
 offset_top = -328.0
-offset_right = 575.0
+offset_right = 580.0
 offset_bottom = 325.0
 script = ExtResource("4_vdean")
 
@@ -65,5 +69,12 @@ text = "15"
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_i0rdp")
+
+[node name="HealthComponent" parent="." instance=ExtResource("5_uqubr")]
+
+[node name="Hitbox" type="Area2D" parent="HealthComponent" groups=["hitbox"]]
+
+[node name="HitboxZone" type="CollisionShape2D" parent="HealthComponent/Hitbox"]
+shape = SubResource("CircleShape2D_e31mc")
 
 [connection signal="timeout" from="Node2D/WeaponManager/SwitchCooldownTimer" to="Node2D/WeaponManager" method="_on_switch_cooldown_timer_timeout"]
