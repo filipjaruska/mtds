@@ -56,7 +56,7 @@ or back up your work other way, most conflicts are resolved automatically but in
 
 ### Server Guide
 
-run in a container or vm using the `--server flah`. cmd example:
+run in a container or vm using the `--server` flag. cmd example:
 
 ```bash
 "project name.exe" --server

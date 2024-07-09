@@ -1,14 +1,17 @@
 extends Control
 
-var address: String = "0.0.0.0"
-@export var port: int = 8080
+# Uses ENet library to implement mutiplayer, takes care of establishing connection between players and starting the main scene.
+# @rpc & .rpc takes care of executing the function on all connected peers.
+
+var address: String = "0.0.0.0" # for server hosting
+@export var port: int = 8080 # default, can be any rly i like this one or 8008
 var peer
 
 func _ready():
 	multiplayer.peer_connected.connect(_on_player_connected)
 	multiplayer.peer_disconnected.connect(_on_player_disconnected)
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
-	if "--server" in OS.get_cmdline_args():
+	if "--server" in OS.get_cmdline_args(): # falg for server hosting (so that the server doesn't count as player)
 		host_game()
 
 func _on_player_connected(id: int):
