@@ -16,6 +16,8 @@ func _process(delta):
 
 @rpc("any_peer")
 func _on_area_2d_area_entered(area):
+	if not area.is_in_group("bullet"):
+		queue_free()
 	if area.is_in_group("hitbox"):
 		area.get_parent().currentHealth -= bulletDamage
 		print("hit")
