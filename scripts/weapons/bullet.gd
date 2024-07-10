@@ -14,7 +14,9 @@ func _process(delta):
 	if is_multiplayer_authority():
 		rpc("network_update", global_position, rotation)
 		
-#TODO DO NOT SYNC, INSTEAD HEANDLE ON CLIENT AND SYNC CURRENT HEALTH (or figure out how to fix cache error)	
+# TODO DO NOT SYNC, INSTEAD HEANDLE ON CLIENT AND SYNC CURRENT HEALTH (or figure out how to fix cache error)	
+# NOTE the cache error apperes even without syncing this function, altho its deffinitely related to it
+# Either way syncing this function creates diffrent issues so its probably still not a good idea
 func _on_area_entered(area):
 	if not area.is_in_group("bullet"):
 		queue_free()

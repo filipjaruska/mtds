@@ -86,4 +86,9 @@ replication_config = SubResource("SceneReplicationConfig_i0rdp")
 [node name="HitboxZone" type="CollisionShape2D" parent="HealthComponent/Hitbox"]
 shape = SubResource("CircleShape2D_e31mc")
 
+[node name="HealTimer" type="Timer" parent="HealthComponent"]
+wait_time = 5.0
+one_shot = true
+
 [connection signal="timeout" from="Node2D/WeaponManager/SwitchCooldownTimer" to="Node2D/WeaponManager" method="_on_switch_cooldown_timer_timeout"]
+[connection signal="timeout" from="HealthComponent/HealTimer" to="HealthComponent" method="_on_heal_timer_timeout"]

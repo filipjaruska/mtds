@@ -1,7 +1,10 @@
 extends Node2D
 class_name HealthComponent
 
+# TODO FIX: not reusable anymore
+
 @onready var UI = $"../Camera2D/UI"
+@onready var heal_timer = $HealTimer
 
 @export var MAX_HEALTH: float = 100.0
 var currentHealth: float
@@ -29,6 +32,8 @@ func damage(dmg: float, penetration: float = 0.0):
 	rpc("update_health", currentHealth)
 	UI.update_health(int(currentHealth), int(MAX_HEALTH))
 
+	heal_timer.start(5.0)
+
 func heal(amount: float):
 	currentHealth += amount
 	if currentHealth > MAX_HEALTH:
@@ -39,3 +44,7 @@ func heal(amount: float):
 func death():
 	if currentHealth <= 0:
 		get_parent().queue_free()
+
+func _on_heal_timer_timeout():
+	if get_parent().is_in_group("Player"):
+		heal(MAX_HEALTH - currentHealth)
