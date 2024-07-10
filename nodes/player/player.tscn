@@ -67,6 +67,15 @@ offset_bottom = 645.0
 theme_override_font_sizes/font_size = 20
 text = "15"
 
+[node name="Health" type="Label" parent="Camera2D/UI"]
+layout_mode = 0
+offset_left = 533.0
+offset_top = 248.0
+offset_right = 566.0
+offset_bottom = 279.0
+theme_override_font_sizes/font_size = 20
+text = "15"
+
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_i0rdp")
 

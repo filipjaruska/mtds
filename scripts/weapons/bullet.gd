@@ -14,11 +14,11 @@ func _process(delta):
 	if is_multiplayer_authority():
 		rpc("network_update", global_position, rotation)
 		
-#TODO DO NOT SYNC, INSTEAD HEANDLE ON CLIENT AND SYNC CURRENT HEALTH		
+#TODO DO NOT SYNC, INSTEAD HEANDLE ON CLIENT AND SYNC CURRENT HEALTH (or figure out how to fix cache error)	
 func _on_area_entered(area):
 	if not area.is_in_group("bullet"):
 		queue_free()
 	if area.is_in_group("hitbox"):
-		area.get_parent().currentHealth -= bulletDamage
+		area.get_parent().damage(bulletDamage, 0)
 		print("hit")
 		$CollisionShape2D.set_deferred("disabled", true)
