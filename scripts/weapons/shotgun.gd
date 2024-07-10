@@ -18,6 +18,3 @@ func _shoot_bullet():
 		
 		# Spread of the shotgun pellets
 		bullet.rotation = global_rotation + randf() * 0.1 - 0.05
-		
-		bullet.apply_impulse(Vector2(), Vector2(speed, 0).rotated(bullet.rotation))
-	print("Shotgun fired.")
