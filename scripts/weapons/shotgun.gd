@@ -12,7 +12,7 @@ func _shoot_bullet():
 	for i in range(pellets):
 		var bullet = bullet_scene.instantiate()
 		get_parent().add_child(bullet)
-		bullet.bulletDamage = 30
+		bullet.bulletDamage = 20
 		var offset = Vector2(range / 10, 0).rotated(global_rotation)
 		bullet.global_position = global_position + offset
 		

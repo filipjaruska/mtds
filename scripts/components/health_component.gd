@@ -16,7 +16,7 @@ func _ready():
 	currentHealth = MAX_HEALTH
 	UI.update_health(int(currentHealth), int(MAX_HEALTH))
 
-func _process(delta):
+func _process(_delta):
 	death()
 
 @rpc("any_peer", "reliable")
