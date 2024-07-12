@@ -5,8 +5,8 @@
   - [ ] Fix weapon stats
   - [ ] try particle system to make effects
 - [ ] Health and DMG system
-  - [ ] Create a component that handles that on any node
-  - [ ] Make work damage handling
+  - [x] Create a component that handles that on any node
+  - [x] Make work damage handling
   - [ ] effects or other dmg taking feedback
 - [ ] Enemy
   - [ ] Create Enemy or/and Entity class
@@ -15,7 +15,7 @@
   - [ ] Implement enemy spawn system (for if auto generated)
 - [ ] UI
   - [x] Ammo
-  - [ ] Health 
+  - [x] Health 
   - [ ] Style menu (main/setting/start game)
 - [x] Multiplayer
   - [x] Network manager
@@ -26,12 +26,6 @@
 - [ ] Audio
   - [ ] Add sound effects
   - [ ] BG music?
-- [ ] Visuals
-  - [ ] not sure
-- [ ] Communicate (or think of way to share whats who doing and what to do ect)
-  - [ ] I know that im not great at it but hb we try or smthing
-  - [ ] Improve TODO
-  - [ ] Have fun
 
 ## Docs
 [old docs iguess](https://www.notion.so)

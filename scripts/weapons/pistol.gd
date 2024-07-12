@@ -8,7 +8,7 @@ func _ready():
 	set_ammo_and_max_ammo(ammo, max_ammo)
 	
 func _shoot_bullet():
-	var bullet = bullet_scene.instantiate()
+	var bullet: Area2D = bullet_scene.instantiate()
 	get_parent().add_child(bullet)
 	bullet.set_bullet_damage(10, 0)
 	
