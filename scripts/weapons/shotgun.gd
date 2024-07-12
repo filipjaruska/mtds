@@ -10,11 +10,11 @@ func _ready():
 
 func _shoot_bullet():
 	for i in range(pellets):
-		var bullet = bullet_scene.instantiate()
+		var bullet: Area2D = bullet_scene.instantiate()
 		get_parent().add_child(bullet)
-		bullet.bulletDamage = 20
-		var offset = Vector2(range / 10, 0).rotated(global_rotation)
+		bullet.set_bullet_damage(20, 0)
+		
+		var offset: Vector2 = Vector2(range / 10, 0).rotated(global_rotation)
 		bullet.global_position = global_position + offset
 		
-		# Spread of the shotgun pellets
 		bullet.rotation = global_rotation + randf() * 0.1 - 0.05

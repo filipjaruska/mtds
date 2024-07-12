@@ -24,7 +24,7 @@ func update_health(new_health: float):
 	currentHealth = new_health
 	UI.update_health(int(currentHealth), int(MAX_HEALTH))
 
-func damage(dmg: float, penetration: float = 0.0):
+func damage(dmg: float, penetration: float):
 	var final_dmg: float = dmg
 	var effective_resist: float = max(physical_resist - penetration, 0.0)
 	final_dmg = dmg * (1.0 - effective_resist)
