@@ -4,11 +4,13 @@ extends RangedWeapon
 @export var pellets: int = 5
 @export var ammo: int = 5
 @export var max_ammo: int = 5
-@export var slowness:float = 1000
+
 
 func _ready():
 	set_ammo_and_max_ammo(ammo, max_ammo)
-
+	slowness = 40
+	slowness_duration = 400
+	fire_rate = 1
 func _shoot_bullet():
 	for i in range(pellets):
 		var bullet: Area2D = bullet_scene.instantiate()

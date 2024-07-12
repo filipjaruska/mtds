@@ -94,9 +94,9 @@ func _process(_delta):
 				current_weapon.shoot()
 				update_hud()
 			if current_weapon.slow_player == true:
-				player.speed = current_weapon.slowness
+				player.speed = lerp(200.0, current_weapon.slowness, 0.8)
 			if current_weapon.slow_player == false:
-				player.speed = 200.0
+				player.speed = lerp(current_weapon.slowness, 200.0, 0.8)
 
 			if Input.is_action_just_pressed("reload"):
 				current_weapon.reload()

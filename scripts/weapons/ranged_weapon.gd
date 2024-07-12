@@ -7,6 +7,8 @@ class_name RangedWeapon
 @export var AMMO: int
 @export var MAX_AMMO: int
 @export var slow_player: bool
+@export var slowness:float
+@export var slowness_duration: float
 
 var last_shot_time: float = 0.0
 
@@ -43,7 +45,7 @@ func _process(delta):
 	can_slow()
 
 func can_slow():
-	if Time.get_ticks_msec() - last_shot_time >= 500 / fire_rate:
+	if Time.get_ticks_msec() - last_shot_time >= slowness_duration:
 		slow_player = false
 	else:
 		slow_player = true
