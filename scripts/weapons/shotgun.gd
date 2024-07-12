@@ -4,6 +4,7 @@ extends RangedWeapon
 @export var pellets: int = 5
 @export var ammo: int = 5
 @export var max_ammo: int = 5
+@export var slowness:float = 1000
 
 func _ready():
 	set_ammo_and_max_ammo(ammo, max_ammo)

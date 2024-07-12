@@ -2,18 +2,24 @@ extends Node2D
 
 @export var max_weapons: int = 2
 
+
+
 var weapons: Array = []
 var current_weapon_index: int = 0
 var can_switch: bool = true
+var player_speed_switch: bool
+var slowed_player_speed: float
 
+@onready var shooting_cooldown = $ShootingCooldown
 @onready var switch_cooldown_timer = $"../WeaponManager/SwitchCooldownTimer"
 @onready var multiplayer_sync = $"../../MultiplayerSynchronizer"
 @onready var UI = $"../../Camera2D/UI"
+@onready var player = $"../.."
 
 func _ready():
 	var pistol_scene: PackedScene = preload("res://nodes/weapons/pistol.tscn")
 	var shotgun_scene: PackedScene = preload("res://nodes/weapons/shotgun.tscn")
-
+	
 	add_weapon(pistol_scene.instantiate())
 	add_weapon(shotgun_scene.instantiate())
 
@@ -84,9 +90,13 @@ func _process(_delta):
 	if multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id():
 		if weapons.size() > 0:
 			var current_weapon = weapons[current_weapon_index]
-			if Input.is_action_just_pressed("shoot"):
+			if Input.is_action_pressed("shoot"):
 				current_weapon.shoot()
 				update_hud()
+			if current_weapon.slow_player == true:
+				player.speed = current_weapon.slowness
+			if current_weapon.slow_player == false:
+				player.speed = 200.0
 
 			if Input.is_action_just_pressed("reload"):
 				current_weapon.reload()
@@ -102,3 +112,5 @@ func _process(_delta):
 
 func _on_switch_cooldown_timer_timeout():
 	can_switch = true
+
+

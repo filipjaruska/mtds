@@ -3,6 +3,7 @@ extends RangedWeapon
 @export var bullet_scene: PackedScene
 @export var ammo: int = 18
 @export var max_ammo: int = 18
+@export var slowness:float = 100.0
 
 func _ready():
 	set_ammo_and_max_ammo(ammo, max_ammo)

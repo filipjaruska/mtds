@@ -32,6 +32,8 @@ script = ExtResource("3_8meis")
 [node name="SwitchCooldownTimer" type="Timer" parent="Node2D/WeaponManager"]
 wait_time = 0.3
 
+[node name="ShootingCooldown" type="Timer" parent="Node2D/WeaponManager"]
+
 [node name="Sprite2D" type="Sprite2D" parent="Node2D"]
 position = Vector2(3.09944e-06, 3.58711e-06)
 scale = Vector2(0.40176, 0.374369)
@@ -86,5 +88,14 @@ shape = SubResource("CircleShape2D_e31mc")
 wait_time = 5.0
 one_shot = true
 
+[node name="Timers" type="Node2D" parent="."]
+
+[node name="DashTimer" type="Timer" parent="Timers"]
+wait_time = 0.3
+
+[node name="DashCooldown" type="Timer" parent="Timers"]
+
 [connection signal="timeout" from="Node2D/WeaponManager/SwitchCooldownTimer" to="Node2D/WeaponManager" method="_on_switch_cooldown_timer_timeout"]
 [connection signal="timeout" from="HealthComponent/HealTimer" to="HealthComponent" method="_on_heal_timer_timeout"]
+[connection signal="timeout" from="Timers/DashTimer" to="." method="_on_dash_timer_timeout"]
+[connection signal="timeout" from="Timers/DashCooldown" to="." method="_on_dash_cooldown_timeout"]
