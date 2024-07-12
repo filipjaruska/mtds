@@ -2,11 +2,14 @@ extends CharacterBody2D
 
 @onready var weapon_manager = $Node2D/WeaponManager
 @onready var camera2d = $Camera2D
+@onready var dash_timer = $Timers/DashTimer
+@onready var dash_cooldown = $Timers/DashCooldown
 
 @export var speed: float = 200.0
 @export var camera_lookahead_distance: float = 150.0
 @export var offset_disable_threshold: float = 200.0
 @export var transition_speed: float = 5.0
+
 
 func _ready():
 	var authority_id: int = str(name).to_int()
@@ -24,7 +27,7 @@ func _process(delta):
 	velocity = input_vector
 	move_and_slide()
 	weapon_manager._process(delta)
-
+	dashing()
 	update_camera_offset(delta)
 	
 func _physics_process(_delta):
@@ -48,3 +51,18 @@ func update_camera_offset(delta):
 		target_offset = direction * camera_lookahead_distance
 
 	camera2d.offset = camera2d.offset.lerp(target_offset, transition_speed * delta)
+
+func dashing():
+	if Input.is_action_just_pressed("Dash") && dash_cooldown.is_stopped() && dash_timer.is_stopped():
+		speed = 700.0
+		dash_cooldown.start()
+		dash_timer.start()
+
+func _on_dash_timer_timeout():
+	dash_timer.stop()
+	speed = 200.0
+
+func _on_dash_cooldown_timeout():
+	dash_cooldown.stop()
+	
+
