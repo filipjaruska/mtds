@@ -48,6 +48,8 @@ or back up your work other way, most conflicts are resolved automatically but in
 
 **Working on Large Features**: For substantial changes or features, create a separate branch. This allows for focused development without disrupting the main branch which also means that any of the work you make won't be lost or unused. Name branches descriptively, such as `feature/megabegabobega-feature` or `rework/weapon-system`.
 
+![img.png](img.png)
+
 ### Server Guide
 
 run in a container or vm using the `--server` flag. cmd example:
