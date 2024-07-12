@@ -5,7 +5,6 @@ class_name RangedWeapon
 @export var range: float = 500.0
 @export var AMMO: int
 @export var MAX_AMMO: int
-@export var speed: float = 500.0
 
 var last_shot_time: float = 0.0
 
