@@ -8,9 +8,10 @@ extends RangedWeapon
 
 func _ready():
 	set_ammo_and_max_ammo(ammo, max_ammo)
-	slowness = 40
-	slowness_duration = 400
+	slowness = 40.0
+	slowness_duration = 400.0
 	fire_rate = 1
+	
 func _shoot_bullet():
 	for i in range(pellets):
 		var bullet: Area2D = bullet_scene.instantiate()
