@@ -46,17 +46,11 @@ func handle_movement():
 
 func handle_dashing():
 	if Input.is_action_just_pressed("Dash") and not is_dashing and (Time.get_ticks_msec() - last_dash_time) >= dash_cooldown:
-		start_dashing()
-
-func start_dashing():
-	is_dashing = true
-	current_speed = dash_speed
-	dash_timer.start()
-
+		is_dashing = true
+		current_speed = dash_speed
+		dash_timer.start()
+		
 func _on_dash_timer_timeout():
-	stop_dashing()
-
-func stop_dashing():
 	is_dashing = false
 	current_speed = normal_speed
 	last_dash_time = Time.get_ticks_msec()
@@ -76,4 +70,4 @@ func update_camera_offset(delta):
 	camera2d.offset = camera2d.offset.lerp(target_offset, transition_speed * delta)
 
 func set_player_name(player_name: String):
-	$Label.text = player_name
+	$Name.text = player_name

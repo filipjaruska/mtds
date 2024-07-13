@@ -12,8 +12,6 @@ var weapons: Array = []
 var current_weapon_index: int = 0
 var can_switch: bool = true
 
-
-
 func _ready():
 	var pistol_scene: PackedScene = preload("res://nodes/weapons/pistol.tscn")
 	var shotgun_scene: PackedScene = preload("res://nodes/weapons/shotgun.tscn")
