@@ -1,6 +1,6 @@
 extends Node2D
 
-@onready var switch_cooldown_timer = $"../WeaponManager/SwitchCooldownTimer"
+@onready var switch_cooldown_timer: Timer = $"../WeaponManager/SwitchCooldownTimer"
 @onready var multiplayer_sync = $"../../MultiplayerSynchronizer"
 @onready var UI = $"../../Camera2D/UI"
 @onready var player = $"../.."
@@ -13,24 +13,24 @@ var current_weapon_index: int = 0
 var can_switch: bool = true
 
 func _ready():
-	var pistol_scene: PackedScene = preload("res://nodes/weapons/pistol.tscn")
-	var shotgun_scene: PackedScene = preload("res://nodes/weapons/shotgun.tscn")
-
-	add_weapon(pistol_scene.instantiate())
-	add_weapon(shotgun_scene.instantiate())
-
 	if weapons.size() > 0:
 		current_weapon_index = 0
 		weapons[current_weapon_index].show()
 		update_hud()
 
-func add_weapon(weapon: RangedWeapon):
+func add_weapon(weapon: RangedWeapon, equip_immediately: bool = false):
 	if weapons.size() >= MAX_WEAPONS:
 		drop_weapon(current_weapon_index)
 
 	weapon.hide()
 	weapons.append(weapon)
 	add_child(weapon)
+
+	if weapons.size() == 1 or equip_immediately:
+		weapons[current_weapon_index].hide()
+		current_weapon_index = weapons.size() - 1
+		weapons[current_weapon_index].show()
+		update_hud()
 
 func drop_weapon(index: int):
 	if index >= 0 and index < weapons.size():
@@ -52,7 +52,7 @@ func switch_weapon():
 	current_weapon_index = (current_weapon_index + 1) % weapons.size()
 	weapons[current_weapon_index].show()
 	update_hud()
-	
+
 	rpc("network_switch_weapon_index", current_weapon_index)
 
 @rpc("any_peer", "call_local")
@@ -88,8 +88,8 @@ func _process(_delta):
 			if Input.is_action_pressed("shoot"):
 				current_weapon.shoot()
 				update_hud()
-			
-				if current_weapon.slowness_duration > 0 && weapons[current_weapon_index].AMMO > 0:
+
+				if current_weapon.slowness_duration > 0 and weapons[current_weapon_index].AMMO > 0:
 					player.current_speed = lerp(200.0, current_weapon.slowness, 0.8)
 					slow_timer.start(current_weapon.slowness_duration / 1000.0)
 
@@ -106,3 +106,6 @@ func _on_switch_cooldown_timer_timeout():
 func _on_slow_timer_timeout():
 	var current_weapon = weapons[current_weapon_index]
 	player.current_speed = lerp(current_weapon.slowness, 200.0, 0.8)
+
+func on_weapon_picked_up(weapon_scene: PackedScene):
+	add_weapon(weapon_scene.instantiate(), true)
