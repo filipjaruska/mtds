@@ -26,6 +26,7 @@ script = ExtResource("1_bpepw")
 [node name="Node2D" type="Node2D" parent="."]
 
 [node name="WeaponManager" type="Node2D" parent="Node2D"]
+unique_name_in_owner = true
 position = Vector2(38, 0)
 script = ExtResource("3_8meis")
 
