@@ -10,6 +10,7 @@ func _ready():
 	fire_rate = 3
 	slowness = 20.0
 	slowness_duration = 300.0
+	muzzle = $Muzzle
 
 func _shoot_bullet():
 	var bullet: Area2D = bullet_scene.instantiate()

@@ -9,10 +9,11 @@ func _ready():
 	set_ammo_and_max_ammo(ammo, max_ammo)
 	slowness = 40.0
 	slowness_duration = 400.0
-	fire_rate = 1
+	fire_rate = 0.85
 	animation_player = $AnimationPlayer
 	shooting_animation = "Shooting"
 	idle_animation = "Idle"
+	muzzle = $Muzzle
 func _shoot_bullet():
 	
 	for i in range(pellets):

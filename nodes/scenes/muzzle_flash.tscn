@@ -1,0 +1,38 @@
+[gd_scene load_steps=5 format=3 uid="uid://bn5g08yckfc3c"]
+
+[ext_resource type="Script" path="res://scripts/weapons/muzzle_flash.gd" id="1_e1ww1"]
+
+[sub_resource type="Curve" id="Curve_jyflo"]
+_data = [Vector2(0.011236, 0.802198), 0.0, 0.0, 0, 0, Vector2(1, 0.340659), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_dordw"]
+offsets = PackedFloat32Array(0.186667, 0.6, 0.833333, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.882353, 0.756863, 0.14902, 1, 0.90303, 0.481165, 0.10307, 1, 0.984314, 0.203922, 0.0117647, 1)
+
+[sub_resource type="Gradient" id="Gradient_uh8if"]
+offsets = PackedFloat32Array(0.22, 1)
+colors = PackedColorArray(0.835294, 0.556863, 0.0862745, 1, 1, 1, 1, 1)
+
+[node name="muzzle_flash" type="CPUParticles2D"]
+top_level = true
+scale = Vector2(1.5, 1.5)
+emitting = false
+amount = 100
+lifetime = 0.3
+one_shot = true
+explosiveness = 1.0
+spread = 30.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 30.31
+initial_velocity_max = 80.8
+damping_min = 49.495
+damping_max = 100.0
+scale_amount_min = 2.0
+scale_amount_max = 4.0
+scale_amount_curve = SubResource("Curve_jyflo")
+color_ramp = SubResource("Gradient_dordw")
+color_initial_ramp = SubResource("Gradient_uh8if")
+script = ExtResource("1_e1ww1")
+
+[connection signal="finished" from="." to="." method="_on_finished"]
