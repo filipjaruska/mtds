@@ -92,7 +92,6 @@ func _process(_delta):
 				if current_weapon.slowness_duration > 0 && weapons[current_weapon_index].AMMO > 0:
 					player.current_speed = lerp(200.0, current_weapon.slowness, 0.8)
 					slow_timer.start(current_weapon.slowness_duration / 1000.0)
-
 			if Input.is_action_just_pressed("reload"):
 				current_weapon.reload()
 				update_hud()
