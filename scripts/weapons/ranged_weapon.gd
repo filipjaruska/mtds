@@ -12,6 +12,8 @@ class_name RangedWeapon
 @export var idle_animation: String
 @onready var muzzle_flash = preload("res://nodes/scenes/muzzle_flash.tscn")
 @export var muzzle = Marker2D
+@export var sprite = Sprite2D
+@export var can_rotate: bool
 
 var last_shot_time: float = 0.0
 
@@ -20,15 +22,20 @@ func _ready():
 
 func shoot():
 	if Time.get_ticks_msec() - last_shot_time >= 1000 / fire_rate:
+		can_rotate = true
 		if AMMO > 0:
-			#animation_player.play(shooting_animation)
+			animation_player.play(shooting_animation)
 			_shoot_bullet()
 			rpc("network_shoot")
 			last_shot_time = Time.get_ticks_msec()
 			AMMO -= 1
 			var muzzle_flash_instance = muzzle_flash.instantiate()
 			muzzle_flash_instance.global_position = muzzle.global_position
+			muzzle_flash_instance.rotation = get_parent().get_parent().rotation
 			add_child(muzzle_flash_instance)
+			print(rotation)
+	else:
+		can_rotate = false
 @rpc("any_peer")
 
 func network_shoot():

@@ -1,6 +1,6 @@
 extends RangedWeapon
 
-@export var bullet_scene: PackedScene
+@export var bullet_scene = preload("res://nodes/weapons/bullet.tscn")
 @export var pellets: int = 5
 @export var ammo: int = 5
 @export var max_ammo: int = 5
@@ -13,17 +13,17 @@ func _ready():
 	animation_player = $AnimationPlayer
 	shooting_animation = "Shooting"
 	idle_animation = "Idle"
-	muzzle = $Muzzle
+	muzzle = $Sprite2D/Muzzle
+	sprite = $Sprite2D
 func _shoot_bullet():
 	
 	for i in range(pellets):
 		var bullet: Area2D = bullet_scene.instantiate()
-		get_parent().add_child(bullet)
+		get_parent().get_parent().get_parent().add_child(bullet)
 		bullet.set_bullet_damage(20, 0)
 		
 		var offset: Vector2 = Vector2(range / 10, 0).rotated(global_rotation)
-		bullet.global_position = global_position + offset
-		
+		bullet.global_position = muzzle.global_position + offset
 		bullet.rotation = global_rotation + randf() * 0.1 - 0.05
 
 
