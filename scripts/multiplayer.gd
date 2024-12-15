@@ -1,17 +1,18 @@
 extends Control
 
-# Uses ENet library to implement mutiplayer, takes care of establishing connection between players and starting the main scene.
+# Uses ENet library to implement multiplayer, takes care of establishing connection between players and starting the main scene.
 # @rpc & .rpc takes care of executing the function on all connected peers.
 
 var address: String = "0.0.0.0" # for server hosting
-@export var port: int = 8080 # default, can be any rly i like this one or 8008
+@export var port: int = 8080 # default, can be any number really
 var peer
 
 func _ready():
 	multiplayer.peer_connected.connect(_on_player_connected)
 	multiplayer.peer_disconnected.connect(_on_player_disconnected)
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
-	if "--server" in OS.get_cmdline_args(): # falg for server hosting (so that the server doesn't count as player)
+	multiplayer.connection_failed.connect(_on_connection_failed)
+	if "--server" in OS.get_cmdline_args(): # flag for server hosting (so that the server doesn't count as player)
 		host_game()
 
 func _on_player_connected(id: int):
@@ -30,6 +31,10 @@ func _on_connected_to_server():
 		multiplayer.get_unique_id(),
 		$MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/LineEdit.text
 	)
+
+func _on_connection_failed():
+	print("Connection to server failed.")
+	_enable_ui()
 
 @rpc("any_peer")
 func send_player(id: int, name):
@@ -60,6 +65,7 @@ func host_game():
 	var error = peer.create_server(port, 4)
 	if error != OK:
 		print("Server creation failed: ", error)
+		_enable_ui()
 		return
 	peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
 	multiplayer.set_multiplayer_peer(peer)
@@ -81,7 +87,11 @@ func _on_join_pressed():
 	if address.to_lower() == "localhost":
 		address = "127.0.0.1"
 	port = $MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2/HBoxContainer/LineEdit3.text.strip_edges().to_int()
-	peer.create_client(address, port)
+	var error = peer.create_client(address, port)
+	if error != OK:
+		print("Failed to connect to server: ", error)
+		_enable_ui()
+		return
 	peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
 	multiplayer.set_multiplayer_peer(peer)
 	_disable_ui()
@@ -93,3 +103,11 @@ func _disable_ui():
 	$MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2/HBoxContainer/LineEdit3.editable = false
 	$MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/Host.visible = false
 	$MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2/Join.visible = false
+
+func _enable_ui():
+	$MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/Start.disabled = true
+	$MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/LineEdit.editable = true
+	$MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2/HBoxContainer/LineEdit2.editable = true	
+	$MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2/HBoxContainer/LineEdit3.editable = true
+	$MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/Host.visible = true
+	$MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2/Join.visible = true
