@@ -1,36 +1,46 @@
-## TODO
-- [x] Weapon system
-  - [ ] Dropping / Equipping guns
-  - [ ] More weapons
+## New TODO:
+
+- [ ] rewrite todo list
+- [ ] create short tutorial lvl to showcase and think of game mechanics
+
+### Player Feathers
+
+- [ ] ctrl for Supervive like zoom out
+
+### Weapon system
+
+- [ ] Refactor
   - [ ] Fix weapon stats
-  - [ ] try particle system to make effects
-- [ ] Health and DMG system
-  - [x] Create a component that handles that on any node
-  - [x] Make work damage handling
-  - [ ] effects or other dmg taking feedback
+  - [ ] Dropping guns
+- [ ] add crossbow
+- [ ] add assault rifle
+
+### Gameplay feathers
+
+- [ ] Think of way, that would clearly indicate ground hight (walls, pits, ground ect)
+
+### Multiplayer
+
+- [ ] REDO
+
+### AI bots
+
 - [ ] Enemy
   - [ ] Create Enemy or/and Entity class
   - [ ] Implement basic states (stay, patrol, attack)
   - [ ] Design basic enemy (and npc perhaps)
   - [ ] Implement enemy spawn system (for if auto generated)
-- [ ] UI
-  - [x] Ammo
-  - [x] Health 
-  - [ ] Style menu (main/setting/start game)
-- [x] Multiplayer
-  - [x] Network manager
-  - [x] Synchronize player
-  - [x] Synchronize weapons
-  - [ ] Synchronize enemies (states and movement)
-  - [ ] Synchronize dmg
-- [ ] Audio
-  - [ ] Add sound effects
-  - [ ] BG music?
+
+### UI
+
+- [ ] Menu needs and overhaul
+- [ ] Style menu (main/setting/start game)
 
 ## Docs
+
 [old docs iguess](https://www.notion.so)
 
-### Commits 
+### Commits
 
 **Commit Individual Final Changes**: Aim to commit `"logical chunks"` of work as you complete them. You do not need to push each commit immediately, but ensure each commit represents a discrete, functional change.
 
@@ -43,8 +53,8 @@ When you then add visuals, animations, ect for the weapon, commit with a message
 
 **Regularly Push Changes**: Don't forget to push your commits regularly to the remote repository to ensure your work is backed up and accessible to everyone. 🐈🐈‍⬛
 
-**Merge Conflicts**: If you encounter merge conflicts when pushing feel free to create new branch (if it still lets you) 
-or back up your work other way, most conflicts are resolved automatically but in some cases you might be required to make them manually (usually you can just open them in vs code and then go through them).  
+**Merge Conflicts**: If you encounter merge conflicts when pushing feel free to create new branch (if it still lets you)
+or back up your work other way, most conflicts are resolved automatically but in some cases you might be required to make them manually (usually you can just open them in vs code and then go through them).
 
 **Working on Large Features**: For substantial changes or features, create a separate branch. This allows for focused development without disrupting the main branch which also means that any of the work you make won't be lost or unused. Name branches descriptively, such as `feature/megabegabobega-feature` or `rework/weapon-system`.
 

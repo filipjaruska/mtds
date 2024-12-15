@@ -14,7 +14,7 @@ var current_health: float
 
 func _ready():
 	current_health = MAX_HEALTH
-	UI.update_health(int(current_health), int(MAX_HEALTH))
+	update_ui()
 
 func _process(_delta):
 	death()
@@ -22,24 +22,22 @@ func _process(_delta):
 @rpc("any_peer", "reliable")
 func update_health(new_health: float):
 	current_health = new_health
-	UI.update_health(int(current_health), int(MAX_HEALTH))
+	update_ui()
 
 func damage(dmg: float, penetration: float):
-	var final_dmg: float = dmg
+	if dmg < 0.0:
+		return
 	var effective_resist: float = max(physical_resist - penetration, 0.0)
-	final_dmg = dmg * (1.0 - effective_resist)
+	var final_dmg: float = dmg * (1.0 - effective_resist)
 	current_health -= final_dmg
 	rpc("update_health", current_health)
-	UI.update_health(int(current_health), int(MAX_HEALTH))
-
+	update_ui()
 	heal_timer.start(5.0)
 
 func heal(amount: float):
-	current_health += amount
-	if current_health > MAX_HEALTH:
-		current_health = MAX_HEALTH
+	current_health = min(current_health + amount, MAX_HEALTH)
 	rpc("update_health", current_health)
-	UI.update_health(int(current_health), int(MAX_HEALTH))
+	update_ui()
 
 func death():
 	if current_health <= 0:
@@ -48,3 +46,6 @@ func death():
 func _on_heal_timer_timeout():
 	if get_parent().is_in_group("Player"):
 		heal(MAX_HEALTH - current_health)
+
+func update_ui():
+	UI.update_health(int(current_health), int(MAX_HEALTH))
