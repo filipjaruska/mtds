@@ -41,21 +41,20 @@ _data = {
 "Shooting": SubResource("Animation_tor5g")
 }
 
-[node name="Shotgun" type="Node2D" node_paths=PackedStringArray("animation_player", "muzzle", "sprite")]
+[node name="Shotgun" type="Node2D" node_paths=PackedStringArray("muzzle", "sprite", "animation_player")]
 script = ExtResource("1_b2bdx")
 fire_rate = 0.85
-max_range = 200.0
+max_range = 250.0
 max_ammo = 5
 ammo = 5
+pellets = 5
 slowness = 40.0
 slowness_duration = 400.0
-animation_player = NodePath("AnimationPlayer")
 shooting_animation = "Shooting"
 idle_animation = "Idle"
 muzzle = NodePath("Sprite2D/Muzzle")
 sprite = NodePath("Sprite2D")
-can_rotate = null
-pellets = 5
+animation_player = NodePath("AnimationPlayer")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture_filter = 1

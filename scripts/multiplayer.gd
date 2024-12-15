@@ -37,9 +37,9 @@ func _on_connection_failed():
 	_enable_ui()
 
 @rpc("any_peer")
-func send_player(id: int, name):
+func send_player(id: int, player_name):
 	if not GameManager.players.has(id):
-		GameManager.players[id] = {"id": id, "name": name}
+		GameManager.players[id] = {"id": id, "name": player_name}
 	
 	if multiplayer.is_server():
 		for player_id in GameManager.players:
