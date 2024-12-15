@@ -1,6 +1,5 @@
 ## New TODO:
 
-- [ ] rewrite todo list
 - [ ] create short tutorial lvl to showcase and think of game mechanics
 
 ### Player Feathers
@@ -21,7 +20,7 @@
 
 ### Multiplayer
 
-- [ ] REDO
+- [ ] REDO (but probably as a last thing)
 
 ### AI bots
 

@@ -40,8 +40,17 @@ _data = {
 "Shooting": SubResource("Animation_qba67")
 }
 
-[node name="Pistol" type="Node2D"]
+[node name="Pistol" type="Node2D" node_paths=PackedStringArray("animation_player", "muzzle", "sprite")]
 script = ExtResource("1_ll076")
+fire_rate = 2.5
+max_ammo = 16
+ammo = 16
+animation_player = NodePath("AnimationPlayer")
+shooting_animation = "Shooting"
+idle_animation = "Idle"
+muzzle = NodePath("Sprite2D/Muzzle")
+sprite = NodePath("Sprite2D")
+metadata/_edit_vertical_guides_ = [290.0]
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture_filter = 1

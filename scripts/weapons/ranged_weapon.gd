@@ -2,9 +2,9 @@ extends Node2D
 class_name RangedWeapon
 
 @export var fire_rate: float = 1.0
-@export var range: float = 500.0
-@export var AMMO: int
-@export var MAX_AMMO: int
+@export var max_range: float = 500.0
+@export var max_ammo: int = 10
+@export var ammo: int = 10
 @export var slowness: float = 20.0
 @export var slowness_duration: float = 300.0
 @export var animation_player: AnimationPlayer
@@ -14,8 +14,11 @@ class_name RangedWeapon
 @export var muzzle = Marker2D
 @export var sprite = Sprite2D
 @export var can_rotate: bool
+@export var bullet_scene: PackedScene
+@export var pellets: int = 1
 
 var last_shot_time: float = 0.0
+
 
 func _ready():
 	last_shot_time = Time.get_ticks_msec()
@@ -23,31 +26,31 @@ func _ready():
 func shoot():
 	if Time.get_ticks_msec() - last_shot_time >= 1000 / fire_rate:
 		can_rotate = true
-		if AMMO > 0:
+		if ammo > 0:
 			animation_player.play(shooting_animation)
 			_shoot_bullet()
-			rpc("network_shoot")
 			last_shot_time = Time.get_ticks_msec()
-			AMMO -= 1
-			var muzzle_flash_instance = muzzle_flash.instantiate()
-			muzzle_flash_instance.global_position = muzzle.global_position
-			muzzle_flash_instance.rotation = get_parent().get_parent().rotation
-			add_child(muzzle_flash_instance)
-			print(rotation)
+			ammo -= 1
+			show_muzzle_flash()
 	else:
 		can_rotate = false
-@rpc("any_peer")
-
-func network_shoot():
-	_shoot_bullet()
 
 func _shoot_bullet():
-	pass
+	for i in range(pellets):
+		if bullet_scene:
+			var bullet: Area2D = bullet_scene.instantiate()
+			get_parent().get_parent().get_parent().add_child(bullet)
+			bullet.set_bullet_damage(10, 0)
+			
+			var offset: Vector2 = Vector2(max_range / 10, 0).rotated(global_rotation)
+			bullet.global_position = muzzle.global_position + offset
+			bullet.rotation = global_rotation + randf() * 0.1 - 0.05
 
 func reload():
-	AMMO = MAX_AMMO
-	print("Weapon reloaded.")
+	ammo = max_ammo
 
-func set_ammo_and_max_ammo(a: int, b: int):
-	AMMO = a
-	MAX_AMMO = b
+func show_muzzle_flash():
+	var muzzle_flash_instance = muzzle_flash.instantiate()
+	muzzle_flash_instance.global_position = muzzle.global_position
+	muzzle_flash_instance.rotation = get_parent().get_parent().rotation
+	add_child(muzzle_flash_instance)

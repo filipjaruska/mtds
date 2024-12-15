@@ -1,31 +1,9 @@
 extends RangedWeapon
 
-@export var bullet_scene = preload("res://nodes/weapons/bullet.tscn")
-@export var pellets: int = 5
-@export var ammo: int = 5
-@export var max_ammo: int = 5
+# Edit gun specific properties through the Godot Editor
 
 func _ready():
-	set_ammo_and_max_ammo(ammo, max_ammo)
-	slowness = 40.0
-	slowness_duration = 400.0
-	fire_rate = 0.85
-	animation_player = $AnimationPlayer
-	shooting_animation = "Shooting"
-	idle_animation = "Idle"
-	muzzle = $Sprite2D/Muzzle
-	sprite = $Sprite2D
-func _shoot_bullet():
-	
-	for i in range(pellets):
-		var bullet: Area2D = bullet_scene.instantiate()
-		get_parent().get_parent().get_parent().add_child(bullet)
-		bullet.set_bullet_damage(20, 0)
-		
-		var offset: Vector2 = Vector2(range / 10, 0).rotated(global_rotation)
-		bullet.global_position = muzzle.global_position + offset
-		bullet.rotation = global_rotation + randf() * 0.1 - 0.05
-
+	bullet_scene = preload("res://nodes/weapons/bullet.tscn")
 
 func _on_animation_player_animation_finished(anim_name):
 	if anim_name == shooting_animation:
