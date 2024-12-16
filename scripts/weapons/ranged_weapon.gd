@@ -1,10 +1,10 @@
 extends Node2D
 class_name RangedWeapon
-
 @export var fire_rate: float = 1.0 # shots per second
+@export var accuracy: float = 100.0 # accuracy percentage in %
+@export var max_range: float = 500.0 # range in pixels
 @export var damage: float = 10.0 # damage per shot
 @export var armor_penetration: float = 0.0 # armor penetration
-@export var max_range: float = 500.0 # range in pixels
 @export var max_ammo: int = 10 # maximum ammunition
 @export var ammo: int = 10 # current ammunition
 @export var pellets: int = 1 # number of pellets per shot
@@ -45,9 +45,13 @@ func _shoot_bullet():
 			
 			var offset: Vector2 = Vector2(max_range / 10, 0).rotated(global_rotation)
 			bullet.global_position = muzzle.global_position + offset
-			bullet.rotation = global_rotation + randf() * 0.1 - 0.05
+			
+			var deviation: float = (1.0 - accuracy / 100.0) * 0.5 # deviation based on accuracy
+			bullet.rotation = global_rotation + randf() * deviation - deviation / 2
 
 func reload():
+	if is_reloading:
+		return
 	is_reloading = true
 	await get_tree().create_timer(reload_time).timeout
 	ammo = max_ammo

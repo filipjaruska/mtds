@@ -43,6 +43,7 @@ _data = {
 [node name="Pistol" type="Node2D" node_paths=PackedStringArray("muzzle", "sprite", "animation_player")]
 script = ExtResource("1_ll076")
 fire_rate = 2.0
+accuracy = 95.0
 max_ammo = 16
 ammo = 16
 shooting_animation = "Shooting"

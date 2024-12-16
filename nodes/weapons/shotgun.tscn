@@ -44,7 +44,8 @@ _data = {
 [node name="Shotgun" type="Node2D" node_paths=PackedStringArray("muzzle", "sprite", "animation_player")]
 script = ExtResource("1_b2bdx")
 fire_rate = 0.85
-max_range = 250.0
+accuracy = 60.0
+max_range = 300.0
 max_ammo = 5
 ammo = 5
 pellets = 5
