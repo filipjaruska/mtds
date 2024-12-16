@@ -25,6 +25,7 @@ var is_reloading: bool = false
 
 func _ready():
 	last_shot_time = Time.get_ticks_msec()
+	animation_player.play(idle_animation)
 
 func shoot():
 	if not is_reloading and Time.get_ticks_msec() - last_shot_time >= 1000 / fire_rate:
@@ -62,3 +63,7 @@ func show_muzzle_flash():
 	muzzle_flash_instance.global_position = muzzle.global_position
 	muzzle_flash_instance.rotation = get_parent().get_parent().rotation
 	add_child(muzzle_flash_instance)
+
+func _on_animation_player_animation_finished(anim_name):
+	if anim_name == shooting_animation:
+		animation_player.play(idle_animation)
