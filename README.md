@@ -1,10 +1,7 @@
 ## New TODO:
 
 - [ ] create short tutorial lvl to showcase and think of game mechanics
-
-### Player Feathers
-
-- [ ] ctrl for Supervive like zoom out
+- [ ] Refactor for code consistency (ex: consistent variables and @exports and @onready)
 
 ### Weapon system
 

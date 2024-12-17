@@ -5,6 +5,7 @@ extends Node2D
 @onready var UI = $"../../Camera2D/UI"
 @onready var player = $"../.."
 @onready var slow_timer = $SlowTimer
+@onready var weapon_slots_ui = $"../../Camera2D/UI/WeaponSlots"
 
 const MAX_WEAPONS: int = 2
 
@@ -12,11 +13,12 @@ var weapons: Array = []
 var current_weapon_index: int = 0
 var can_switch: bool = true
 
-func _ready():
+func _ready() -> void:
 	if weapons.size() > 0:
 		equip_weapon(0)
+	update_weapon_slots()
 
-func add_weapon(weapon: RangedWeapon, equip_immediately: bool = false):
+func add_weapon(weapon: RangedWeapon, equip_immediately: bool = false) -> void:
 	if weapons.size() >= MAX_WEAPONS:
 		drop_weapon(current_weapon_index)
 
@@ -26,15 +28,17 @@ func add_weapon(weapon: RangedWeapon, equip_immediately: bool = false):
 
 	if weapons.size() == 1 or equip_immediately:
 		equip_weapon(weapons.size() - 1)
+	update_weapon_slots()
 
-func drop_weapon(index: int):
+func drop_weapon(index: int) -> void:
 	if index >= 0 and index < weapons.size():
 		weapons[index].queue_free()
 		weapons.remove_at(index)
 		if weapons.size() > 0:
 			equip_weapon(0)
+	update_weapon_slots()
 
-func switch_weapon():
+func switch_weapon() -> void:
 	if not can_switch or weapons.size() < 2:
 		return
 
@@ -45,34 +49,46 @@ func switch_weapon():
 	current_weapon_index = (current_weapon_index + 1) % weapons.size()
 	current_weapon().show()
 	update_hud()
+	update_weapon_slots()
 
-func equip_weapon(index: int):
-	if index < 0 or index >= weapons.size():
+func equip_weapon(index: int) -> void:
+	if index < 0 or index > weapons.size():
 		return
 
 	if current_weapon_index < weapons.size():
 		current_weapon().hide()
 	current_weapon_index = index
-	current_weapon().show()
+	if index < weapons.size():
+		current_weapon().show()
 	update_hud()
+	update_weapon_slots()
 
 func current_weapon() -> RangedWeapon:
-	return weapons[current_weapon_index]
+	if current_weapon_index < weapons.size():
+		return weapons[current_weapon_index]
+	return null
 
-func update_hud():
-	if weapons.size() > 0:
+func update_hud() -> void:
+	if weapons.size() > 0 and current_weapon() != null:
 		UI.update_ammo(current_weapon().ammo, current_weapon().max_ammo)
 
-func _process(_delta):
+func update_weapon_slots() -> void:
+	for i in range(MAX_WEAPONS):
+		if i < weapons.size():
+			weapon_slots_ui.update_slot(i, weapons[i].name)
+		else:
+			weapon_slots_ui.update_slot(i, "")
+
+func _process(_delta: float) -> void:
 	if multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id():
-		if weapons.size() > 0:
+		if weapons.size() > 0 and current_weapon() != null:
 			var weapon = current_weapon()
 			if Input.is_action_pressed("shoot"):
 				weapon.shoot()
 				update_hud()
 
 				if weapon.slowness_duration > 0 and weapon.ammo > 0:
-					player.current_speed = lerp(200.0, weapon.slowness, 0.8)
+					player.current_speed = lerp(200.0, weapon.slowness, 0.8) # TODO fix this (player speed)
 					slow_timer.start(weapon.slowness_duration / 1000.0)
 			if Input.is_action_just_pressed("reload"):
 				weapon.reload()
@@ -81,11 +97,16 @@ func _process(_delta):
 			if Input.is_action_just_pressed("switch_weapon"):
 				switch_weapon()
 
-func _on_switch_cooldown_timer_timeout():
+	if Input.is_action_just_pressed("switch_weapon_1"):
+		equip_weapon(0)
+	if Input.is_action_just_pressed("switch_weapon_2"):
+		equip_weapon(1)
+
+func _on_switch_cooldown_timer_timeout() -> void:
 	can_switch = true
 
-func _on_slow_timer_timeout():
+func _on_slow_timer_timeout() -> void:
 	player.current_speed = lerp(current_weapon().slowness, 200.0, 0.8)
 
-func on_weapon_picked_up(weapon_scene: PackedScene):
+func on_weapon_picked_up(weapon_scene: PackedScene) -> void:
 	add_weapon(weapon_scene.instantiate(), true)
