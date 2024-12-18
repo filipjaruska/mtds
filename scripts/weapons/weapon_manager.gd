@@ -79,6 +79,10 @@ func update_weapon_slots() -> void:
 		else:
 			weapon_slots_ui.update_slot(i, "")
 
+func delete_current_weapon() -> void:
+	if weapons.size() > 0 and current_weapon() != null:
+		drop_weapon(current_weapon_index)
+
 func _process(_delta: float) -> void:
 	if multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id():
 		if weapons.size() > 0 and current_weapon() != null:
@@ -87,8 +91,8 @@ func _process(_delta: float) -> void:
 				weapon.shoot()
 				update_hud()
 
-				if weapon.slowness_duration > 0 and weapon.ammo > 0:
-					player.current_speed = lerp(200.0, weapon.slowness, 0.8) # TODO fix this (player speed)
+				if weapon.slowness_duration > 0 and weapon.ammo > 0: 
+					player.current_speed = lerp(200.0, weapon.slowness, 0.8)
 					slow_timer.start(weapon.slowness_duration / 1000.0)
 			if Input.is_action_just_pressed("reload"):
 				weapon.reload()
@@ -101,12 +105,16 @@ func _process(_delta: float) -> void:
 		equip_weapon(0)
 	if Input.is_action_just_pressed("switch_weapon_2"):
 		equip_weapon(1)
+	if Input.is_action_just_pressed("ui_drop_weapon"): # the x button
+		delete_current_weapon()
 
 func _on_switch_cooldown_timer_timeout() -> void:
 	can_switch = true
 
 func _on_slow_timer_timeout() -> void:
-	player.current_speed = lerp(current_weapon().slowness, 200.0, 0.8)
+	var weapon = current_weapon()
+	if weapon != null:
+		player.current_speed = lerp(weapon.slowness, 200.0, 0.8)
 
 func on_weapon_picked_up(weapon_scene: PackedScene) -> void:
 	add_weapon(weapon_scene.instantiate(), true)

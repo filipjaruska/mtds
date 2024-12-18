@@ -2,7 +2,7 @@ extends Area2D
 
 @export var weapon_scene: PackedScene
 @onready var label = $Label
-var player = null
+var player: Node = null
 
 func _ready() -> void:
 	label.visible = false
@@ -10,7 +10,7 @@ func _ready() -> void:
 	add_child(weapon_scene.instantiate())
 	
 func _process(_delta):
-	if player != null and Input.is_action_just_pressed("interact"):
+	if player and Input.is_action_just_pressed("interact"):
 		player.weapon_manager.on_weapon_picked_up(weapon_scene)
 		queue_free()
 	
