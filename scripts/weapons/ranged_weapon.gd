@@ -1,5 +1,6 @@
 extends Node2D
 class_name RangedWeapon
+@export var resource_path: String
 @export var fire_rate: float = 1.0 # shots per second
 @export var accuracy: float = 100.0 # accuracy percentage in %
 @export var max_range: float = 500.0 # range in pixels

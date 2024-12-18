@@ -32,10 +32,19 @@ func add_weapon(weapon: RangedWeapon, equip_immediately: bool = false) -> void:
 
 func drop_weapon(index: int) -> void:
 	if index >= 0 and index < weapons.size():
-		weapons[index].queue_free()
+		var weapon = weapons[index]
+
+		var weapon_scene = load(weapon.resource_path) as PackedScene
+		var weapon_pickup_scene = preload("res://nodes/weapons/weapon_pickup.tscn")
+		var weapon_pickup = weapon_pickup_scene.instantiate()
+		weapon_pickup.position = player.position
+
+		weapon_pickup.set_weapon_scene(weapon_scene)
+		get_tree().root.add_child(weapon_pickup)
+
+
 		weapons.remove_at(index)
-		if weapons.size() > 0:
-			equip_weapon(0)
+		weapon.queue_free()
 	update_weapon_slots()
 
 func switch_weapon() -> void:

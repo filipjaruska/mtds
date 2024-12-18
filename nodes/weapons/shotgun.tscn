@@ -43,6 +43,7 @@ _data = {
 
 [node name="Shotgun" type="Node2D" node_paths=PackedStringArray("muzzle", "sprite", "animation_player")]
 script = ExtResource("1_5i0fo")
+resource_path = "res://nodes/weapons/shotgun.tscn"
 fire_rate = 0.85
 accuracy = 55.0
 max_range = 250.0

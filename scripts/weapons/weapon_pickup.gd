@@ -1,13 +1,15 @@
 extends Area2D
 
 @export var weapon_scene: PackedScene
+@export var weapon_name: String
 @onready var label = $Label
 var player: Node = null
 
 func _ready() -> void:
 	label.visible = false
 	$Sprite2D.visible = false
-	add_child(weapon_scene.instantiate())
+	if weapon_scene:
+		add_child(weapon_scene.instantiate())
 	
 func _process(_delta):
 	if player and Input.is_action_just_pressed("interact"):
@@ -25,3 +27,8 @@ func _on_body_exited(body):
 		return
 	player = null
 	label.visible = false
+
+func set_weapon_scene(new_weapon_scene: PackedScene) -> void:
+	weapon_scene = new_weapon_scene
+	if weapon_scene:
+		add_child(weapon_scene.instantiate())
