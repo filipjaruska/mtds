@@ -41,7 +41,25 @@ func heal(amount: float):
 
 func death():
 	if current_health <= 0:
-		get_parent().queue_free()
+		print("Player died")
+		var player = get_parent()
+		player.visible = false
+		await get_tree().create_timer(1.0).timeout
+		print("Time out done")
+		respawn_player(player)
+		print("Player respawned")
+
+func respawn_player(player):
+	player.visible = true
+	player.position = get_spawn_location(player.name)
+	current_health = MAX_HEALTH
+	update_ui()
+
+func get_spawn_location(player_name: String) -> Vector2:
+	for spawn in get_tree().get_nodes_in_group("PlayerSpawnLocation"):
+		if spawn.name == player_name:
+			return spawn.global_position
+	return Vector2.ZERO
 
 func _on_heal_timer_timeout():
 	if get_parent().is_in_group("Player"):

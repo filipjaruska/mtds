@@ -48,7 +48,6 @@ fire_rate = 0.85
 accuracy = 55.0
 max_range = 250.0
 damage = 12.0
-armor_penetration = null
 max_ammo = 5
 ammo = 5
 pellets = 5

@@ -3,14 +3,6 @@
 - [ ] create short tutorial lvl to showcase and think of game mechanics
 - [ ] Refactor for code consistency (ex: consistent variables and @exports and @onready)
 
-### Weapon system
-
-- [ ] Refactor
-  - [ ] Fix weapon stats
-  - [ ] Dropping guns
-- [ ] add crossbow
-- [ ] add assault rifle
-
 ### Gameplay feathers
 
 - [ ] Think of way, that would clearly indicate ground hight (walls, pits, ground ect)
