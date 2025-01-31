@@ -6,6 +6,8 @@ on: [push, pull_request]
 env:
   # Configure Godot version
   GODOT_VERSION: 4.3.0
+  # TEMPORARY: Set to true to mark the release as a pre-release
+  PRE_RELEASE: True
 
 jobs:
   build:
@@ -83,6 +85,13 @@ jobs:
           cd ${{ matrix.export-folder }}
           7z a -tzip ${{ matrix.archive }}.zip *.* -x'!.gitignore'
 
+      # Generate Changelog
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          echo "## Changelog" > CHANGELOG.md
+          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" >> CHANGELOG.md
+
       # Publish release (if building release)
       - name: Publish Release
         uses: ncipollo/release-action@v1
@@ -95,3 +104,5 @@ jobs:
           omitNameDuringUpdate: true
           omitBodyDuringUpdate: true
           token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: ${{ env.PRE_RELEASE }}
+          body: ${{ steps.changelog.outputs.changelog }}
