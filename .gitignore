@@ -3,7 +3,3 @@
 .vscode/
 .idea/
 img.png.import
-
-# builds
-build/windows/*
-build/linux/*
