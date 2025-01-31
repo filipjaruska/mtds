@@ -83,6 +83,27 @@ jobs:
           cd ${{ matrix.export-folder }}
           7z a -tzip ${{ matrix.archive }}.zip *.* -x'!.gitignore'
 
+      # Generate patch notes
+      - name: Generate Patch Notes
+        id: patch_notes
+        run: |
+          echo "## Changes" > patch_notes.md
+          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 @^)..@ >> patch_notes.md
+
+      # Upload patch notes for manual editing
+      - name: Upload Patch Notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: PatchNotes
+          path: patch_notes.md
+
+      # Download edited patch notes
+      - name: Download Patch Notes
+        uses: actions/download-artifact@v4
+        with:
+          name: PatchNotes
+          path: .
+
       # Publish release (if building release)
       - name: Publish Release
         uses: ncipollo/release-action@v1
@@ -95,3 +116,4 @@ jobs:
           omitNameDuringUpdate: true
           omitBodyDuringUpdate: true
           token: ${{ secrets.GITHUB_TOKEN }}
+          bodyPath: patch_notes.md
