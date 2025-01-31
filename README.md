@@ -3,10 +3,6 @@
 - [ ] create short tutorial lvl to showcase and think of game mechanics
 - [ ] Refactor for code consistency (ex: consistent variables and @exports and @onready)
 
-### Gameplay feathers
-
-- [ ] Think of way, that would clearly indicate ground hight (walls, pits, ground ect)
-
 ### Multiplayer
 
 - [ ] REDO (but probably as a last thing)

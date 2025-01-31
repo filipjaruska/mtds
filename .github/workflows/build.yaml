@@ -1,0 +1,97 @@
+name: Build
+
+on: [push, pull_request]
+
+# Environment variables
+env:
+  # Configure Godot version
+  GODOT_VERSION: 4.3.0
+
+jobs:
+  build:
+    name: Building for ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          # Export for Windows
+          - name: 🪟 Windows
+            os: windows-latest
+            platform: windows
+            export-preset: Windows
+            export-type: release
+            export-folder: build/windows
+            archive: Windows
+            butler-channel: windows
+
+          # Export for Linux
+          - name: 🐧 Linux
+            os: ubuntu-22.04
+            platform: linux
+            export-preset: Linux
+            export-type: release
+            export-folder: build/linux
+            archive: Linux
+            butler-channel: linux
+
+    steps:
+      # Check out the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Setup Godot
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: true
+
+      # Import Godot Project
+      - name: Initial Godot Import
+        shell: bash
+        run: |
+          godot --headless --import || exit 0
+
+      # Export project
+      - name: Export Godot Project
+        shell: bash
+        run: >
+          godot
+          --headless
+          ${{ matrix.export-args }}
+          --export-${{ matrix.export-type }} "${{ matrix.export-preset }}"
+
+      # Upload artifacts
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}-Artifacts
+          path: |
+            ${{ matrix.export-folder }}/*.*
+            !**/.gitignore
+
+      # Compress project (if building release)
+      - name: Compress Project
+        if: >
+          github.event_name == 'push' && 
+          github.ref_type == 'tag'
+        run: |
+          cd ${{ matrix.export-folder }}
+          7z a -tzip ${{ matrix.archive }}.zip *.* -x'!.gitignore'
+
+      # Publish release (if building release)
+      - name: Publish Release
+        uses: ncipollo/release-action@v1
+        if: >
+          github.event_name == 'push' && 
+          github.ref_type == 'tag'
+        with:
+          allowUpdates: true
+          artifacts: "${{ matrix.export-folder }}/${{ matrix.archive }}.zip"
+          omitNameDuringUpdate: true
+          omitBodyDuringUpdate: true
+          token: ${{ secrets.GITHUB_TOKEN }}

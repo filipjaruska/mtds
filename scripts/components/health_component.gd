@@ -41,13 +41,10 @@ func heal(amount: float):
 
 func death():
 	if current_health <= 0:
-		print("Player died")
 		var player = get_parent()
 		player.visible = false
 		await get_tree().create_timer(1.0).timeout
-		print("Time out done")
 		respawn_player(player)
-		print("Player respawned")
 
 func respawn_player(player):
 	player.visible = true
