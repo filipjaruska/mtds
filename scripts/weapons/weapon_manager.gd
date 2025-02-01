@@ -44,18 +44,19 @@ func add_weapon(weapon: RangedWeapon, equip_immediately: bool = false) -> void:
 func drop_weapon(index: int) -> void:
 	if index >= 0 and index < weapons.size():
 		var weapon = weapons[index]
-
 		var weapon_scene = load(weapon.resource_path) as PackedScene
 		var weapon_pickup_scene = preload("res://nodes/weapons/weapon_pickup.tscn")
 		var weapon_pickup = weapon_pickup_scene.instantiate()
 		weapon_pickup.position = player.position
-
 		weapon_pickup.set_weapon_scene(weapon_scene)
 		get_tree().root.add_child(weapon_pickup)
-
-
+		
+		rpc("remove_weapon", index)  # Add this line to sync weapon removal
+		rpc("spawn_weapon_pickup", weapon.resource_path, player.position)
+		
 		weapons.remove_at(index)
 		weapon.queue_free()
+		
 	update_weapon_slots()
 	if is_authority and index >= 0 and index < weapon_paths.size():
 		weapon_paths.remove_at(index)
@@ -165,3 +166,20 @@ func sync_inventory_state(paths: Array, new_index: int):
 			weapons.append(new_weapon)
 			add_child(new_weapon)
 	equip_weapon(current_weapon_index)
+
+@rpc("any_peer", "reliable")
+func spawn_weapon_pickup(weapon_path: String, pos: Vector2) -> void:
+	var weapon_scene = load(weapon_path) as PackedScene
+	var weapon_pickup_scene = preload("res://nodes/weapons/weapon_pickup.tscn")
+	var weapon_pickup = weapon_pickup_scene.instantiate()
+	weapon_pickup.position = pos
+	weapon_pickup.set_weapon_scene(weapon_scene)
+	get_tree().root.add_child(weapon_pickup)
+
+@rpc("any_peer", "reliable")
+func remove_weapon(index: int) -> void:
+	if index >= 0 and index < weapons.size():
+		var weapon = weapons[index]
+		weapons.remove_at(index)
+		weapon.queue_free()
+		update_weapon_slots()
