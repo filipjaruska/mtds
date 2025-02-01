@@ -30,11 +30,13 @@ func _ready():
 	current_speed = normal_speed
 
 	var authority_id: int = str(name).to_int()
+	weapon_manager.multiplayer_sync.set_multiplayer_authority(authority_id)
 	$MultiplayerSynchronizer.set_multiplayer_authority(authority_id)
 	var is_authority = $MultiplayerSynchronizer.get_multiplayer_authority() == multiplayer.get_unique_id()
 	$Camera2D.enabled = is_authority
 	$Camera2D/UI/Ammo.visible = is_authority
 	$Camera2D/UI/Health.visible = is_authority
+	$Camera2D/UI/WeaponSlots.visible = is_authority
 	dash_cooldown_indicator.visible = is_authority
 
 func _process(delta):

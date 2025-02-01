@@ -12,11 +12,16 @@ const MAX_WEAPONS: int = 2
 var weapons: Array = []
 var current_weapon_index: int = 0
 var can_switch: bool = true
+var is_authority: bool = false
+var weapon_paths: Array = []
 
 func _ready() -> void:
 	if weapons.size() > 0:
 		equip_weapon(0)
 	update_weapon_slots()
+	is_authority = (multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id())
+	if not is_authority:
+		rpc_id(multiplayer_sync.get_multiplayer_authority(), "request_inventory_sync")
 
 func add_weapon(weapon: RangedWeapon, equip_immediately: bool = false) -> void:
 	if weapons.size() >= MAX_WEAPONS:
@@ -29,6 +34,12 @@ func add_weapon(weapon: RangedWeapon, equip_immediately: bool = false) -> void:
 	if weapons.size() == 1 or equip_immediately:
 		equip_weapon(weapons.size() - 1)
 	update_weapon_slots()
+	if is_authority:
+		weapon_paths.append(weapon.resource_path)
+		rpc("sync_inventory_state", weapon_paths, current_weapon_index)
+	else:
+		weapon_paths.append(weapon.resource_path)
+		rpc("sync_inventory_state", weapon_paths, current_weapon_index)
 
 func drop_weapon(index: int) -> void:
 	if index >= 0 and index < weapons.size():
@@ -46,6 +57,9 @@ func drop_weapon(index: int) -> void:
 		weapons.remove_at(index)
 		weapon.queue_free()
 	update_weapon_slots()
+	if is_authority and index >= 0 and index < weapon_paths.size():
+		weapon_paths.remove_at(index)
+		rpc("sync_inventory_state", weapon_paths, current_weapon_index)
 
 func switch_weapon() -> void:
 	if not can_switch or weapons.size() < 2:
@@ -59,6 +73,7 @@ func switch_weapon() -> void:
 	current_weapon().show()
 	update_hud()
 	update_weapon_slots()
+	rpc("sync_inventory_state", weapon_paths, current_weapon_index)
 
 func equip_weapon(index: int) -> void:
 	if index < 0 or index > weapons.size():
@@ -109,13 +124,15 @@ func _process(_delta: float) -> void:
 
 			if Input.is_action_just_pressed("switch_weapon"):
 				switch_weapon()
-
-	if Input.is_action_just_pressed("switch_weapon_1"):
-		equip_weapon(0)
-	if Input.is_action_just_pressed("switch_weapon_2"):
-		equip_weapon(1)
-	if Input.is_action_just_pressed("ui_drop_weapon"): # the x button
-		delete_current_weapon()
+			
+			if Input.is_action_just_pressed("switch_weapon_1"):
+				equip_weapon(0)
+				rpc("sync_inventory_state", weapon_paths, 0)
+			if Input.is_action_just_pressed("switch_weapon_2"):
+				equip_weapon(1)
+				rpc("sync_inventory_state", weapon_paths, 1)
+			if Input.is_action_just_pressed("ui_drop_weapon"):
+				delete_current_weapon()
 
 func _on_switch_cooldown_timer_timeout() -> void:
 	can_switch = true
@@ -127,3 +144,24 @@ func _on_slow_timer_timeout() -> void:
 
 func on_weapon_picked_up(weapon_scene: PackedScene) -> void:
 	add_weapon(weapon_scene.instantiate(), true)
+
+@rpc
+func request_inventory_sync():
+	if is_authority:
+		rpc_id(multiplayer.get_remote_sender_id(), "sync_inventory_state", weapon_paths, current_weapon_index)
+
+@rpc("any_peer", "reliable")
+func sync_inventory_state(paths: Array, new_index: int):
+	weapon_paths = paths
+	current_weapon_index = new_index
+	for w in weapons:
+		w.queue_free()
+	weapons.clear()
+	for path in weapon_paths:
+		var scene := load(path) as PackedScene
+		if scene:
+			var new_weapon := scene.instantiate()
+			new_weapon.hide()
+			weapons.append(new_weapon)
+			add_child(new_weapon)
+	equip_weapon(current_weapon_index)
