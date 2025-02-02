@@ -156,7 +156,7 @@ func _on_slow_timer_timeout() -> void:
 func on_weapon_picked_up(weapon_scene: PackedScene) -> void:
 	add_weapon(weapon_scene.instantiate(), true)
 
-@rpc
+@rpc("any_peer", "reliable")
 func request_inventory_sync():
 	if is_authority:
 		rpc_id(multiplayer.get_remote_sender_id(), "sync_inventory_state", weapon_paths, current_weapon_index)
