@@ -35,24 +35,24 @@ func add_weapon(weapon: RangedWeapon, equip_immediately: bool = false) -> void:
 	if weapons.size() == 1 or equip_immediately:
 		equip_weapon(weapons.size() - 1)
 	update_weapon_slots()
-	if is_authority:
-		weapon_paths.append(weapon.resource_path)
-		rpc("sync_inventory_state", weapon_paths, current_weapon_index)
-	else:
-		weapon_paths.append(weapon.resource_path)
-		rpc("sync_inventory_state", weapon_paths, current_weapon_index)
+
+	weapon_paths.append(weapon.resource_path)
+	rpc("sync_inventory_state", weapon_paths, current_weapon_index)
+	
 
 func drop_weapon(index: int) -> void:
 	if index >= 0 and index < weapons.size():
 		var weapon = weapons[index]
+
 		var weapon_scene = load(weapon.resource_path) as PackedScene
 		var weapon_pickup_scene = preload("res://nodes/weapons/weapon_pickup.tscn")
 		var weapon_pickup = weapon_pickup_scene.instantiate()
 		weapon_pickup.position = player.position
+
 		weapon_pickup.set_weapon_scene(weapon_scene)
 		get_tree().root.add_child(weapon_pickup)
 		
-		rpc("remove_weapon", index)  # Add this line to sync weapon removal
+		rpc("remove_weapon", index)
 		rpc("spawn_weapon_pickup", weapon.resource_path, player.position)
 		
 		weapons.remove_at(index)
@@ -64,15 +64,21 @@ func drop_weapon(index: int) -> void:
 		rpc("sync_inventory_state", weapon_paths, current_weapon_index)
 
 func switch_weapon() -> void:
-	if not can_switch:
+	if not can_switch or weapons.size() == 0:
 		return
 
 	can_switch = false
 	switch_cooldown_timer.start()
 
-	current_weapon().hide()
+	var current = current_weapon()
+	if current != null:
+		current.hide()
+		
 	current_weapon_index = (current_weapon_index + 1) % weapons.size()
-	current_weapon().show()
+	var next_weapon = current_weapon()
+	if next_weapon != null:
+		next_weapon.show()
+		
 	update_hud()
 	update_weapon_slots()
 	rpc("sync_inventory_state", weapon_paths, current_weapon_index)
@@ -115,6 +121,17 @@ func delete_current_weapon() -> void:
 
 func _process(_delta: float) -> void:
 	if multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id():
+		if Input.is_action_just_pressed("switch_weapon"):
+			switch_weapon()
+		if Input.is_action_just_pressed("switch_weapon_1"):
+			equip_weapon(0)
+			rpc("sync_inventory_state", weapon_paths, 0)
+		if Input.is_action_just_pressed("switch_weapon_2"):
+			equip_weapon(1)
+			rpc("sync_inventory_state", weapon_paths, 1)
+		if Input.is_action_just_pressed("ui_drop_weapon"):
+			delete_current_weapon()
+
 		if weapons.size() > 0 and current_weapon() != null:
 			var weapon = current_weapon()
 			if Input.is_action_pressed("shoot"):
@@ -127,18 +144,6 @@ func _process(_delta: float) -> void:
 			if Input.is_action_just_pressed("reload"):
 				weapon.reload()
 				update_hud()
-
-			if Input.is_action_just_pressed("switch_weapon"):
-				switch_weapon()
-			
-			if Input.is_action_just_pressed("switch_weapon_1"):
-				equip_weapon(0)
-				rpc("sync_inventory_state", weapon_paths, 0)
-			if Input.is_action_just_pressed("switch_weapon_2"):
-				equip_weapon(1)
-				rpc("sync_inventory_state", weapon_paths, 1)
-			if Input.is_action_just_pressed("ui_drop_weapon"):
-				delete_current_weapon()
 
 func _on_switch_cooldown_timer_timeout() -> void:
 	can_switch = true
