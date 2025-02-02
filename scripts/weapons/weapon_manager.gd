@@ -14,6 +14,7 @@ var current_weapon_index: int = 0
 var can_switch: bool = true
 var is_authority: bool = false
 var weapon_paths: Array = []
+var can_drop: bool = true
 
 func _ready() -> void:
 	if weapons.size() > 0:
@@ -63,7 +64,7 @@ func drop_weapon(index: int) -> void:
 		rpc("sync_inventory_state", weapon_paths, current_weapon_index)
 
 func switch_weapon() -> void:
-	if not can_switch or weapons.size() < 2:
+	if not can_switch:
 		return
 
 	can_switch = false
@@ -105,8 +106,12 @@ func update_weapon_slots() -> void:
 			weapon_slots_ui.update_slot(i, "")
 
 func delete_current_weapon() -> void:
-	if weapons.size() > 0 and current_weapon() != null:
-		drop_weapon(current_weapon_index)
+	if not can_drop or weapons.size() == 0 or current_weapon() == null:
+		return
+	can_drop = false
+	drop_weapon(current_weapon_index)
+	await get_tree().create_timer(1.0).timeout
+	can_drop = true
 
 func _process(_delta: float) -> void:
 	if multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id():
