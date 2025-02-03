@@ -4,9 +4,6 @@ on:
   workflow_run:
     workflows: [Test]
     types: [completed]
-    branches: [main]
-  pull_request:
-    branches: [main]
 
 # Environment variables
 env:
@@ -17,7 +14,7 @@ env:
 
 jobs:
   build:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'pull_request' }}
+    if: github.event.workflow_run.conclusion == 'success'
     name: Building for ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     permissions:
