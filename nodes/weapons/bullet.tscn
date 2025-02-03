@@ -1,19 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://xcnabvtbwikx"]
+[gd_scene load_steps=2 format=3 uid="uid://xcnabvtbwikx"]
 
 [ext_resource type="Script" path="res://scripts/weapons/bullet.gd" id="1_6ha7u"]
-[ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://icon.svg" id="1_xpq3p"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_6avn1"]
-size = Vector2(52, 14)
-
-[node name="Bullet" type="Area2D" groups=["bullet"]]
+[node name="Bullet" type="RayCast2D" groups=["bullet"]]
+target_position = Vector2(500, 0)
+collision_mask = 2
+collide_with_areas = true
+collide_with_bodies = false
 script = ExtResource("1_6ha7u")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_6avn1")
-
-[node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(0.421875, 0.109375)
-texture = ExtResource("1_xpq3p")
-
-[connection signal="area_entered" from="." to="." method="_on_area_entered"]
+[node name="Line2D" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 500, 0)
+width = 2.0
+default_color = Color(1, 1, 0, 1)
