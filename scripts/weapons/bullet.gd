@@ -1,33 +1,49 @@
-extends Area2D
+extends RayCast2D
 
-const SPEED: float = 5000.0
-var LIFETIME: float = 1000
 var _bullet_damage: float
 var _bullet_armor_penetration: float
-var _birth: float
+var _visual_range: float
 
 func set_bullet_damage(damage: float, penetration: float) -> void:
 	_bullet_damage = damage
 	_bullet_armor_penetration = penetration
 
-func _ready():
-	_birth = Time.get_ticks_msec()
+func set_visual_range(weapon_range: float) -> void:
+	_visual_range = weapon_range
+	$Line2D.points[1] = Vector2(weapon_range, 0)
 
-func _process(delta: float) -> void:
-	if Time.get_ticks_msec() - _birth >= LIFETIME:
-		queue_free()
-		
-	global_position += Vector2(SPEED, 0).rotated(rotation) * delta
-		
-func _on_area_entered(area: Area2D) -> void: 
-	if area.is_in_group("bullet"): 
-		return
-	self.visible = false
+func _ready() -> void:
+	enabled = true
+	collide_with_areas = true
+	collide_with_bodies = false
+	
+	await get_tree().process_frame
+	force_raycast_update()
+	
+	# Only the server handles collisions
+	if multiplayer.is_server(): 
+		check_collision()
+	
+	await get_tree().create_timer(0.1).timeout
 	queue_free()
-	if area.is_in_group("hitbox"):
-		area.get_parent().damage(_bullet_damage, _bullet_armor_penetration)
-		$CollisionShape2D.set_deferred("disabled", true)
 
-func set_bullet_lifetime(lifetime: float) -> void:
-	_birth = Time.get_ticks_msec()
-	LIFETIME = lifetime * 1000  # Convert seconds to milliseconds		
+func check_collision() -> void:
+	if is_colliding():
+		var collision_point = get_collision_point()
+		var distance_to_hit = global_position.distance_to(collision_point)
+		
+		if distance_to_hit <= target_position.length():
+			var local_hit = to_local(collision_point)
+			show_impact.rpc(local_hit)
+			if multiplayer.is_server():
+				show_impact(local_hit)
+				
+			var collider = get_collider()
+			if collider is Area2D and collider.is_in_group("hitbox"):
+				var health_component = collider.get_parent()
+				if health_component and health_component.has_method("damage"):
+					health_component.damage(_bullet_damage, _bullet_armor_penetration)
+
+@rpc("reliable")
+func show_impact(hit_point: Vector2):
+	$Line2D.points[1] = hit_point

@@ -14,8 +14,13 @@ func _ready() -> void:
 func _process(_delta):
 	if player and Input.is_action_just_pressed("interact"):
 		player.weapon_manager.on_weapon_picked_up(weapon_scene)
+		rpc("delete_pickup")
 		queue_free()
-	
+
+@rpc("any_peer", "reliable")
+func delete_pickup() -> void:
+	queue_free()
+
 func _on_body_entered(body):
 	if not body.is_in_group("Player"):
 		return
