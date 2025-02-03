@@ -40,20 +40,23 @@ func shoot():
 func _shoot_bullet():
 	for i in range(pellets):
 		if bullet_scene:
-			var bullet = bullet_scene.instantiate()
-			
 			var spawn_pos = muzzle.global_position
 			var deviation = (1.0 - accuracy / 100.0) * 0.5
 			var shot_rotation = global_rotation + randf() * deviation - deviation / 2
 			
-			get_tree().root.add_child(bullet)
-			
-			bullet.global_position = spawn_pos
-			bullet.global_rotation = shot_rotation
-			bullet.target_position = Vector2(max_range, 0)
-			bullet.set_visual_range(max_range)
-			bullet.set_bullet_damage(damage, armor_penetration)
-			bullet.force_raycast_update()
+			spawn_bullet.rpc(spawn_pos, shot_rotation, max_range, damage, armor_penetration)
+
+@rpc("any_peer", "call_local")
+func spawn_bullet(pos: Vector2, rot: float, weapon_range: float, dmg: float, pen: float):
+	var bullet = bullet_scene.instantiate()
+	get_tree().root.add_child(bullet)
+	
+	bullet.global_position = pos
+	bullet.global_rotation = rot
+	bullet.target_position = Vector2(weapon_range, 0)
+	bullet.set_visual_range(weapon_range)
+	bullet.set_bullet_damage(dmg, pen)
+	bullet.force_raycast_update()
 
 func reload():
 	if is_reloading:

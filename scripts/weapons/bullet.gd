@@ -19,7 +19,10 @@ func _ready() -> void:
 	
 	await get_tree().process_frame
 	force_raycast_update()
-	check_collision()
+	
+	# Only the server handles collisions
+	if multiplayer.is_server(): 
+		check_collision()
 	
 	await get_tree().create_timer(0.1).timeout
 	queue_free()
@@ -30,9 +33,17 @@ func check_collision() -> void:
 		var distance_to_hit = global_position.distance_to(collision_point)
 		
 		if distance_to_hit <= target_position.length():
-			$Line2D.points[1] = to_local(collision_point)
+			var local_hit = to_local(collision_point)
+			show_impact.rpc(local_hit)
+			if multiplayer.is_server():
+				show_impact(local_hit)
+				
 			var collider = get_collider()
 			if collider is Area2D and collider.is_in_group("hitbox"):
 				var health_component = collider.get_parent()
 				if health_component and health_component.has_method("damage"):
 					health_component.damage(_bullet_damage, _bullet_armor_penetration)
+
+@rpc("reliable")
+func show_impact(hit_point: Vector2):
+	$Line2D.points[1] = hit_point
