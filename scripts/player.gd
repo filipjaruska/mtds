@@ -62,7 +62,7 @@ func handle_movement():
 		move_and_slide()
 
 func handle_dashing():
-	if Input.is_action_just_pressed("Dash") and not is_dashing and (Time.get_ticks_msec() - last_dash_time) >= dash_cooldown:
+	if Input.is_action_just_pressed("Dash") and not is_dashing and not is_crouching and (Time.get_ticks_msec() - last_dash_time) >= dash_cooldown:
 		is_dashing = true
 		current_speed = dash_speed
 		dash_direction = Vector2(
