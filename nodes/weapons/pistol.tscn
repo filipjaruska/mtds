@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://cslbakgrwn56g"]
 
-[ext_resource type="Script" path="res://scripts/weapons/ranged_weapon.gd" id="1_bttd4"]
+[ext_resource type="Script" uid="uid://mdurqy28abs5" path="res://scripts/weapons/ranged_weapon.gd" id="1_bttd4"]
 [ext_resource type="Texture2D" uid="uid://brfoniiux05cq" path="res://assets/guns/pistol/Pistol.base.png" id="3_cc8qp"]
 
 [sub_resource type="Animation" id="Animation_6d1wn"]
@@ -36,8 +36,8 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_8gak3"]
 _data = {
-"Idle": SubResource("Animation_6d1wn"),
-"Shooting": SubResource("Animation_qba67")
+&"Idle": SubResource("Animation_6d1wn"),
+&"Shooting": SubResource("Animation_qba67")
 }
 
 [node name="Pistol" type="Node2D" node_paths=PackedStringArray("muzzle", "sprite", "animation_player")]

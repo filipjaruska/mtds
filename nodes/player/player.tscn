@@ -1,11 +1,11 @@
 [gd_scene load_steps=9 format=3 uid="uid://qgub06sgnvml"]
 
-[ext_resource type="Script" path="res://scripts/player.gd" id="1_bpepw"]
+[ext_resource type="Script" uid="uid://dq3xe3usxlyd" path="res://scripts/player.gd" id="1_bpepw"]
 [ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://icon.svg" id="2_krkth"]
-[ext_resource type="Script" path="res://scripts/weapons/weapon_manager.gd" id="3_8meis"]
-[ext_resource type="Script" path="res://scripts/ui/player_ui.gd" id="4_vdean"]
+[ext_resource type="Script" uid="uid://fegglyhn80nu" path="res://scripts/weapons/weapon_manager.gd" id="3_8meis"]
+[ext_resource type="Script" uid="uid://cyraqsogm3i4s" path="res://scripts/ui/player_ui.gd" id="4_vdean"]
 [ext_resource type="PackedScene" uid="uid://i2rvom7p2l2f" path="res://nodes/components/health_component.tscn" id="5_uqubr"]
-[ext_resource type="Script" path="res://scripts/ui/weapon_slots.gd" id="5_xljkp"]
+[ext_resource type="Script" uid="uid://x5crv0aomnqv" path="res://scripts/ui/weapon_slots.gd" id="5_xljkp"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b7jsc"]
 radius = 26.0192

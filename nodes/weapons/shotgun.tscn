@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://b7r7dn2ffb7d8"]
 
-[ext_resource type="Script" path="res://scripts/weapons/ranged_weapon.gd" id="1_5i0fo"]
+[ext_resource type="Script" uid="uid://mdurqy28abs5" path="res://scripts/weapons/ranged_weapon.gd" id="1_5i0fo"]
 [ext_resource type="Texture2D" uid="uid://kwsmsi533xv6" path="res://assets/guns/shotgun/Shotgun.base.png" id="3_k83dr"]
 
 [sub_resource type="Animation" id="Animation_3aled"]
@@ -37,8 +37,8 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_vod60"]
 _data = {
-"Idle": SubResource("Animation_3aled"),
-"Shooting": SubResource("Animation_tor5g")
+&"Idle": SubResource("Animation_3aled"),
+&"Shooting": SubResource("Animation_tor5g")
 }
 
 [node name="Shotgun" type="Node2D" node_paths=PackedStringArray("muzzle", "sprite", "animation_player")]
