@@ -49,26 +49,20 @@ func _process(delta):
 
 func _physics_process(_delta):
 	if $MultiplayerSynchronizer.get_multiplayer_authority() == multiplayer.get_unique_id():
-		var direction: Vector2 = (get_global_mouse_position() - global_position).normalized()
+		var direction: Vector2 = InputManager.get_aim_direction(global_position)
 		$Node2D.rotation = direction.angle()
 
 func handle_movement():
 	if not is_dashing:
-		var input_vector: Vector2 = Vector2(
-			Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"),
-			Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
-		).normalized() * current_speed
+		var input_vector: Vector2 = InputManager.get_movement_vector() * current_speed
 		velocity = input_vector
 		move_and_slide()
 
 func handle_dashing():
-	if Input.is_action_just_pressed("Dash") and not is_dashing and not is_crouching and (Time.get_ticks_msec() - last_dash_time) >= dash_cooldown:
+	if InputManager.is_dash_pressed() and not is_dashing and not is_crouching and (Time.get_ticks_msec() - last_dash_time) >= dash_cooldown:
 		is_dashing = true
 		current_speed = dash_speed
-		dash_direction = Vector2(
-			Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"),
-			Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
-		).normalized()
+		dash_direction = InputManager.get_movement_vector()
 		await get_tree().create_timer(dash_duration).timeout
 		is_dashing = false
 		current_speed = normal_speed
@@ -79,7 +73,7 @@ func handle_dashing():
 		move_and_slide()
 
 func handle_crouching(delta):
-	if Input.is_action_pressed("ui_crouch"):
+	if InputManager.is_crouch_pressed():
 		is_crouching = true
 		current_speed = crouch_speed
 		camera2d.zoom = camera2d.zoom.lerp(Vector2(camera_zoom_out_factor, camera_zoom_out_factor), camera_zoom_transition_speed * delta)
@@ -89,7 +83,7 @@ func handle_crouching(delta):
 		camera2d.zoom = camera2d.zoom.lerp(Vector2(1, 1), camera_zoom_transition_speed * delta)
 
 func update_camera_offset(delta):
-	var mouse_position: Vector2 = get_global_mouse_position()
+	var mouse_position: Vector2 = InputManager.get_global_mouse_position()
 	var player_position: Vector2 = global_position
 	var distance_to_mouse: float = player_position.distance_to(mouse_position)
 	var target_offset: Vector2

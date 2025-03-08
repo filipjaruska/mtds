@@ -12,7 +12,7 @@ func _ready() -> void:
 		add_child(weapon_scene.instantiate())
 	
 func _process(_delta):
-	if player and Input.is_action_just_pressed("interact"):
+	if player and InputManager.is_interact_pressed():
 		player.weapon_manager.on_weapon_picked_up(weapon_scene)
 		rpc("delete_pickup")
 		queue_free()

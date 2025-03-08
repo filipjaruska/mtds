@@ -121,27 +121,27 @@ func delete_current_weapon() -> void:
 
 func _process(_delta: float) -> void:
 	if multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id():
-		if Input.is_action_just_pressed("switch_weapon"):
+		if InputManager.is_weapon_switch_pressed():
 			switch_weapon()
-		if Input.is_action_just_pressed("switch_weapon_1"):
+		if InputManager.is_weapon_1_pressed():
 			equip_weapon(0)
 			rpc("sync_inventory_state", weapon_paths, 0)
-		if Input.is_action_just_pressed("switch_weapon_2"):
+		if InputManager.is_weapon_2_pressed():
 			equip_weapon(1)
 			rpc("sync_inventory_state", weapon_paths, 1)
-		if Input.is_action_just_pressed("ui_drop_weapon"):
+		if InputManager.is_drop_weapon_pressed():
 			delete_current_weapon()
 
 		if weapons.size() > 0 and current_weapon() != null:
 			var weapon = current_weapon()
-			if Input.is_action_pressed("shoot"):
+			if InputManager.is_shoot_pressed():
 				weapon.shoot()
 				update_hud()
 
 				if weapon.slowness_duration > 0 and weapon.ammo > 0: 
 					player.current_speed = lerp(200.0, weapon.slowness, 0.8)
 					slow_timer.start(weapon.slowness_duration / 1000.0)
-			if Input.is_action_just_pressed("reload"):
+			if InputManager.is_reload_pressed():
 				weapon.reload()
 				update_hud()
 
