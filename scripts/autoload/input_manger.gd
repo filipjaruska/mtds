@@ -5,6 +5,7 @@ signal input_device_changed(device: String)
 enum InputDevice { KEYBOARD_MOUSE, GAMEPAD }
 var current_device: InputDevice = InputDevice.KEYBOARD_MOUSE
 var last_movement_input := Vector2.ZERO
+var last_aim_direction := Vector2.RIGHT
 
 # Switch input devices
 func _process(_delta: float) -> void:
@@ -26,7 +27,7 @@ func get_movement_vector() -> Vector2:
         Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
     ).normalized()
     
-    if input_vector != last_movement_input:
+    if input_vector != Vector2.ZERO:
         last_movement_input = input_vector
     
     return input_vector
@@ -35,31 +36,58 @@ func is_moving() -> bool:
     return get_movement_vector().length_squared() > 0.1
 
 func is_dash_pressed() -> bool:
-    return Input.is_action_just_pressed("dash")
+    if current_device == InputDevice.KEYBOARD_MOUSE:
+        return Input.is_action_just_pressed("dash")
+    else:
+        return Input.is_joy_button_pressed(0, JOY_BUTTON_A)
 
 func is_shoot_pressed() -> bool:
-    return Input.is_action_pressed("shoot")
+    if current_device == InputDevice.KEYBOARD_MOUSE:
+        return Input.is_action_pressed("shoot")
+    else:
+        return Input.is_joy_button_pressed(0, JOY_BUTTON_RIGHT_SHOULDER)
 
 func is_reload_pressed() -> bool:
-    return Input.is_action_just_pressed("reload")
+    if current_device == InputDevice.KEYBOARD_MOUSE:
+        return Input.is_action_just_pressed("reload")
+    else:
+        return Input.is_joy_button_pressed(0, JOY_BUTTON_X)
 
 func is_crouch_pressed() -> bool:
-    return Input.is_action_pressed("ui_crouch")
+    if current_device == InputDevice.KEYBOARD_MOUSE:
+        return Input.is_action_pressed("ui_crouch")
+    else:
+        return Input.is_joy_button_pressed(0, JOY_BUTTON_LEFT_STICK)
 
 func is_interact_pressed() -> bool:
-    return Input.is_action_just_pressed("interact")
+    if current_device == InputDevice.KEYBOARD_MOUSE:
+        return Input.is_action_just_pressed("interact")
+    else:
+        return Input.is_joy_button_pressed(0, JOY_BUTTON_B)
 
 func is_weapon_switch_pressed() -> bool:
-    return Input.is_action_just_pressed("switch_weapon")
+    if current_device == InputDevice.KEYBOARD_MOUSE:
+        return Input.is_action_just_pressed("switch_weapon")
+    else:
+        return Input.is_joy_button_pressed(0, JOY_BUTTON_Y)
 
 func is_weapon_1_pressed() -> bool:
-    return Input.is_action_just_pressed("switch_weapon_1")
+    if current_device == InputDevice.KEYBOARD_MOUSE:
+        return Input.is_action_just_pressed("switch_weapon_1")
+    else:
+        return Input.is_joy_button_pressed(0, JOY_BUTTON_DPAD_LEFT)
 
 func is_weapon_2_pressed() -> bool:
-    return Input.is_action_just_pressed("switch_weapon_2")
+    if current_device == InputDevice.KEYBOARD_MOUSE:
+        return Input.is_action_just_pressed("switch_weapon_2")
+    else:
+        return Input.is_joy_button_pressed(0, JOY_BUTTON_DPAD_RIGHT)
 
 func is_drop_weapon_pressed() -> bool:
-    return Input.is_action_just_pressed("ui_drop_weapon")
+    if current_device == InputDevice.KEYBOARD_MOUSE:
+        return Input.is_action_just_pressed("ui_drop_weapon")
+    else:
+        return Input.is_joy_button_pressed(0, JOY_BUTTON_DPAD_DOWN)
 
 func get_global_mouse_position() -> Vector2:
     var viewport = get_viewport()
@@ -70,12 +98,13 @@ func get_global_mouse_position() -> Vector2:
     # Fallback to viewport position (for cutscenes/animations?)
     return get_viewport().get_mouse_position()
 
-# TODO Fix - camera panning to the right; with controller; while not using right stick
-# TODO Implement - rest of the controller inputs
 func get_aim_direction(player_position: Vector2) -> Vector2:
     if current_device == InputDevice.KEYBOARD_MOUSE:
         var mouse_pos = get_global_mouse_position()
-        return (mouse_pos - player_position).normalized()
+        var direction = (mouse_pos - player_position).normalized()
+        if direction != Vector2.ZERO:
+            last_aim_direction = direction
+        return last_aim_direction
     else:
         var aim_vector = Vector2(
             Input.get_joy_axis(0, JOY_AXIS_RIGHT_X),
@@ -83,18 +112,13 @@ func get_aim_direction(player_position: Vector2) -> Vector2:
         )
         
         # For deadzone
-        if aim_vector.length_squared() > 0.1:
-            return aim_vector.normalized()
+        if aim_vector.length_squared() > 0.2:
+            last_aim_direction = aim_vector.normalized()
+            return last_aim_direction
         
-        # Use movement direction or last known direction if right stick isn't being used
+        # If no right stick input, keep last aim direction unless moving in new direction
         var movement = get_movement_vector()
-        return movement if movement.length_squared() > 0.1 else Vector2.RIGHT
-
-# TODO Fix - Controller button inputs
-func get_controller_button(button_name: String) -> bool:
-    match button_name:
-        "shoot": return Input.is_joy_button_pressed(0, JOY_BUTTON_RIGHT_SHOULDER)
-        "reload": return Input.is_joy_button_pressed(0, JOY_BUTTON_X)
-        "dash": return Input.is_joy_button_pressed(0, JOY_BUTTON_A)
-        "interact": return Input.is_joy_button_pressed(0, JOY_BUTTON_B)
-    return false
+        if movement.length_squared() > 0.1:
+            last_aim_direction = movement
+            
+        return last_aim_direction

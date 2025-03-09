@@ -5,20 +5,20 @@ extends CharacterBody2D
 @onready var dash_cooldown_indicator = $Camera2D/UI/DashCooldownIndicator
 
 @export_group("Movement")
-@export var normal_speed: float = 200.0 # pixels per second
-@export var dash_speed: float = 800.0 # pixels per second
-@export var crouch_speed: float = 100.0 # pixels per second
+@export var normal_speed: float = 200.0 	# pixels per second
+@export var dash_speed: float = 800.0 		# pixels per second
+@export var crouch_speed: float = 100.0 	# pixels per second
 
 @export_group("Dash Settings")
-@export var dash_duration: float = 0.3 # seconds
-@export var dash_cooldown: float = 3500.0 # milliseconds
+@export var dash_duration: float = 0.3 		# seconds
+@export var dash_cooldown: float = 3500.0 	# milliseconds
 
 @export_group("Camera Settings")
-@export var camera_lookahead_distance: float = 175.0 # pixels
-@export var offset_disable_threshold: float = 200.0 # pixels
-@export var camera_transition_speed: float = 5.0 # interpolation factor
-@export var camera_zoom_out_factor: float = 0.7 # zoom factor when crouching
-@export var camera_zoom_transition_speed: float = 2.0 # zoom transition speed
+@export var camera_lookahead_distance: float = 175.0 	# pixels
+@export var offset_disable_threshold: float = 200.0	 	# pixels
+@export var camera_transition_speed: float = 5.0 		# interpolation factor
+@export var camera_zoom_out_factor: float = 0.7 		# zoom factor when crouching
+@export var camera_zoom_transition_speed: float = 2.0 	# zoom transition speed
 
 enum PlayerState {
 	NORMAL,
@@ -39,7 +39,7 @@ func _ready():
 	weapon_manager.multiplayer_sync.set_multiplayer_authority(authority_id)
 	$MultiplayerSynchronizer.set_multiplayer_authority(authority_id)
 	var is_authority = $MultiplayerSynchronizer.get_multiplayer_authority() == multiplayer.get_unique_id()
-	$Camera2D.enabled = is_authority
+	camera2d.enabled = is_authority
 	$Camera2D/UI/Ammo.visible = is_authority
 	$Camera2D/UI/Health.visible = is_authority
 	$Camera2D/UI/WeaponSlots.visible = is_authority
@@ -132,18 +132,24 @@ func update_camera_zoom(delta):
 	camera2d.zoom = camera2d.zoom.lerp(target_zoom, camera_zoom_transition_speed * delta)
 
 func update_camera_offset(delta):
-	var mouse_position: Vector2 = InputManager.get_global_mouse_position()
-	var player_position: Vector2 = global_position
-	var distance_to_mouse: float = player_position.distance_to(mouse_position)
-	var target_offset: Vector2
+	if InputManager.current_device == InputManager.InputDevice.KEYBOARD_MOUSE:
+		var mouse_position: Vector2 = InputManager.get_global_mouse_position()
+		var player_position: Vector2 = global_position
+		var distance_to_mouse: float = player_position.distance_to(mouse_position)
+		var target_offset: Vector2
 
-	if distance_to_mouse < offset_disable_threshold:
-		target_offset = Vector2.ZERO
+		if distance_to_mouse < offset_disable_threshold:
+			target_offset = Vector2.ZERO
+		else:
+			var direction: Vector2 = (mouse_position - player_position).normalized()
+			target_offset = direction * camera_lookahead_distance
+            
+		camera2d.offset = camera2d.offset.lerp(target_offset, camera_transition_speed * delta)
 	else:
-		var direction: Vector2 = (mouse_position - player_position).normalized()
-		target_offset = direction * camera_lookahead_distance
-
-	camera2d.offset = camera2d.offset.lerp(target_offset, camera_transition_speed * delta)
+		var aim_direction = InputManager.last_aim_direction
+		if aim_direction.length_squared() > 0.1:
+			var target_offset = aim_direction * camera_lookahead_distance
+			camera2d.offset = camera2d.offset.lerp(target_offset, camera_transition_speed * delta)
 
 func update_dash_cooldown_indicator():
 	var cooldown_progress: float = clamp((Time.get_ticks_msec() - last_dash_time) / dash_cooldown, 0, 1)
