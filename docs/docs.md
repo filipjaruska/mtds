@@ -13,8 +13,7 @@ Are autoload scripts. These scripts are loaded when the game starts and persist 
 - `game_manager`:
 - `input_manager`:
 - `event_manager`:
-
-Working with these tm
+  A centralized event bus system that facilitates communication between different parts of the game through a publish/subscribe pattern. See the [Event Manager](/docs/docs/event-manager.md).
 
 ### Multiplier
 

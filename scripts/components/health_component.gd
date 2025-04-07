@@ -1,8 +1,6 @@
 extends Node2D
 class_name HealthComponent
 
-# TODO FIX: not reusable anymore
-
 @onready var UI = $"../Camera2D/UI"
 @onready var heal_timer = $HealTimer
 @onready var health_bar = $"../HealthBar"
@@ -27,10 +25,12 @@ func update_health(new_health: float):
 	current_health = new_health
 	update_ui()
 	health_bar.value = current_health
+	EventManager.emit_event(EventManager.Events.UI_HEALTH_UPDATED, [int(current_health), int(MAX_HEALTH)])
 
 func damage(dmg: float, penetration: float):
 	if dmg < 0.0:
 		return
+		
 	var effective_resist: float = max(physical_resist - penetration, 0.0)
 	var final_dmg: float = dmg * (1.0 - effective_resist)
 	current_health -= final_dmg
@@ -38,17 +38,24 @@ func damage(dmg: float, penetration: float):
 	rpc("update_health", current_health)
 	update_ui()
 	heal_timer.start(5.0)
+	
+	EventManager.emit_event(EventManager.Events.PLAYER_DAMAGED, [get_parent(), final_dmg, current_health])
 
 func heal(amount: float):
 	current_health = min(current_health + amount, MAX_HEALTH)
 	health_bar.value = current_health
 	rpc("update_health", current_health)
 	update_ui()
+	
+	EventManager.emit_event(EventManager.Events.PLAYER_HEALED, [get_parent(), amount, current_health])
 
 func death():
 	if current_health <= 0:
 		var player = get_parent()
 		player.visible = false
+		
+		EventManager.emit_event(EventManager.Events.PLAYER_DIED, [player])
+		
 		await get_tree().create_timer(1.0).timeout
 		respawn_player(player)
 
@@ -57,6 +64,8 @@ func respawn_player(player):
 	player.position = get_spawn_location(player.name)
 	current_health = MAX_HEALTH
 	update_ui()
+	
+	EventManager.emit_event(EventManager.Events.PLAYER_RESPAWNED, [player])
 
 func get_spawn_location(player_name: String) -> Vector2:
 	for spawn in get_tree().get_nodes_in_group("PlayerSpawnLocation"):

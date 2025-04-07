@@ -23,34 +23,44 @@ func _ready() -> void:
 	is_authority = (multiplayer_sync.get_multiplayer_authority() == multiplayer.get_unique_id())
 	if not is_authority:
 		rpc_id(multiplayer_sync.get_multiplayer_authority(), "request_inventory_sync")
+# TODO: Consider when moving forward
+	# EventManager.register(EventManager.Events.WEAPON_FIRED, self, "_on_weapon_fired")
+	# EventManager.register(EventManager.Events.WEAPON_RELOADED, self, "_on_weapon_reloaded")
+
+#func _exit_tree() -> void:
+	# EventManager.unregister(EventManager.Events.WEAPON_FIRED, self, "_on_weapon_fired")
+	# EventManager.unregister(EventManager.Events.WEAPON_RELOADED, self, "_on_weapon_reloaded")
 
 func add_weapon(weapon: RangedWeapon, equip_immediately: bool = false) -> void:
 	if weapons.size() >= MAX_WEAPONS:
 		drop_weapon(current_weapon_index)
-
+		
 	weapon.hide()
 	weapons.append(weapon)
 	add_child(weapon)
-
+	
 	if weapons.size() == 1 or equip_immediately:
 		equip_weapon(weapons.size() - 1)
 	update_weapon_slots()
-
+	
 	weapon_paths.append(weapon.resource_path)
 	rpc("sync_inventory_state", weapon_paths, current_weapon_index)
+	
+	EventManager.emit_event(EventManager.Events.WEAPON_PICKED_UP, [player, weapon])
 	
 
 func drop_weapon(index: int) -> void:
 	if index >= 0 and index < weapons.size():
 		var weapon = weapons[index]
-
+		
 		var weapon_scene = load(weapon.resource_path) as PackedScene
 		var weapon_pickup_scene = preload("res://nodes/weapons/weapon_pickup.tscn")
 		var weapon_pickup = weapon_pickup_scene.instantiate()
 		weapon_pickup.position = player.position
-
 		weapon_pickup.set_weapon_scene(weapon_scene)
 		get_tree().root.add_child(weapon_pickup)
+		
+		EventManager.emit_event(EventManager.Events.WEAPON_DROPPED, [player, weapon])
 		
 		rpc("remove_weapon", index)
 		rpc("spawn_weapon_pickup", weapon.resource_path, player.position)
@@ -66,10 +76,10 @@ func drop_weapon(index: int) -> void:
 func switch_weapon() -> void:
 	if not can_switch or weapons.size() == 0:
 		return
-
+		
 	can_switch = false
 	switch_cooldown_timer.start()
-
+	
 	var current = current_weapon()
 	if current != null:
 		current.hide()
@@ -82,18 +92,30 @@ func switch_weapon() -> void:
 	update_hud()
 	update_weapon_slots()
 	rpc("sync_inventory_state", weapon_paths, current_weapon_index)
+	
+	EventManager.emit_event(EventManager.Events.WEAPON_SWITCHED, [player, current_weapon_index, next_weapon])
 
 func equip_weapon(index: int) -> void:
 	if index < 0 or index > weapons.size():
 		return
-
+		
+	var previous_weapon = current_weapon()
+	var previous_index = current_weapon_index
+	
 	if current_weapon_index < weapons.size():
 		current_weapon().hide()
+		
 	current_weapon_index = index
+	
 	if index < weapons.size():
 		current_weapon().show()
+		
 	update_hud()
 	update_weapon_slots()
+	
+	# Don't emit event if equipping same weapon or during initialization
+	if previous_weapon != current_weapon() and previous_weapon != null:
+		EventManager.emit_event(EventManager.Events.WEAPON_SWITCHED, [player, current_weapon_index, current_weapon()])
 
 func current_weapon() -> RangedWeapon:
 	if current_weapon_index < weapons.size():
@@ -102,18 +124,24 @@ func current_weapon() -> RangedWeapon:
 
 func update_hud() -> void:
 	if weapons.size() > 0 and current_weapon() != null:
-		UI.update_ammo(current_weapon().ammo, current_weapon().max_ammo)
+		EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [current_weapon().ammo, current_weapon().max_ammo])
 
 func update_weapon_slots() -> void:
+	var slot_info = []
 	for i in range(MAX_WEAPONS):
 		if i < weapons.size():
 			weapon_slots_ui.update_slot(i, weapons[i].name)
+			slot_info.append(weapons[i].name)
 		else:
 			weapon_slots_ui.update_slot(i, "")
+			slot_info.append("")
+	
+	EventManager.emit_event(EventManager.Events.UI_WEAPON_SLOTS_UPDATED, [slot_info])
 
 func delete_current_weapon() -> void:
 	if not can_drop or weapons.size() == 0 or current_weapon() == null:
 		return
+		
 	can_drop = false
 	drop_weapon(current_weapon_index)
 	await get_tree().create_timer(1.0).timeout

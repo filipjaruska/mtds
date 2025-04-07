@@ -12,20 +12,24 @@ func _ready():
 	multiplayer.peer_disconnected.connect(_on_player_disconnected)
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
 	multiplayer.connection_failed.connect(_on_connection_failed)
+	
 	if "--server" in OS.get_cmdline_args(): # flag for server hosting (so that the server doesn't count as player)
 		host_game()
 
 func _on_player_connected(id: int):
-	print("Player connected: ", id)
+	EventManager.emit_event(EventManager.Events.PLAYER_CONNECTED, [id])
 
-func _on_player_disconnected(id: int):
-	print("Player disconnected: ", id)
+func _on_player_disconnected(id: int):	
+	EventManager.emit_event(EventManager.Events.PLAYER_DISCONNECTED, [id, GameManager.players.get(id, {})])
+	
 	GameManager.players.erase(id)
 	for player in get_tree().get_nodes_in_group("Player"):
 		if player.name == str(id):
 			player.queue_free()
 
 func _on_connected_to_server():
+	EventManager.emit_event(EventManager.Events.CONNECTION_SUCCEEDED)
+	
 	send_player.rpc_id(
 		1,
 		multiplayer.get_unique_id(),
@@ -33,7 +37,8 @@ func _on_connected_to_server():
 	)
 
 func _on_connection_failed():
-	print("Connection to server failed.")
+	EventManager.emit_event(EventManager.Events.CONNECTION_FAILED)
+	
 	_enable_ui()
 
 @rpc("any_peer")
@@ -59,6 +64,8 @@ func start_game():
 	var scene: Node = load("res://nodes/scenes/main.tscn").instantiate()
 	get_tree().root.add_child(scene)
 	self.hide()
+	
+	EventManager.emit_event(EventManager.Events.GAME_STARTED)
 
 func host_game():
 	peer = ENetMultiplayerPeer.new()
@@ -90,6 +97,9 @@ func _on_join_pressed():
 	var error = peer.create_client(address, port)
 	if error != OK:
 		print("Failed to connect to server: ", error)
+		
+		EventManager.emit_event(EventManager.Events.CONNECTION_FAILED)
+		
 		_enable_ui()
 		return
 	peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
