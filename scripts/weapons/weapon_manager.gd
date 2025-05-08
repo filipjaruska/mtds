@@ -182,7 +182,14 @@ func _on_slow_timer_timeout() -> void:
 		player.current_speed = lerp(weapon.slowness, 200.0, 0.8)
 
 func on_weapon_picked_up(weapon_scene: PackedScene) -> void:
+	var weapon_path = weapon_scene.resource_path
+	
+	if weapons.size() >= MAX_WEAPONS:
+		add_weapon(weapon_scene.instantiate(), true)
+		return
+		
 	add_weapon(weapon_scene.instantiate(), true)
+	await get_tree().process_frame
 
 @rpc("any_peer", "reliable")
 func request_inventory_sync():
