@@ -19,9 +19,9 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-GameManager="*res://scripts/autoload/game_manager.gd"
-InputManager="*res://scripts/autoload/input_manger.gd"
-EventManager="*res://scripts/autoload/event_manager.gd"
+GameManager="*res://src/core/game_manager.gd"
+InputManager="*res://src/core/input_manager.gd"
+EventManager="*res://src/core/event_manager.gd"
 
 [display]
 

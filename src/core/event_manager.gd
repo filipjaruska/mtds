@@ -14,18 +14,12 @@ enum Events {
 	PLAYER_DIED, # [player_node]
 	PLAYER_RESPAWNED, # [player_node]
 	
-	# Weapon related events
+	# Weapon events
 	WEAPON_FIRED, # [weapon_node, current_ammo, max_ammo]
 	WEAPON_RELOADED, # [weapon_node, is_reloading_start: bool, remaining_reload_time: float]
 	WEAPON_SWITCHED, # [player_node, weapon_index, weapon_node]
 	WEAPON_PICKED_UP, # [player_node, weapon_node]
 	WEAPON_DROPPED, # [player_node, weapon_node]
-	
-	# Game state events
-	GAME_STARTED, # []
-	GAME_PAUSED, # []
-	GAME_RESUMED, # []
-	GAME_ENDED, # []
 	
 	# UI events
 	UI_HEALTH_UPDATED, # [current_health: int, max_health: int]
@@ -36,23 +30,26 @@ enum Events {
 	PLAYER_CONNECTED, # [player_id: int]
 	PLAYER_DISCONNECTED, # [player_id: int, player_data: Dictionary]
 	CONNECTION_SUCCEEDED, # []
-	CONNECTION_FAILED # []
+	CONNECTION_FAILED, # []
+	
+	# Game state events
+	GAME_STATE_CHANGED, # [old_state: GameManager.GameState, new_state: GameManager.GameState]
 }
 
 ## Initialize all events on ready
 func _ready() -> void:
-	# Initialize all signals
-	for event in Events.keys():
-		_signal_dict[Events[event]] = []
-		add_user_signal(event)
+	for event_name in Events.keys():
+		var event_id = Events[event_name]
+		_signal_dict[event_id] = []
+		add_user_signal(event_name)
 
 ## Register a callback to an event
 ## 
 ## Subscribes an object's method to be called when the specified event is emitted.
-## @param event The event type from the Events enum
+## @param event  The event type from the Events enum
 ## @param target The object that will receive the callback
 ## @param method The method name to call on the target object
-## @param binds Optional array of additional parameters to pass to the callback
+## @param binds  Optional array of additional parameters to pass to the callback
 func register(event: int, target: Object, method: String, binds: Array = []) -> void:
 	if not _signal_dict.has(event):
 		push_error("Trying to register non-existent event: " + str(event))
@@ -76,7 +73,6 @@ func register(event: int, target: Object, method: String, binds: Array = []) -> 
 
 ## Unregister a callback from an event
 ##
-## Removes a previously registered callback.
 ## @param event The event type from the Events enum
 ## @param target The object that was receiving the callback
 ## @param method The method name that was being called
@@ -92,7 +88,6 @@ func unregister(event: int, target: Object, method: String) -> void:
 
 ## Clean up when a connected object is freed
 ## 
-## Internal callback for automatic cleanup of registered events.
 ## @private
 ## @param event The event type from the Events enum
 ## @param target The target object that is being freed
