@@ -13,9 +13,11 @@ func _ready() -> void:
 	
 func _process(_delta):
 	if player and InputManager.is_interact_pressed():
-		player.weapon_manager.on_weapon_picked_up(weapon_scene)
-		rpc("delete_pickup")
-		queue_free()
+		var weapon_manager = player.get_weapon_manager()
+		if weapon_manager:
+			weapon_manager.on_weapon_picked_up(weapon_scene)
+			rpc("delete_pickup")
+			queue_free()
 
 @rpc("any_peer", "reliable")
 func delete_pickup() -> void:

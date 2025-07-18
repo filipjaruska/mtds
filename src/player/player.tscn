@@ -1,0 +1,161 @@
+[gd_scene load_steps=11 format=3 uid="uid://qgub06sgnvml"]
+
+[ext_resource type="Script" uid="uid://drtw2we68sgym" path="res://src/player/player_tool.gd" id="1_new"]
+[ext_resource type="Script" uid="uid://d3ln8ymurgub" path="res://src/player/player_controller.gd" id="2_new"]
+[ext_resource type="Script" uid="uid://d3d5g7q27qywk" path="res://src/player/camera_component.gd" id="3_new"]
+[ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://icon.svg" id="4_krkth"]
+[ext_resource type="Script" uid="uid://fegglyhn80nu" path="res://scripts/weapons/weapon_manager.gd" id="5_8meis"]
+[ext_resource type="Script" uid="uid://cyraqsogm3i4s" path="res://scripts/ui/player_ui.gd" id="6_vdean"]
+[ext_resource type="PackedScene" uid="uid://i2rvom7p2l2f" path="res://src/player/components/health_component.tscn" id="7_uqubr"]
+[ext_resource type="Script" uid="uid://x5crv0aomnqv" path="res://scripts/ui/weapon_slots.gd" id="8_xljkp"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_b7jsc"]
+radius = 26.0192
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_i0rdp"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath("PlayerController:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("HealthBar:value")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+
+[node name="Player" type="CharacterBody2D" groups=["Player"]]
+script = ExtResource("1_new")
+player_name = "Player"
+player_id = 0
+movement_normal_speed = 200.0
+movement_crouch_speed = 100.0
+movement_dash_speed = 800.0
+dash_duration = 0.3
+dash_cooldown = 3500.0
+camera_lookahead_distance = 175.0
+camera_offset_disable_threshold = 200.0
+camera_transition_speed = 5.0
+camera_zoom_out_factor = 0.7
+camera_zoom_transition_speed = 2.0
+health_max_health = 100.0
+health_physical_resist = 0.0
+health_resist_penetration = 0.0
+enable_camera_customization = true
+enable_health_customization = true
+show_debug_info = false
+
+[node name="PlayerController" type="Node2D" parent="."]
+script = ExtResource("2_new")
+
+[node name="WeaponManager" type="Node2D" parent="PlayerController"]
+unique_name_in_owner = true
+position = Vector2(38, 0)
+script = ExtResource("5_8meis")
+
+[node name="SwitchCooldownTimer" type="Timer" parent="PlayerController/WeaponManager"]
+wait_time = 0.3
+
+[node name="SlowTimer" type="Timer" parent="PlayerController/WeaponManager"]
+
+[node name="Sprite2D" type="Sprite2D" parent="PlayerController"]
+position = Vector2(3.09944e-06, 3.58711e-06)
+scale = Vector2(0.40176, 0.374369)
+texture = ExtResource("4_krkth")
+
+[node name="CameraComponent" type="Node2D" parent="."]
+script = ExtResource("3_new")
+
+[node name="Camera2D" type="Camera2D" parent="CameraComponent"]
+drag_horizontal_enabled = true
+drag_vertical_enabled = true
+drag_left_margin = 0.1
+drag_top_margin = 0.1
+drag_right_margin = 0.1
+drag_bottom_margin = 0.1
+
+[node name="UI" type="CanvasLayer" parent="CameraComponent/Camera2D"]
+script = ExtResource("6_vdean")
+
+[node name="Ammo" type="Label" parent="CameraComponent/Camera2D/UI"]
+offset_left = 1078.0
+offset_top = 615.0
+offset_right = 1131.0
+offset_bottom = 638.0
+text = "AMMO"
+
+[node name="Health" type="Label" parent="CameraComponent/Camera2D/UI"]
+offset_left = 20.0
+offset_top = 608.0
+offset_right = 82.0
+offset_bottom = 631.0
+text = "HEALTH"
+
+[node name="DashCooldownIndicator" type="ProgressBar" parent="CameraComponent/Camera2D/UI"]
+offset_left = 153.0
+offset_top = 605.0
+offset_right = 293.0
+offset_bottom = 632.0
+max_value = 1.0
+show_percentage = false
+
+[node name="WeaponSlots" type="Control" parent="CameraComponent/Camera2D/UI"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("8_xljkp")
+
+[node name="Slot1" type="Label" parent="CameraComponent/Camera2D/UI/WeaponSlots"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 527.0
+offset_right = 62.0
+offset_bottom = 550.0
+text = "1. Epmty"
+
+[node name="Slot2" type="Label" parent="CameraComponent/Camera2D/UI/WeaponSlots"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 549.0
+offset_right = 62.0
+offset_bottom = 572.0
+text = "2. Empty"
+
+[node name="NameLabel" type="Label" parent="."]
+z_index = 10
+offset_left = -23.0
+offset_top = -49.0
+offset_right = 24.0
+offset_bottom = -26.0
+text = "Name"
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+offset_left = -25.0
+offset_top = -52.0
+offset_right = 25.0
+offset_bottom = -44.0
+show_percentage = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_b7jsc")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_i0rdp")
+
+[node name="HealthComponent" parent="." instance=ExtResource("7_uqubr")]
+visible = false
+
+[node name="Hitbox" type="Area2D" parent="HealthComponent" groups=["hitbox"]]
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HealthComponent/Hitbox"]
+shape = SubResource("CircleShape2D_b7jsc")
+
+[node name="HealTimer" type="Timer" parent="HealthComponent"]
+wait_time = 5.0
+one_shot = true
+
+[connection signal="timeout" from="PlayerController/WeaponManager/SwitchCooldownTimer" to="PlayerController/WeaponManager" method="_on_switch_cooldown_timer_timeout"]
+[connection signal="timeout" from="PlayerController/WeaponManager/SlowTimer" to="PlayerController/WeaponManager" method="_on_slow_timer_timeout"]
+[connection signal="timeout" from="HealthComponent/HealTimer" to="HealthComponent" method="_on_heal_timer_timeout"]

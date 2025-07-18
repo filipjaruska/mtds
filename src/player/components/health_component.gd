@@ -1,7 +1,7 @@
 extends Node2D
 class_name HealthComponent
 
-@onready var UI = $"../Camera2D/UI"
+@onready var UI = $"../CameraComponent/Camera2D/UI"
 @onready var heal_timer = $HealTimer
 @onready var health_bar = $"../HealthBar"
 
@@ -13,9 +13,12 @@ var current_health: float
 
 func _ready():
 	current_health = MAX_HEALTH
+
+	await get_tree().process_frame # wait one frame for all nodes to be ready
+	if health_bar:
+		health_bar.max_value = MAX_HEALTH
+		health_bar.value = current_health
 	update_ui()
-	health_bar.max_value = MAX_HEALTH
-	health_bar.value = current_health
 
 func _process(_delta):
 	death()
@@ -24,7 +27,8 @@ func _process(_delta):
 func update_health(new_health: float):
 	current_health = new_health
 	update_ui()
-	health_bar.value = current_health
+	if health_bar and is_instance_valid(health_bar):
+		health_bar.value = current_health
 	EventManager.emit_event(EventManager.Events.UI_HEALTH_UPDATED, [int(current_health), int(MAX_HEALTH)])
 
 func damage(dmg: float, penetration: float):
@@ -34,7 +38,8 @@ func damage(dmg: float, penetration: float):
 	var effective_resist: float = max(physical_resist - penetration, 0.0)
 	var final_dmg: float = dmg * (1.0 - effective_resist)
 	current_health -= final_dmg
-	health_bar.value = current_health
+	if health_bar and is_instance_valid(health_bar):
+		health_bar.value = current_health
 	rpc("update_health", current_health)
 	update_ui()
 	heal_timer.start(5.0)
@@ -43,7 +48,8 @@ func damage(dmg: float, penetration: float):
 
 func heal(amount: float):
 	current_health = min(current_health + amount, MAX_HEALTH)
-	health_bar.value = current_health
+	if health_bar and is_instance_valid(health_bar):
+		health_bar.value = current_health
 	rpc("update_health", current_health)
 	update_ui()
 	
@@ -78,4 +84,5 @@ func _on_heal_timer_timeout():
 		heal(MAX_HEALTH - current_health)
 
 func update_ui():
-	UI.update_health(int(current_health), int(MAX_HEALTH))
+	if UI and is_instance_valid(UI):
+		UI.update_health(int(current_health), int(MAX_HEALTH))

@@ -1,11 +1,12 @@
 extends Node2D
 
-@onready var switch_cooldown_timer: Timer = $"../WeaponManager/SwitchCooldownTimer"
+@onready var switch_cooldown_timer: Timer = $SwitchCooldownTimer
 @onready var multiplayer_sync = $"../../MultiplayerSynchronizer"
-@onready var UI = $"../../Camera2D/UI"
+@onready var UI = $"../../CameraComponent/Camera2D/UI"
 @onready var player = $"../.."
+@onready var player_controller = $".."
 @onready var slow_timer = $SlowTimer
-@onready var weapon_slots_ui = $"../../Camera2D/UI/WeaponSlots"
+@onready var weapon_slots_ui = $"../../CameraComponent/Camera2D/UI/WeaponSlots"
 
 const MAX_WEAPONS: int = 2
 
@@ -166,8 +167,8 @@ func _process(_delta: float) -> void:
 				weapon.shoot()
 				update_hud()
 
-				if weapon.slowness_duration > 0 and weapon.ammo > 0: 
-					player.current_speed = lerp(200.0, weapon.slowness, 0.8)
+				if weapon.slowness_duration > 0 and weapon.ammo > 0:
+					player_controller.apply_weapon_slowness(weapon.slowness)
 					slow_timer.start(weapon.slowness_duration / 1000.0)
 			if InputManager.is_reload_pressed():
 				weapon.reload()
@@ -176,10 +177,10 @@ func _process(_delta: float) -> void:
 func _on_switch_cooldown_timer_timeout() -> void:
 	can_switch = true
 
-func _on_slow_timer_timeout() -> void:
+func _on_slow_timer_timeout():
 	var weapon = current_weapon()
 	if weapon != null:
-		player.current_speed = lerp(weapon.slowness, 200.0, 0.8)
+		player_controller.remove_weapon_slowness(weapon.slowness)
 
 func on_weapon_picked_up(weapon_scene: PackedScene) -> void:
 	var weapon_path = weapon_scene.resource_path
