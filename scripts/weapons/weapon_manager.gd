@@ -1,12 +1,12 @@
 extends Node2D
 
-@onready var switch_cooldown_timer: Timer = $SwitchCooldownTimer
+@onready var switch_cooldown_timer: Timer = $WeaponSwitchTimer
 @onready var multiplayer_sync = $"../../MultiplayerSynchronizer"
-@onready var UI = $"../../CameraComponent/Camera2D/UI"
+@onready var UI = $"../../CameraComponent/PlayerCamera/PlayerUI"
 @onready var player = $"../.."
 @onready var player_controller = $".."
-@onready var slow_timer = $SlowTimer
-@onready var weapon_slots_ui = $"../../CameraComponent/Camera2D/UI/WeaponSlots"
+@onready var slow_timer = $MovementSlowTimer
+@onready var weapon_slots_ui = $"../../CameraComponent/PlayerCamera/PlayerUI/WeaponSlots"
 
 const MAX_WEAPONS: int = 2
 

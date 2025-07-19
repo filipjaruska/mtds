@@ -6,10 +6,10 @@ func _ready():
 
 # TODO: remove - kept for backwards compatibility 
 func update_ammo(ammo: int, max_ammo: int):
-	$Ammo.text = "%d / %d" % [ammo, max_ammo]
+	$AmmoDisplay.text = "%d / %d" % [ammo, max_ammo]
 	
 func update_health(hp: int, max_hp: int):
-	$Health.text = "%d / %d HP" % [hp, max_hp]
+	$HealthDisplay.text = "%d / %d HP" % [hp, max_hp]
 
 func _on_health_updated(hp: int, max_hp: int):
 	update_health(hp, max_hp)

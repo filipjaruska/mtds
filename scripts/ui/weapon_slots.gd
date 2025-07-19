@@ -1,7 +1,7 @@
 extends Control
 
-@onready var slot_1 = $Slot1
-@onready var slot_2 = $Slot2
+@onready var slot_1 = $WeaponSlot1
+@onready var slot_2 = $WeaponSlot2
 
 func update_slot(index: int, weapon_name: String):
     var display_name = weapon_name if weapon_name != "" else "Empty"

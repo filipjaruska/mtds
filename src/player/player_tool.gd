@@ -4,7 +4,7 @@ class_name PlayerTool
 
 @onready var player_controller: Node2D = $PlayerController
 @onready var camera_component: Node2D = $CameraComponent
-@onready var name_label: Label = $NameLabel
+@onready var name_label: Label = $PlayerNameLabel
 
 var player_name: String = "Player":
 	set(value):

@@ -1,9 +1,9 @@
 extends Node2D
 class_name HealthComponent
 
-@onready var UI = $"../CameraComponent/Camera2D/UI"
-@onready var heal_timer = $HealTimer
-@onready var health_bar = $"../HealthBar"
+@onready var UI = $"../CameraComponent/PlayerCamera/PlayerUI"
+@onready var heal_timer = $HealthRegenTimer
+@onready var health_bar = $"../PlayerHealthBar"
 
 @export var MAX_HEALTH: float = 100.0
 var current_health: float

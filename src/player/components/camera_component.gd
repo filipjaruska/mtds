@@ -1,8 +1,8 @@
 extends Node2D
 class_name CameraComponent
 
-@onready var camera2d: Camera2D = $Camera2D
-@onready var ui_canvas: CanvasLayer = $Camera2D/UI
+@onready var camera2d: Camera2D = $PlayerCamera
+@onready var ui_canvas: CanvasLayer = $PlayerCamera/PlayerUI
 
 # default camera settings
 var lookahead_distance: float = 175.0

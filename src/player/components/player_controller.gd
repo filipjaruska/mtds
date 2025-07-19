@@ -2,10 +2,10 @@ extends Node2D
 class_name PlayerController
 
 @onready var weapon_manager = $WeaponManager
-@onready var sprite = $Sprite2D
+@onready var sprite = get_parent().get_node("PlayerSprite")
 @onready var player_root: CharacterBody2D = get_parent()
 @onready var camera_component: Node2D = get_parent().get_node("CameraComponent")
-@onready var dash_cooldown_indicator = get_parent().get_node("CameraComponent/Camera2D/UI/DashCooldownIndicator")
+@onready var dash_cooldown_indicator = get_parent().get_node("CameraComponent/PlayerCamera/PlayerUI/DashCooldownBar")
 
 # default settings
 var normal_speed: float = 200.0
@@ -51,6 +51,7 @@ func _physics_process(_delta):
 	if player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() == multiplayer.get_unique_id():
 		var direction: Vector2 = InputManager.get_aim_direction(player_root.global_position)
 		rotation = direction.angle()
+		sprite.rotation = rotation
 
 func _check_state_transitions():
 	if player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() != multiplayer.get_unique_id():
