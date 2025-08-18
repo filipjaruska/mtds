@@ -228,4 +228,3 @@ func remove_weapon(index: int) -> void:
 		var weapon = weapons[index]
 		weapons.remove_at(index)
 		weapon.queue_free()
-		update_weapon_slots()

@@ -18,7 +18,7 @@ class_name RangedWeapon
 @export var sprite = Sprite2D # weapon sprite
 
 @onready var bullet_scene = preload("res://nodes/weapons/bullet.tscn")
-@onready var muzzle_flash = preload("res://nodes/weapons/muzzle_flash.tscn") 
+@onready var muzzle_flash = preload("res://nodes/weapons/muzzle_flash.tscn")
 @export var animation_player: AnimationPlayer
 
 var last_shot_time: float = 0.0
@@ -47,19 +47,32 @@ func _shoot_bullet():
 			var deviation = (1.0 - accuracy / 100.0) * 0.5
 			var shot_rotation = global_rotation + randf() * deviation - deviation / 2
 			
+			var bullet = bullet_scene.instantiate()
+			get_tree().root.add_child(bullet)
+			
+			bullet.global_position = spawn_pos
+			bullet.global_rotation = shot_rotation
+			bullet.target_position = Vector2(max_range, 0)
+			bullet.set_visual_range(max_range)
+			bullet.set_bullet_damage(damage, armor_penetration)
+			bullet.force_raycast_update()
+			
 			spawn_bullet.rpc(spawn_pos, shot_rotation, max_range, damage, armor_penetration)
 
-@rpc("any_peer", "call_local")
+@rpc("any_peer", "reliable")
 func spawn_bullet(pos: Vector2, rot: float, weapon_range: float, dmg: float, pen: float):
-	var bullet = bullet_scene.instantiate()
-	get_tree().root.add_child(bullet)
-	
-	bullet.global_position = pos
-	bullet.global_rotation = rot
-	bullet.target_position = Vector2(weapon_range, 0)
-	bullet.set_visual_range(weapon_range)
-	bullet.set_bullet_damage(dmg, pen)
-	bullet.force_raycast_update()
+	if bullet_scene:
+		var bullet = bullet_scene.instantiate()
+		get_tree().root.add_child(bullet)
+		
+		bullet.global_position = pos
+		bullet.global_rotation = rot
+		bullet.target_position = Vector2(weapon_range, 0)
+		bullet.set_visual_range(weapon_range)
+		bullet.set_bullet_damage(dmg, pen)
+		
+		await get_tree().process_frame
+		bullet.force_raycast_update()
 
 func reload():
 	if is_reloading:
@@ -72,7 +85,6 @@ func reload():
 	
 	await get_tree().create_timer(reload_time).timeout
 	
-	var old_ammo = ammo
 	ammo = max_ammo
 	is_reloading = false
 	
