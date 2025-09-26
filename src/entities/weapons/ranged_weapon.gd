@@ -14,8 +14,8 @@ class_name RangedWeapon
 @export var slowness_duration: float = 300.0 # duration in milliseconds
 @export var shooting_animation: String # name of the shooting animation
 @export var idle_animation: String # name of the idle animation
-@export var muzzle = Marker2D # muzzle position
-@export var sprite = Sprite2D # weapon sprite
+@export var muzzle: Marker2D # muzzle position
+@export var sprite: Sprite2D # weapon sprite
 
 @onready var bullet_scene = preload("res://src/entities/weapons/bullet.tscn")
 @onready var muzzle_flash = preload("res://src/entities/weapons/muzzle_flash.tscn")
@@ -47,20 +47,10 @@ func _shoot_bullet():
 			var deviation = (1.0 - accuracy / 100.0) * 0.5
 			var shot_rotation = global_rotation + randf() * deviation - deviation / 2
 			
-			var bullet = bullet_scene.instantiate()
-			get_tree().root.add_child(bullet)
+			spawn_bullet.rpc(spawn_pos, shot_rotation, max_range, damage, armor_penetration, multiplayer.get_unique_id())
 			
-			bullet.global_position = spawn_pos
-			bullet.global_rotation = shot_rotation
-			bullet.target_position = Vector2(max_range, 0)
-			bullet.set_visual_range(max_range)
-			bullet.set_bullet_damage(damage, armor_penetration)
-			bullet.force_raycast_update()
-			
-			spawn_bullet.rpc(spawn_pos, shot_rotation, max_range, damage, armor_penetration)
-
-@rpc("any_peer", "reliable")
-func spawn_bullet(pos: Vector2, rot: float, weapon_range: float, dmg: float, pen: float):
+@rpc("any_peer", "call_local", "reliable")
+func spawn_bullet(pos: Vector2, rot: float, weapon_range: float, dmg: float, pen: float, shooter_id: int):
 	if bullet_scene:
 		var bullet = bullet_scene.instantiate()
 		get_tree().root.add_child(bullet)
@@ -70,8 +60,10 @@ func spawn_bullet(pos: Vector2, rot: float, weapon_range: float, dmg: float, pen
 		bullet.target_position = Vector2(weapon_range, 0)
 		bullet.set_visual_range(weapon_range)
 		bullet.set_bullet_damage(dmg, pen)
+		bullet.set_shooter_authority(shooter_id)
 		
 		await get_tree().process_frame
+		bullet.force_raycast_update()
 		bullet.force_raycast_update()
 
 func reload():
@@ -96,7 +88,7 @@ func reload():
 func show_muzzle_flash():
 	var muzzle_flash_instance = muzzle_flash.instantiate()
 	muzzle_flash_instance.global_position = muzzle.global_position
-	muzzle_flash_instance.rotation = get_parent().get_parent().rotation
+	muzzle_flash_instance.global_rotation = global_rotation
 	add_child(muzzle_flash_instance)
 
 func _on_animation_player_animation_finished(anim_name):

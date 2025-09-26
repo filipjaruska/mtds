@@ -22,14 +22,28 @@ enum PlayerState {
 
 var current_state: PlayerState = PlayerState.NORMAL
 var current_speed: float
+var slowness_factor: float = 1.0
 var last_dash_time: float = 0
 var dash_direction: Vector2 = Vector2.ZERO
 var dash_timer: SceneTreeTimer = null
 
 func _ready():
-	current_speed = normal_speed
+	last_dash_time = Time.get_ticks_msec() - dash_cooldown
+	_recompute_current_speed()
 	# TODO: defers cool, ensures all components are ready
 	call_deferred("_setup_multiplayer_authority")
+
+func _recompute_current_speed():
+	var base_speed: float
+	match current_state:
+		PlayerState.NORMAL:
+			base_speed = normal_speed
+		PlayerState.DASHING:
+			base_speed = dash_speed
+		PlayerState.CROUCHING:
+			base_speed = crouch_speed
+	
+	current_speed = base_speed * slowness_factor
 
 func _setup_multiplayer_authority():
 	var authority_id: int = str(player_root.name).to_int()
@@ -42,9 +56,11 @@ func _setup_multiplayer_authority():
 	dash_cooldown_indicator.visible = is_authority
 
 func _process(delta):
-	_check_state_transitions()
-	_process_current_state(delta)
-	weapon_manager._process(delta)
+	if player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() == multiplayer.get_unique_id():
+		_check_state_transitions()
+		_process_current_state(delta)
+		weapon_manager._process(delta)
+	
 	_update_dash_cooldown_indicator()
 
 func _physics_process(_delta):
@@ -93,17 +109,12 @@ func _change_state(new_state: PlayerState):
 	current_state = new_state
 	
 	match new_state:
-		PlayerState.NORMAL:
-			current_speed = normal_speed
-		
 		PlayerState.DASHING:
-			current_speed = dash_speed
 			dash_direction = InputManager.get_movement_vector()
 			dash_timer = get_tree().create_timer(dash_duration)
 			dash_timer.timeout.connect(_on_dash_timer_timeout)
-		
-		PlayerState.CROUCHING:
-			current_speed = crouch_speed
+	
+	_recompute_current_speed()
 
 func _process_normal_state():
 	var input_vector: Vector2 = InputManager.get_movement_vector() * current_speed
@@ -129,8 +140,10 @@ func _update_dash_cooldown_indicator():
 func get_current_state() -> PlayerState:
 	return current_state
 
-func apply_weapon_slowness(slowness_factor: float): # TODO: maybe not? should be handled by weapon manager
-	current_speed = lerp(200.0, slowness_factor, 0.8)
+func apply_weapon_slowness(weapon_slowness: float):
+	slowness_factor = weapon_slowness / normal_speed
+	_recompute_current_speed()
 
-func remove_weapon_slowness(slowness_factor: float):
-	current_speed = lerp(slowness_factor, 200.0, 0.8)
+func remove_weapon_slowness(_weapon_slowness: float):
+	slowness_factor = 1.0
+	_recompute_current_speed()

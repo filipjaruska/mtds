@@ -4,10 +4,14 @@ var _bullet_damage: float
 var _bullet_armor_penetration: float
 var _visual_range: float
 var _collision_checked: bool = false
+var _shooter_authority_id: int = 1
 
 func set_bullet_damage(damage: float, penetration: float) -> void:
 	_bullet_damage = damage
 	_bullet_armor_penetration = penetration
+
+func set_shooter_authority(authority_id: int) -> void:
+	_shooter_authority_id = authority_id
 
 func set_visual_range(weapon_range: float) -> void:
 	_visual_range = weapon_range
@@ -49,8 +53,11 @@ func check_collision() -> void:
 			if collider and is_instance_valid(collider) and collider is Area2D and collider.is_in_group("hitbox"):
 				var health_component = collider.get_parent()
 				if health_component and is_instance_valid(health_component) and health_component.has_method("damage"):
-					if multiplayer.is_server():
+					# Only the peer that fired the bullet should apply damage
+					if _shooter_authority_id == multiplayer.get_unique_id():
 						health_component.damage(_bullet_damage, _bullet_armor_penetration)
+					else:
+						print("Not shooter authority, skipping damage")
 		else:
 			if has_node("Line2D"):
 				$Line2D.points[1] = Vector2(target_position.x, 0)

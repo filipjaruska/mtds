@@ -7,6 +7,7 @@ class_name HealthComponent
 
 @export var MAX_HEALTH: float = 100.0
 var current_health: float
+var is_dying: bool = false
 
 @export var physical_resist: float = 0.0 # Percentage
 @export var resist_penetration: float = 0.0 # 0.0 to 1.0
@@ -56,7 +57,8 @@ func heal(amount: float):
 	EventManager.emit_event(EventManager.Events.PLAYER_HEALED, [get_parent(), amount, current_health])
 
 func death():
-	if current_health <= 0:
+	if current_health <= 0 and not is_dying:
+		is_dying = true
 		var player = get_parent()
 		player.visible = false
 		
@@ -69,9 +71,11 @@ func respawn_player(player):
 	player.visible = true
 	player.position = get_spawn_location(player.name)
 	current_health = MAX_HEALTH
+	rpc("update_health", current_health)
 	update_ui()
-	
+
 	EventManager.emit_event(EventManager.Events.PLAYER_RESPAWNED, [player])
+	is_dying = false
 
 func get_spawn_location(player_name: String) -> Vector2:
 	for spawn in get_tree().get_nodes_in_group("PlayerSpawnLocation"):
