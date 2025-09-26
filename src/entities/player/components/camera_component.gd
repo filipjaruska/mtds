@@ -68,9 +68,10 @@ func _update_camera_offset(delta):
 		camera2d.offset = camera2d.offset.lerp(target_offset, transition_speed * delta)
 	else:
 		var aim_direction = InputManager.last_aim_direction
+		var target_offset = Vector2.ZERO
 		if aim_direction.length_squared() > 0.1:
-			var target_offset = aim_direction * lookahead_distance
-			camera2d.offset = camera2d.offset.lerp(target_offset, transition_speed * delta)
+			target_offset = aim_direction * lookahead_distance
+		camera2d.offset = camera2d.offset.lerp(target_offset, transition_speed * delta)
 
 func get_camera() -> Camera2D:
 	return camera2d

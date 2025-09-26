@@ -152,6 +152,7 @@ func _on_player_connected(player_id: int) -> void:
 
 func _on_player_disconnected(player_id: int, _player_data: Dictionary) -> void:
 	print("GameManager: Player disconnected event received for ID: ", player_id) # TODO: rm later
+	remove_player(player_id)
 	
 	# If we're in lobby and no players left, return to menu
 	if current_state == GameState.LOBBY and get_player_count() == 0:

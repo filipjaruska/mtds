@@ -53,11 +53,10 @@ func check_collision() -> void:
 			if collider and is_instance_valid(collider) and collider is Area2D and collider.is_in_group("hitbox"):
 				var health_component = collider.get_parent()
 				if health_component and is_instance_valid(health_component) and health_component.has_method("damage"):
-					# Only the peer that fired the bullet should apply damage
 					if _shooter_authority_id == multiplayer.get_unique_id():
 						health_component.damage(_bullet_damage, _bullet_armor_penetration)
 					else:
-						print("Not shooter authority, skipping damage")
+						return
 		else:
 			if has_node("Line2D"):
 				$Line2D.points[1] = Vector2(target_position.x, 0)

@@ -35,7 +35,8 @@ func _on_player_disconnected(id: int) -> void:
 	for player in get_tree().get_nodes_in_group("Player"):
 		if player.name == str(id):
 			player.queue_free()
-
+	_update_player_list()
+	
 func _on_connected_to_server() -> void:
 	EventManager.emit_event(EventManager.Events.CONNECTION_SUCCEEDED)
 	

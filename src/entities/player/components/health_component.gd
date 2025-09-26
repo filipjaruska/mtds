@@ -27,10 +27,12 @@ func _process(_delta):
 @rpc("any_peer", "reliable")
 func update_health(new_health: float):
 	current_health = new_health
-	update_ui()
+	var player = get_parent()
+	if player and player.is_multiplayer_authority():
+		update_ui()
+		EventManager.emit_event(EventManager.Events.UI_HEALTH_UPDATED, [int(current_health), int(MAX_HEALTH)])
 	if health_bar and is_instance_valid(health_bar):
 		health_bar.value = current_health
-	EventManager.emit_event(EventManager.Events.UI_HEALTH_UPDATED, [int(current_health), int(MAX_HEALTH)])
 
 func damage(dmg: float, penetration: float):
 	if dmg < 0.0:

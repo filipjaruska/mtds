@@ -6,13 +6,17 @@ class_name PlayerTool
 @onready var camera_component: Node2D = $CameraComponent
 @onready var name_label: Label = $PlayerNameLabel
 
-var player_name: String = "Player":
+var _player_name: String = "Name"
+var player_name: String:
 	set(value):
-		player_name = value
+		if _player_name == value:
+			return
+		_player_name = value
 		if name_label:
 			name_label.text = value
 		_update_components()
-
+	get:
+		return _player_name
 var player_id: int = 0
 
 var movement_normal_speed: float = 200.0:

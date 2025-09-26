@@ -9,7 +9,7 @@ extends Node2D
 func _ready():
 	var index: int = 0
 	for i in GameManager.players:
-		var currentPlayer: Node = playerScene.instantiate()
+		var currentPlayer = playerScene.instantiate()
 		currentPlayer.name = str(GameManager.players[i].id)
 		currentPlayer.set_player_name(str(GameManager.players[i].name)) # changes the text in player lable to the player nickname
 		add_child(currentPlayer)

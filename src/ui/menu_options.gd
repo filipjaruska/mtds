@@ -14,7 +14,11 @@ func _ready():
 		resolution.add_item(i)
 	
 func on_resolution_selected(index: int):
-	DisplayServer.window_set_size(RESOLUTION.values()[index])
+	var selected_text = resolution.get_item_text(index)
+	if RESOLUTION.has(selected_text):
+		DisplayServer.window_set_size(RESOLUTION[selected_text])
+	else:
+		return
 
 func _on_exit_pressed():
 	get_tree().change_scene_to_file("res://src/ui/menus/main.tscn")
