@@ -53,22 +53,26 @@ func _is_keyboard_mouse_input_detected() -> bool:
 		   Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_A) or \
 		   Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_D)
 
-## Get the normalized movement vector from input
+## Get the movement vector from input with proper analog magnitude and deadzone handling
 ##
 ## @return Vector2 representing the movement direction and magnitude
 func get_movement_vector() -> Vector2:
 	var input_vector := Vector2(
 		Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"),
 		Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
-	).normalized()
+	)
 	
-	if input_vector != Vector2.ZERO:
+	if input_vector.length() < MOVEMENT_DEADZONE:
+		input_vector = Vector2.ZERO
+	else:
+		if input_vector.length() > 1.0:
+			input_vector = input_vector.normalized()
 		last_movement_input = input_vector
 	
 	return input_vector
 
 func is_moving() -> bool:
-	return get_movement_vector().length_squared() > MOVEMENT_DEADZONE
+	return get_movement_vector() != Vector2.ZERO
 
 func is_dash_pressed() -> bool:
 	if current_device == InputDevice.KEYBOARD_MOUSE:
