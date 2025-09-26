@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://xcnabvtbwikx"]
 
-[ext_resource type="Script" uid="uid://dbesxewg3xppe" path="res://scripts/weapons/bullet.gd" id="1_6ha7u"]
+[ext_resource type="Script" uid="uid://dbesxewg3xppe" path="res://src/entities/weapons/bullet.gd" id="1_6ha7u"]
 
 [node name="Bullet" type="RayCast2D" groups=["bullet"]]
 target_position = Vector2(500, 0)

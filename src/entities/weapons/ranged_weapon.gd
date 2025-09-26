@@ -17,8 +17,8 @@ class_name RangedWeapon
 @export var muzzle = Marker2D # muzzle position
 @export var sprite = Sprite2D # weapon sprite
 
-@onready var bullet_scene = preload("res://nodes/weapons/bullet.tscn")
-@onready var muzzle_flash = preload("res://nodes/weapons/muzzle_flash.tscn")
+@onready var bullet_scene = preload("res://src/entities/weapons/bullet.tscn")
+@onready var muzzle_flash = preload("res://src/entities/weapons/muzzle_flash.tscn")
 @export var animation_player: AnimationPlayer
 
 var last_shot_time: float = 0.0

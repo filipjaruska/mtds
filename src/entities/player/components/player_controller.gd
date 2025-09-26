@@ -51,7 +51,8 @@ func _physics_process(_delta):
 	if player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() == multiplayer.get_unique_id():
 		var direction: Vector2 = InputManager.get_aim_direction(player_root.global_position)
 		rotation = direction.angle()
-		sprite.rotation = rotation
+	
+	sprite.rotation = rotation
 
 func _check_state_transitions():
 	if player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() != multiplayer.get_unique_id():

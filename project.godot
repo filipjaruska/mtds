@@ -13,19 +13,23 @@ config_version=5
 config/name="Multiplayer Top-down Shooter"
 config/description="A Description"
 config/version="0.0.1"
-run/main_scene="res://nodes/menu/main.tscn"
+run/main_scene="res://src/ui/menus/main.tscn"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
-GameManager="*res://src/core/game_manager.gd"
-InputManager="*res://src/core/input_manager.gd"
-EventManager="*res://src/core/event_manager.gd"
+GameManager="*res://src/systems/game_system.gd"
+InputManager="*res://src/systems/input_system.gd"
+EventManager="*res://src/systems/event_system.gd"
 
 [display]
 
 window/size/resizable=false
+
+[dotnet]
+
+project/assembly_name="Multiplayer Top-down Shooter"
 
 [input]
 

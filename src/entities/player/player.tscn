@@ -1,13 +1,13 @@
 [gd_scene load_steps=11 format=3 uid="uid://qgub06sgnvml"]
 
-[ext_resource type="Script" uid="uid://drtw2we68sgym" path="res://src/player/player_tool.gd" id="1_new"]
-[ext_resource type="Script" uid="uid://d3ln8ymurgub" path="res://src/player/components/player_controller.gd" id="2_new"]
-[ext_resource type="Script" uid="uid://d3d5g7q27qywk" path="res://src/player/components/camera_component.gd" id="3_new"]
+[ext_resource type="Script" uid="uid://drtw2we68sgym" path="res://src/entities/player/player_tool.gd" id="1_new"]
+[ext_resource type="Script" uid="uid://d3ln8ymurgub" path="res://src/entities/player/components/player_controller.gd" id="2_new"]
+[ext_resource type="Script" uid="uid://d3d5g7q27qywk" path="res://src/entities/player/components/camera_component.gd" id="3_new"]
 [ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://icon.svg" id="4_krkth"]
-[ext_resource type="Script" uid="uid://fegglyhn80nu" path="res://scripts/weapons/weapon_manager.gd" id="5_8meis"]
-[ext_resource type="Script" uid="uid://cyraqsogm3i4s" path="res://scripts/ui/player_ui.gd" id="6_vdean"]
-[ext_resource type="PackedScene" uid="uid://i2rvom7p2l2f" path="res://src/player/components/health_component.tscn" id="7_uqubr"]
-[ext_resource type="Script" uid="uid://x5crv0aomnqv" path="res://scripts/ui/weapon_slots.gd" id="8_xljkp"]
+[ext_resource type="Script" uid="uid://fegglyhn80nu" path="res://src/entities/weapons/weapon_manager.gd" id="5_8meis"]
+[ext_resource type="Script" uid="uid://cyraqsogm3i4s" path="res://src/ui/player_ui.gd" id="6_vdean"]
+[ext_resource type="PackedScene" uid="uid://i2rvom7p2l2f" path="res://src/entities/player/components/health_component.tscn" id="7_uqubr"]
+[ext_resource type="Script" uid="uid://x5crv0aomnqv" path="res://src/ui/weapon_slots.gd" id="8_xljkp"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b7jsc"]
 radius = 26.0192

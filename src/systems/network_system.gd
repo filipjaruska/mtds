@@ -72,7 +72,7 @@ func _update_player_list() -> void:
 @rpc("any_peer", "call_local")
 func start_game() -> void:
 	print("Starting game...")
-	var scene: Node = load("res://nodes/scenes/main.tscn").instantiate()
+	var scene: Node = load("res://src/scenes/main.tscn").instantiate()
 	get_tree().root.add_child(scene)
 	self.hide()
 	
@@ -88,7 +88,10 @@ func host_game() -> void:
 		_enable_ui()
 		return
 	
-	peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
+	# Check if peer creation was successful before trying to compress
+	if peer.get_host():
+		peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
+	
 	multiplayer.set_multiplayer_peer(peer)
 	
 	print("Server started on port ", port, " with max ", max_players, " players")

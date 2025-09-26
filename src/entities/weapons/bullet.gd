@@ -32,7 +32,7 @@ func check_collision() -> void:
 		return
 	_collision_checked = true
 	
- 	force_raycast_update()
+	force_raycast_update()
 	await get_tree().process_frame
 	
 	if is_colliding():

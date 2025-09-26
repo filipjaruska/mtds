@@ -55,7 +55,7 @@ func drop_weapon(index: int) -> void:
 		var weapon = weapons[index]
 		
 		var weapon_scene = load(weapon.resource_path) as PackedScene
-		var weapon_pickup_scene = preload("res://nodes/weapons/weapon_pickup.tscn")
+		var weapon_pickup_scene = preload("res://src/entities/weapons/weapon_pickup.tscn")
 		var weapon_pickup = weapon_pickup_scene.instantiate()
 		weapon_pickup.position = player.position
 		weapon_pickup.set_weapon_scene(weapon_scene)
@@ -101,7 +101,7 @@ func equip_weapon(index: int) -> void:
 		return
 		
 	var previous_weapon = current_weapon()
-	var previous_index = current_weapon_index
+	var _previous_index = current_weapon_index
 	
 	if current_weapon_index < weapons.size():
 		current_weapon().hide()
@@ -183,7 +183,7 @@ func _on_slow_timer_timeout():
 		player_controller.remove_weapon_slowness(weapon.slowness)
 
 func on_weapon_picked_up(weapon_scene: PackedScene) -> void:
-	var weapon_path = weapon_scene.resource_path
+	var _weapon_path = weapon_scene.resource_path
 	
 	if weapons.size() >= MAX_WEAPONS:
 		add_weapon(weapon_scene.instantiate(), true)
@@ -216,7 +216,7 @@ func sync_inventory_state(paths: Array, new_index: int):
 @rpc("any_peer", "reliable")
 func spawn_weapon_pickup(weapon_path: String, pos: Vector2) -> void:
 	var weapon_scene = load(weapon_path) as PackedScene
-	var weapon_pickup_scene = preload("res://nodes/weapons/weapon_pickup.tscn")
+	var weapon_pickup_scene = preload("res://src/entities/weapons/weapon_pickup.tscn")
 	var weapon_pickup = weapon_pickup_scene.instantiate()
 	weapon_pickup.position = pos
 	weapon_pickup.set_weapon_scene(weapon_scene)
