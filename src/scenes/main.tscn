@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://n36pcq02ew6"]
+[gd_scene load_steps=8 format=3 uid="uid://n36pcq02ew6"]
 
 [ext_resource type="Script" uid="uid://bl3nihnsfb4ot" path="res://src/scenes/scene_manager.gd" id="1_11pgr"]
 [ext_resource type="PackedScene" uid="uid://qgub06sgnvml" path="res://src/entities/player/player.tscn" id="2_c1wiw"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://src/assets/icon.svg" id="3_ympha"]
 [ext_resource type="PackedScene" uid="uid://cslbakgrwn56g" path="res://src/entities/weapons/pistol.tscn" id="4_nb3wn"]
 [ext_resource type="PackedScene" uid="uid://b7r7dn2ffb7d8" path="res://src/entities/weapons/shotgun.tscn" id="5_trlik"]
+[ext_resource type="PackedScene" uid="uid://bm8k3y5n6qrst" path="res://src/entities/powerups/powerup_spawner.tscn" id="6_spawner"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_11pgr")
@@ -34,5 +35,10 @@ position = Vector2(446, 445)
 position = Vector2(806, 449)
 
 [node name="reference point" type="Sprite2D" parent="."]
-position = Vector2(637, 93)
+position = Vector2(-180, 215)
 texture = ExtResource("3_ympha")
+
+[node name="PowerupSpawner" parent="." instance=ExtResource("6_spawner")]
+position = Vector2(620, 350)
+spawn_frequency = 10.0
+spawn_area_size = Vector2(600, 400)

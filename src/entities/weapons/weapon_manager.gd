@@ -17,6 +17,10 @@ var is_authority: bool = false
 var weapon_paths: Array = []
 var can_drop: bool = true
 
+var damage_multiplier: float = 1.0
+var reload_speed_multiplier: float = 1.0
+var fire_rate_multiplier: float = 1.0
+
 func _ready() -> void:
 	if weapons.size() > 0:
 		equip_weapon(0)
@@ -164,13 +168,26 @@ func _process(_delta: float) -> void:
 		if weapons.size() > 0 and current_weapon() != null:
 			var weapon = current_weapon()
 			if InputManager.is_shoot_pressed():
+				# Apply fire rate multiplier
+				if fire_rate_multiplier > 1.0:
+					weapon.fire_rate *= fire_rate_multiplier
+				
 				weapon.shoot()
+				
+				# Apply damage multiplier
+				if damage_multiplier > 1.0:
+					weapon.damage *= damage_multiplier
+				
 				update_hud()
 
 				if weapon.slowness_duration > 0 and weapon.ammo > 0:
 					player_controller.apply_weapon_slowness(weapon.slowness)
 					slow_timer.start(weapon.slowness_duration / 1000.0)
 			if InputManager.is_reload_pressed():
+				# Apply reload speed multiplier
+				if reload_speed_multiplier > 1.0:
+					weapon.reload_time /= reload_speed_multiplier
+				
 				weapon.reload()
 				update_hud()
 

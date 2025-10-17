@@ -34,6 +34,11 @@ enum Events {
 	
 	# Game state events
 	GAME_STATE_CHANGED, # [old_state: GameManager.GameState, new_state: GameManager.GameState]
+	
+	# Powerup events
+	POWERUP_COLLECTED, # [player_node, powerup_card, inventory_slot]
+	POWERUP_USED, # [player_node, powerup_card, inventory_slot]
+	POWERUP_EXPIRED, # [player_node, powerup_card]
 }
 
 ## Initialize all events on ready

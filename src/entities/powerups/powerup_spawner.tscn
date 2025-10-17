@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://bm8k3y5n6qrst"]
+
+[ext_resource type="Script" path="res://src/entities/powerups/powerup_spawner.gd" id="1_spawner"]
+
+[node name="PowerupSpawner" type="Node2D"]
+script = ExtResource("1_spawner")
+spawn_type = 0
+spawn_frequency = 15.0
+max_powerups = 5
+use_spawn_area = true
+spawn_area_size = Vector2(600, 400)
