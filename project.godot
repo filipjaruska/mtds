@@ -15,7 +15,7 @@ config/description="A Description"
 config/version="0.0.1"
 run/main_scene="res://src/ui/menus/main.tscn"
 config/features=PackedStringArray("4.5", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://src/assets/icon.svg"
 
 [autoload]
 

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bl3nihnsfb4ot" path="res://src/scenes/scene_manager.gd" id="1_11pgr"]
 [ext_resource type="PackedScene" uid="uid://qgub06sgnvml" path="res://src/entities/player/player.tscn" id="2_c1wiw"]
 [ext_resource type="PackedScene" uid="uid://cgbejbtvglgk5" path="res://src/entities/weapons/weapon_pickup.tscn" id="3_h2xyf"]
-[ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://icon.svg" id="3_ympha"]
+[ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://src/assets/icon.svg" id="3_ympha"]
 [ext_resource type="PackedScene" uid="uid://cslbakgrwn56g" path="res://src/entities/weapons/pistol.tscn" id="4_nb3wn"]
 [ext_resource type="PackedScene" uid="uid://b7r7dn2ffb7d8" path="res://src/entities/weapons/shotgun.tscn" id="5_trlik"]
 
