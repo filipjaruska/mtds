@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://qgub06sgnvml"]
+[gd_scene load_steps=14 format=3 uid="uid://qgub06sgnvml"]
 
 [ext_resource type="Script" uid="uid://drtw2we68sgym" path="res://src/entities/player/player_tool.gd" id="1_new"]
 [ext_resource type="Script" uid="uid://d3ln8ymurgub" path="res://src/entities/player/components/player_controller.gd" id="2_new"]
@@ -8,6 +8,9 @@
 [ext_resource type="Script" uid="uid://cyraqsogm3i4s" path="res://src/ui/player_ui.gd" id="6_vdean"]
 [ext_resource type="PackedScene" uid="uid://i2rvom7p2l2f" path="res://src/entities/player/components/health_component.tscn" id="7_uqubr"]
 [ext_resource type="Script" uid="uid://x5crv0aomnqv" path="res://src/ui/weapon_slots.gd" id="8_xljkp"]
+[ext_resource type="Script" path="res://src/entities/powerups/powerup_manager.gd" id="9_powerup"]
+[ext_resource type="Script" path="res://src/ui/powerup_inventory_ui.gd" id="10_inventory"]
+[ext_resource type="Script" path="res://src/ui/active_powerups_ui.gd" id="11_active"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b7jsc"]
 radius = 26.0192
@@ -123,6 +126,237 @@ offset_right = 62.0
 offset_bottom = 572.0
 text = "2. Empty"
 
+[node name="PowerupInventoryUI" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -120.0
+offset_right = 200.0
+offset_bottom = -20.0
+script = ExtResource("10_inventory")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PowerupSlot1" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Background" type="ColorRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.2, 0.2, 0.2, 0.5)
+
+[node name="Icon" type="TextureRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot1"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot1"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -15.0
+offset_right = 20.0
+text = "Empty"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Hotkey" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot1"]
+layout_mode = 1
+anchors_preset = 0
+offset_right = 15.0
+offset_bottom = 15.0
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PowerupSlot2" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Background" type="ColorRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.2, 0.2, 0.2, 0.5)
+
+[node name="Icon" type="TextureRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot2"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot2"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -15.0
+offset_right = 20.0
+text = "Empty"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Hotkey" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot2"]
+layout_mode = 1
+anchors_preset = 0
+offset_right = 15.0
+offset_bottom = 15.0
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PowerupSlot3" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Background" type="ColorRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.2, 0.2, 0.2, 0.5)
+
+[node name="Icon" type="TextureRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot3"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot3"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -15.0
+offset_right = 20.0
+text = "Empty"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Hotkey" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot3"]
+layout_mode = 1
+anchors_preset = 0
+offset_right = 15.0
+offset_bottom = 15.0
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PowerupSlot4" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Background" type="ColorRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.2, 0.2, 0.2, 0.5)
+
+[node name="Icon" type="TextureRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot4"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot4"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -15.0
+offset_right = 20.0
+text = "Empty"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Hotkey" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot4"]
+layout_mode = 1
+anchors_preset = 0
+offset_right = 15.0
+offset_bottom = 15.0
+text = "4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActivePowerupsUI" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
+layout_mode = 3
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = -100.0
+offset_right = 300.0
+offset_bottom = 100.0
+script = ExtResource("11_active")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CameraComponent/PlayerCamera/PlayerUI/ActivePowerupsUI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CameraComponent/PlayerCamera/PlayerUI/ActivePowerupsUI/ScrollContainer"]
+layout_mode = 2
+
 [node name="PlayerNameLabel" type="Label" parent="."]
 z_index = 10
 offset_left = -23.0
@@ -140,6 +374,9 @@ show_percentage = false
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_i0rdp")
+
+[node name="PowerupManager" type="Node" parent="."]
+script = ExtResource("9_powerup")
 
 [node name="HealthComponent" parent="." instance=ExtResource("7_uqubr")]
 visible = false
