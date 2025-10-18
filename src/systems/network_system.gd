@@ -73,7 +73,7 @@ func _update_player_list() -> void:
 @rpc("any_peer", "call_local")
 func start_game() -> void:
 	print("Starting game...")
-	var scene: Node = load("res://src/scenes/main.tscn").instantiate()
+	var scene: Node = load("uid://n36pcq02ew6").instantiate()
 	get_tree().root.add_child(scene)
 	self.hide()
 	
