@@ -5,6 +5,8 @@ extends Node
 ## Key: player_id (int), Value: Dictionary with player information
 var players: Dictionary = {}
 
+var local_player_name: String = ""
+
 enum GameState {
 	MENU,
 	CONNECTING,
