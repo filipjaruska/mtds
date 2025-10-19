@@ -35,14 +35,27 @@ func _check_powerup_inputs():
 	elif Input.is_action_just_pressed("powerup_slot_4"):
 		use_powerup_at_slot(3)
 
-func collect_powerup(powerup_card: BasePowerupCard) -> bool:
+func collect_powerup(_powerup_card: BasePowerupCard) -> bool:
+	return find_empty_slot() != -1
+
+func find_empty_slot() -> int:
 	for i in range(MAX_INVENTORY_SLOTS):
 		if powerup_inventory[i] == null:
-			powerup_inventory[i] = powerup_card
-			inventory_updated.emit(powerup_inventory)
-			EventManager.emit_event(EventManager.Events.POWERUP_COLLECTED, [player_node, powerup_card, i])
-			return true
-	return false
+			return i
+	return -1
+
+func add_powerup_to_slot(card_type: int, slot_index: int):
+	var powerup_card = _create_card_from_type(card_type)
+	powerup_inventory[slot_index] = powerup_card
+	inventory_updated.emit(powerup_inventory)
+	EventManager.emit_event(EventManager.Events.POWERUP_COLLECTED, [player_node, powerup_card, slot_index])
+
+@rpc("any_peer", "call_local", "reliable")
+func _sync_collect_powerup(card_type: int, slot_index: int):
+	var powerup_card = _create_card_from_type(card_type)
+	powerup_inventory[slot_index] = powerup_card
+	inventory_updated.emit(powerup_inventory)
+	EventManager.emit_event(EventManager.Events.POWERUP_COLLECTED, [player_node, powerup_card, slot_index])
 
 func use_powerup_at_slot(slot_index: int):
 	if slot_index < 0 or slot_index >= MAX_INVENTORY_SLOTS:
@@ -52,22 +65,28 @@ func use_powerup_at_slot(slot_index: int):
 	if powerup_card == null:
 		return
 	
+	_sync_use_powerup.rpc(powerup_card.type, slot_index)
+
+@rpc("any_peer", "call_local", "reliable")
+func _sync_use_powerup(card_type: int, slot_index: int):
+	var powerup_card = _create_card_from_type(card_type)
+	
 	var existing_powerup = _get_active_powerup_of_type(powerup_card.type)
 	
 	if existing_powerup:
 		existing_powerup.add_stack(1)
-		powerup_activated.emit(powerup_card, slot_index)
 	else:
 		var active_powerup = ActivePowerup.new(powerup_card, player_node)
 		active_powerup.powerup_expired.connect(_on_powerup_expired)
 		active_powerups.append(active_powerup)
 		add_child(active_powerup)
-		powerup_activated.emit(powerup_card, slot_index)
 	
-	powerup_inventory[slot_index] = null
-	inventory_updated.emit(powerup_inventory)
+	if player_node and player_node.is_multiplayer_authority():
+		powerup_inventory[slot_index] = null
+		inventory_updated.emit(powerup_inventory)
+		powerup_activated.emit(powerup_card, slot_index)
+		EventManager.emit_event(EventManager.Events.POWERUP_USED, [player_node, powerup_card, slot_index])
 	active_powerups_updated.emit(active_powerups)
-	EventManager.emit_event(EventManager.Events.POWERUP_USED, [player_node, powerup_card, slot_index])
 
 func use_multiple_powerups(slot_indices: Array[int]):
 	var cards_to_use: Array[BasePowerupCard] = []
@@ -148,3 +167,20 @@ func clear_all_active_powerups():
 		powerup.queue_free()
 	active_powerups.clear()
 	active_powerups_updated.emit(active_powerups)
+
+func _create_card_from_type(card_type: int) -> BasePowerupCard:
+	match card_type:
+		BasePowerupCard.PowerupType.SPEED_BOOST:
+			return PowerupFactory.create_speed_boost()
+		BasePowerupCard.PowerupType.DAMAGE_BOOST:
+			return PowerupFactory.create_damage_boost()
+		BasePowerupCard.PowerupType.HEALTH_BOOST:
+			return PowerupFactory.create_health_boost()
+		BasePowerupCard.PowerupType.RELOAD_SPEED:
+			return PowerupFactory.create_reload_speed()
+		BasePowerupCard.PowerupType.FIRE_RATE:
+			return PowerupFactory.create_fire_rate()
+		BasePowerupCard.PowerupType.ARMOR:
+			return PowerupFactory.create_armor()
+		_:
+			return PowerupFactory.create_speed_boost()

@@ -21,11 +21,12 @@ func _ready():
 	apply_effect()
 
 func _process(delta):
-	remaining_duration -= delta
-	if remaining_duration <= 0:
-		powerup_expired.emit(self)
-		remove_effect()
-		queue_free()
+	if target_player and target_player.is_multiplayer_authority():
+		remaining_duration -= delta
+		if remaining_duration <= 0:
+			powerup_expired.emit(self)
+			remove_effect()
+			queue_free()
 
 func apply_effect():
 	if not target_player or not powerup_card:

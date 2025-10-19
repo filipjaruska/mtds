@@ -75,18 +75,37 @@ func _attempt_pickup():
 	if not powerup_card or not player:
 		return
 	
+	if not player.is_multiplayer_authority():
+		return
+	
 	var powerup_manager = player.get_node("PowerupManager")
 	if not powerup_manager:
 		push_warning("Player doesn't have a PowerupManager component")
 		return
 	
-	var success = powerup_manager.collect_powerup(powerup_card)
-	
-	if success:
-		rpc("delete_pickup")
-		queue_free()
-	else:
+	var slot_index = powerup_manager.find_empty_slot()
+	if slot_index == -1:
 		_show_inventory_full_feedback()
+		return
+	
+	_request_pickup.rpc_id(1, player.get_multiplayer_authority(), powerup_card.type, slot_index)
+
+@rpc("any_peer", "call_local", "reliable")
+func _request_pickup(player_id: int, card_type: int, slot_index: int):
+	if multiplayer.is_server():
+		rpc_id(player_id, "_collect_powerup_confirmed", card_type, slot_index)
+		delete_pickup.rpc()
+
+@rpc("authority", "call_local", "reliable")
+func _collect_powerup_confirmed(card_type: int, slot_index: int):
+	if player and player.is_multiplayer_authority():
+		var powerup_manager = player.get_node("PowerupManager")
+		if powerup_manager:
+			powerup_manager.add_powerup_to_slot(card_type, slot_index)
+
+@rpc("authority", "call_local", "reliable")
+func delete_pickup():
+	queue_free()
 
 func _show_inventory_full_feedback():
 	if not label:
@@ -101,10 +120,6 @@ func _show_inventory_full_feedback():
 		if label and powerup_card:
 			label.text = "Press E to collect " + powerup_card.get_display_name()
 	)
-
-@rpc("any_peer", "reliable")
-func delete_pickup() -> void:
-	queue_free()
 
 func _on_body_entered(body):
 	if not body.is_in_group("Player") or not pickup_available:
@@ -139,7 +154,6 @@ static func create_pickup(card: BasePowerupCard, spawn_position: Vector2) -> Pow
 	pickup.z_index = 0
 	pickup.z_as_relative = false
 	
-	# Create Area2D for collision detection
 	var pickup_area = Area2D.new()
 	pickup_area.name = "Area2D"
 	pickup.add_child(pickup_area)
