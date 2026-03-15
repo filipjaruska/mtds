@@ -6,6 +6,9 @@ extends Node
 ## For more information see the docs: res://docs/docs/event-manager.md
 
 var _signal_dict = {}
+var _event_contracts = {}
+var strict_validation: bool = true
+var log_invalid_payloads: bool = true
 
 enum Events {
 	# Player events
@@ -47,6 +50,31 @@ func _ready() -> void:
 		var event_id = Events[event_name]
 		_signal_dict[event_id] = []
 		add_user_signal(event_name)
+	_initialize_event_contracts()
+
+func _initialize_event_contracts() -> void:
+	_event_contracts = {
+		Events.PLAYER_DAMAGED: [TYPE_OBJECT, TYPE_INT, TYPE_INT],
+		Events.PLAYER_HEALED: [TYPE_OBJECT, TYPE_INT, TYPE_INT],
+		Events.PLAYER_DIED: [TYPE_OBJECT],
+		Events.PLAYER_RESPAWNED: [TYPE_OBJECT],
+		Events.WEAPON_FIRED: [TYPE_OBJECT, TYPE_INT, TYPE_INT],
+		Events.WEAPON_RELOADED: [TYPE_OBJECT, TYPE_BOOL, TYPE_FLOAT],
+		Events.WEAPON_SWITCHED: [TYPE_OBJECT, TYPE_INT, TYPE_OBJECT],
+		Events.WEAPON_PICKED_UP: [TYPE_OBJECT, TYPE_OBJECT],
+		Events.WEAPON_DROPPED: [TYPE_OBJECT, TYPE_OBJECT],
+		Events.UI_HEALTH_UPDATED: [TYPE_INT, TYPE_INT],
+		Events.UI_AMMO_UPDATED: [TYPE_INT, TYPE_INT],
+		Events.UI_WEAPON_SLOTS_UPDATED: [TYPE_ARRAY],
+		Events.PLAYER_CONNECTED: [TYPE_INT],
+		Events.PLAYER_DISCONNECTED: [TYPE_INT, TYPE_DICTIONARY],
+		Events.CONNECTION_SUCCEEDED: [],
+		Events.CONNECTION_FAILED: [],
+		Events.GAME_STATE_CHANGED: [TYPE_INT, TYPE_INT],
+		Events.POWERUP_COLLECTED: [TYPE_OBJECT, TYPE_OBJECT, TYPE_INT],
+		Events.POWERUP_USED: [TYPE_OBJECT, TYPE_OBJECT, TYPE_INT],
+		Events.POWERUP_EXPIRED: [TYPE_OBJECT, TYPE_OBJECT]
+	}
 
 ## Register a callback to an event
 ## 
@@ -55,41 +83,86 @@ func _ready() -> void:
 ## @param target The object that will receive the callback
 ## @param method The method name to call on the target object
 ## @param binds  Optional array of additional parameters to pass to the callback
-func register(event: int, target: Object, method: String, binds: Array = []) -> void:
+func register(event: int, target_or_callable: Variant, method: String = "", binds: Array = []) -> void:
 	if not _signal_dict.has(event):
 		push_error("Trying to register non-existent event: " + str(event))
 		return
 
+	var event_callable: Callable
+	var target: Object = null
+	var method_name: String = method
+
+	if target_or_callable is Callable:
+		event_callable = target_or_callable
+		target = event_callable.get_object()
+		method_name = event_callable.get_method()
+		if binds.size() > 0:
+			event_callable = event_callable.bindv(binds)
+	elif target_or_callable is Object:
+		target = target_or_callable
+		if method_name.is_empty():
+			push_error("Register requires a method name when passing a target object.")
+			return
+		event_callable = Callable(target, method_name)
+		if binds.size() > 0:
+			event_callable = event_callable.bindv(binds)
+	else:
+		push_error("Register requires either a Callable or target Object.")
+		return
+
 	# Check if this connection already exists
 	for connection in _signal_dict[event]:
-		if connection.target == target and connection.method == method:
+		if connection.callable == event_callable:
 			return
 	
 	# Store connection info
 	_signal_dict[event].append({
+		"callable": event_callable,
 		"target": target,
-		"method": method,
-		"binds": binds
+		"method": method_name
 	})
 	
 	# Connect to target's tree_exiting signal to auto-unregister
-	if not target.tree_exiting.is_connected(_on_target_tree_exiting.bind(event, target, method)):
-		target.tree_exiting.connect(_on_target_tree_exiting.bind(event, target, method))
+	if target is Node:
+		var on_exit := _on_target_tree_exiting.bind(event, target, method_name)
+		if not target.tree_exiting.is_connected(on_exit):
+			target.tree_exiting.connect(on_exit)
 
 ## Unregister a callback from an event
 ##
 ## @param event The event type from the Events enum
 ## @param target The object that was receiving the callback
 ## @param method The method name that was being called
-func unregister(event: int, target: Object, method: String) -> void:
+func unregister(event: int, target_or_callable: Variant, method: String = "") -> void:
 	if not _signal_dict.has(event):
 		push_error("Trying to unregister from non-existent event: " + str(event))
+		return
+
+	var callable_to_remove: Callable
+	var target: Object = null
+	var method_name: String = method
+
+	if target_or_callable is Callable:
+		callable_to_remove = target_or_callable
+		target = callable_to_remove.get_object()
+		method_name = callable_to_remove.get_method()
+	elif target_or_callable is Object:
+		target = target_or_callable
+		if method_name.is_empty():
+			push_error("Unregister requires a method name when passing a target object.")
+			return
+	else:
+		push_error("Unregister requires either a Callable or target Object.")
 		return
 	
 	var connections = _signal_dict[event]
 	for i in range(connections.size() - 1, -1, -1):
-		if connections[i].target == target and connections[i].method == method:
-			connections.remove_at(i)
+		if target_or_callable is Callable:
+			if connections[i].callable == callable_to_remove:
+				connections.remove_at(i)
+		else:
+			if connections[i].target == target and connections[i].method == method_name:
+				connections.remove_at(i)
 
 ## Clean up when a connected object is freed
 ## 
@@ -110,14 +183,71 @@ func emit_event(event: int, args: Array = []) -> void:
 		push_error("Trying to emit non-existent event: " + str(event))
 		return
 	
+	if not _validate_event_args(event, args):
+		return
+	
 	# Call all registered callbacks
 	for connection in _signal_dict[event]:
-		if is_instance_valid(connection.target):
-			var combined_args = args + connection.binds
-			if combined_args.size() > 0:
-				connection.target.callv(connection.method, combined_args)
-			else:
-				connection.target.call(connection.method)
+		if connection.target == null or is_instance_valid(connection.target):
+			connection.callable.callv(args)
+
+func _validate_event_args(event: int, args: Array) -> bool:
+	if not _event_contracts.has(event):
+		return true
+
+	var contract: Array = _event_contracts[event]
+	if contract.size() != args.size():
+		var count_error = "Event %s expected %d args but got %d" % [get_event_name(event), contract.size(), args.size()]
+		_log_invalid_emit(event, args, count_error)
+		if strict_validation:
+			push_error(count_error)
+			return false
+		push_warning(count_error)
+		return true
+
+	for i in range(contract.size()):
+		if not _matches_type(args[i], contract[i]):
+			var type_error = "Event %s arg[%d] expected %s but got %s" % [
+				get_event_name(event),
+				i,
+				_type_to_string(contract[i]),
+				type_string(typeof(args[i]))
+			]
+			_log_invalid_emit(event, args, type_error)
+			if strict_validation:
+				push_error(type_error)
+				return false
+			push_warning(type_error)
+			return true
+
+	return true
+
+func _matches_type(value: Variant, expected_type: Variant) -> bool:
+	if expected_type is Array:
+		for allowed_type in expected_type:
+			if typeof(value) == int(allowed_type):
+				return true
+		return false
+	return typeof(value) == int(expected_type)
+
+func _type_to_string(expected_type: Variant) -> String:
+	if expected_type is Array:
+		var names: Array = []
+		for allowed_type in expected_type:
+			names.append(type_string(int(allowed_type)))
+		return "/".join(names)
+	return type_string(int(expected_type))
+
+func _log_invalid_emit(event: int, args: Array, reason: String) -> void:
+	if not log_invalid_payloads:
+		return
+	push_warning("Event validation failed (%s): %s | payload=%s" % [get_event_name(event), reason, _format_payload(args)])
+
+func _format_payload(args: Array) -> String:
+	var preview: Array = []
+	for value in args:
+		preview.append("%s:%s" % [type_string(typeof(value)), str(value)])
+	return "[" + ", ".join(preview) + "]"
 
 ## Helper method to get event names for debugging
 ##

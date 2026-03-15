@@ -31,10 +31,10 @@ func _ready() -> void:
 			push_error("GameManager: EventManager failed to initialize!")
 			return
 	
-	EventManager.register(EventManager.Events.PLAYER_CONNECTED, self, "_on_player_connected")
-	EventManager.register(EventManager.Events.PLAYER_DISCONNECTED, self, "_on_player_disconnected")
-	EventManager.register(EventManager.Events.CONNECTION_SUCCEEDED, self, "_on_connection_succeeded")
-	EventManager.register(EventManager.Events.CONNECTION_FAILED, self, "_on_connection_failed")
+	EventManager.register(EventManager.Events.PLAYER_CONNECTED, _on_player_connected)
+	EventManager.register(EventManager.Events.PLAYER_DISCONNECTED, _on_player_disconnected)
+	EventManager.register(EventManager.Events.CONNECTION_SUCCEEDED, _on_connection_succeeded)
+	EventManager.register(EventManager.Events.CONNECTION_FAILED, _on_connection_failed)
 
 ## Add a new player to the game
 ##

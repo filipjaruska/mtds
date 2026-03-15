@@ -4,10 +4,10 @@ extends CanvasLayer
 @onready var active_powerups_ui = $ActivePowerupsUI
 
 func _ready():
-	EventManager.register(EventManager.Events.UI_HEALTH_UPDATED, self, "_on_health_updated")
-	EventManager.register(EventManager.Events.UI_AMMO_UPDATED, self, "_on_ammo_updated")
-	EventManager.register(EventManager.Events.POWERUP_COLLECTED, self, "_on_powerup_collected")
-	EventManager.register(EventManager.Events.POWERUP_USED, self, "_on_powerup_used")
+	EventManager.register(EventManager.Events.UI_HEALTH_UPDATED, _on_health_updated)
+	EventManager.register(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)
+	EventManager.register(EventManager.Events.POWERUP_COLLECTED, _on_powerup_collected)
+	EventManager.register(EventManager.Events.POWERUP_USED, _on_powerup_used)
 
 func update_ammo(ammo: int, max_ammo: int):
 	$AmmoDisplay.text = "%d / %d" % [ammo, max_ammo]
@@ -47,7 +47,7 @@ func update_powerup_displays(player_node: Node):
 		active_powerups_ui.update_active_powerups(powerup_manager.active_powerups)
 
 func _exit_tree():
-	EventManager.unregister(EventManager.Events.UI_HEALTH_UPDATED, self, "_on_health_updated")
-	EventManager.unregister(EventManager.Events.UI_AMMO_UPDATED, self, "_on_ammo_updated")
-	EventManager.unregister(EventManager.Events.POWERUP_COLLECTED, self, "_on_powerup_collected")
-	EventManager.unregister(EventManager.Events.POWERUP_USED, self, "_on_powerup_used")
+	EventManager.unregister(EventManager.Events.UI_HEALTH_UPDATED, _on_health_updated)
+	EventManager.unregister(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)
+	EventManager.unregister(EventManager.Events.POWERUP_COLLECTED, _on_powerup_collected)
+	EventManager.unregister(EventManager.Events.POWERUP_USED, _on_powerup_used)
