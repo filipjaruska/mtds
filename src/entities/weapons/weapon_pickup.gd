@@ -2,13 +2,18 @@ extends Area2D
 
 @export var weapon_scene: PackedScene
 @export var weapon_name: String
-@onready var label = $Label
+var label: Label
+var pickup_sprite: Sprite2D
 var player: Node = null
 var current_weapon_instance: Node = null
 
 func _ready() -> void:
-	label.visible = false
-	$Sprite2D.visible = false
+	label = get_node_or_null("Label")
+	pickup_sprite = get_node_or_null("Sprite2D")
+	if label:
+		label.visible = false
+	if pickup_sprite:
+		pickup_sprite.visible = false
 	if weapon_scene:
 		spawn_weapon_scene()
 
@@ -37,17 +42,28 @@ func _on_body_entered(body):
 	if not body.is_in_group("Player"):
 		return
 	player = body
-	label.visible = true
+	if label:
+		label.visible = true
 
 func _on_body_exited(body):
 	if not body.is_in_group("Player"):
 		return
 	player = null
-	label.visible = false
+	if label:
+		label.visible = false
 
-func set_weapon_scene(scene: PackedScene, weapon_label: String) -> void:
+func set_weapon_scene(scene: PackedScene, weapon_label: String = "") -> void:
 	weapon_scene = scene
-	label.text = weapon_label
-	label.visible = true
-	$Sprite2D.visible = true
+	if not label:
+		label = get_node_or_null("Label")
+	if label:
+		if weapon_label.is_empty() and scene:
+			label.text = scene.resource_path.get_file().get_basename().replace("_", " ").capitalize()
+		else:
+			label.text = weapon_label
+		label.visible = true
+	if not pickup_sprite:
+		pickup_sprite = get_node_or_null("Sprite2D")
+	if pickup_sprite:
+		pickup_sprite.visible = true
 	spawn_weapon_scene()

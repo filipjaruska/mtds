@@ -65,7 +65,7 @@ func _get_powerup_type_index() -> int:
 		SpawnType.ARMOR:
 			return 5
 		_:
-			return randi() % 6 # Random
+			return randi() % 6 # Random (SpawnType.size() - 1)
 
 func _on_powerup_picked_up():
 	current_powerups = max(0, current_powerups - 1)
