@@ -8,9 +8,9 @@
 [ext_resource type="Script" uid="uid://cyraqsogm3i4s" path="res://src/ui/player_ui.gd" id="6_vdean"]
 [ext_resource type="PackedScene" uid="uid://i2rvom7p2l2f" path="res://src/entities/player/components/health_component.tscn" id="7_uqubr"]
 [ext_resource type="Script" uid="uid://x5crv0aomnqv" path="res://src/ui/weapon_slots.gd" id="8_xljkp"]
-[ext_resource type="Script" path="res://src/entities/powerups/powerup_manager.gd" id="9_powerup"]
-[ext_resource type="Script" path="res://src/ui/powerup_inventory_ui.gd" id="10_inventory"]
-[ext_resource type="Script" path="res://src/ui/active_powerups_ui.gd" id="11_active"]
+[ext_resource type="Script" uid="uid://doar148j221lu" path="res://src/entities/powerups/powerup_manager.gd" id="9_powerup"]
+[ext_resource type="Script" uid="uid://dcpgxm8yg8a6e" path="res://src/ui/powerup_inventory_ui.gd" id="10_inventory"]
+[ext_resource type="Script" uid="uid://dmlrypu5xkgqa" path="res://src/ui/active_powerups_ui.gd" id="11_active"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b7jsc"]
 radius = 26.0192
@@ -137,6 +137,8 @@ offset_left = -200.0
 offset_top = -120.0
 offset_right = 200.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
 script = ExtResource("10_inventory")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI"]
@@ -144,6 +146,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="PowerupSlot1" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer"]
 layout_mode = 2
@@ -154,6 +158,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.2, 0.2, 0.2, 0.5)
 
 [node name="Icon" type="TextureRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot1"]
@@ -167,6 +173,8 @@ offset_left = -20.0
 offset_top = -20.0
 offset_right = 20.0
 offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 
@@ -180,13 +188,14 @@ anchor_bottom = 1.0
 offset_left = -20.0
 offset_top = -15.0
 offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
 text = "Empty"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Hotkey" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot1"]
 layout_mode = 1
-anchors_preset = 0
 offset_right = 15.0
 offset_bottom = 15.0
 text = "1"
@@ -202,6 +211,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.2, 0.2, 0.2, 0.5)
 
 [node name="Icon" type="TextureRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot2"]
@@ -215,6 +226,8 @@ offset_left = -20.0
 offset_top = -20.0
 offset_right = 20.0
 offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 
@@ -228,13 +241,14 @@ anchor_bottom = 1.0
 offset_left = -20.0
 offset_top = -15.0
 offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
 text = "Empty"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Hotkey" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot2"]
 layout_mode = 1
-anchors_preset = 0
 offset_right = 15.0
 offset_bottom = 15.0
 text = "2"
@@ -250,6 +264,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.2, 0.2, 0.2, 0.5)
 
 [node name="Icon" type="TextureRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot3"]
@@ -263,6 +279,8 @@ offset_left = -20.0
 offset_top = -20.0
 offset_right = 20.0
 offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 
@@ -276,13 +294,14 @@ anchor_bottom = 1.0
 offset_left = -20.0
 offset_top = -15.0
 offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
 text = "Empty"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Hotkey" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot3"]
 layout_mode = 1
-anchors_preset = 0
 offset_right = 15.0
 offset_bottom = 15.0
 text = "3"
@@ -298,6 +317,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.2, 0.2, 0.2, 0.5)
 
 [node name="Icon" type="TextureRect" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot4"]
@@ -311,6 +332,8 @@ offset_left = -20.0
 offset_top = -20.0
 offset_right = 20.0
 offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 
@@ -324,13 +347,14 @@ anchor_bottom = 1.0
 offset_left = -20.0
 offset_top = -15.0
 offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
 text = "Empty"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Hotkey" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupInventoryUI/HBoxContainer/PowerupSlot4"]
 layout_mode = 1
-anchors_preset = 0
 offset_right = 15.0
 offset_bottom = 15.0
 text = "4"
@@ -346,6 +370,7 @@ offset_left = 20.0
 offset_top = -100.0
 offset_right = 300.0
 offset_bottom = 100.0
+grow_vertical = 2
 script = ExtResource("11_active")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="CameraComponent/PlayerCamera/PlayerUI/ActivePowerupsUI"]
@@ -353,9 +378,18 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CameraComponent/PlayerCamera/PlayerUI/ActivePowerupsUI/ScrollContainer"]
 layout_mode = 2
+
+[node name="Time" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
+offset_left = 561.0
+offset_top = 13.0
+offset_right = 601.0
+offset_bottom = 36.0
+text = "TIME"
 
 [node name="PlayerNameLabel" type="Label" parent="."]
 z_index = 10

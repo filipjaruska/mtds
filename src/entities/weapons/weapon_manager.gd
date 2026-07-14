@@ -129,7 +129,7 @@ func current_weapon() -> RangedWeapon:
 
 func update_hud() -> void:
 	if weapons.size() > 0 and current_weapon() != null:
-		EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [current_weapon().ammo, current_weapon().max_ammo])
+		EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), current_weapon().ammo, current_weapon().max_ammo])
 
 func update_weapon_slots() -> void:
 	var slot_info = []

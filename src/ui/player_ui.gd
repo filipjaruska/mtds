@@ -3,6 +3,9 @@ extends CanvasLayer
 @onready var powerup_inventory_ui = $PowerupInventoryUI
 @onready var active_powerups_ui = $ActivePowerupsUI
 
+func _process(_delta: float):
+	$Time.text = "%d" % [GameManager.get_match_time_remaining()]
+
 func _ready():
 	EventManager.register(EventManager.Events.UI_HEALTH_UPDATED, _on_health_updated)
 	EventManager.register(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)

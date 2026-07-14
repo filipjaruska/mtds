@@ -38,7 +38,7 @@ func shoot():
 			show_muzzle_flash()
 			
 			EventManager.emit_event(EventManager.Events.WEAPON_FIRED, [self, ammo, max_ammo])
-			EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [ammo, max_ammo])
+			EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo])
 
 func _shoot_bullet():
 	for i in range(pellets):
@@ -83,7 +83,7 @@ func reload():
 	# Emit reload completed event
 	EventManager.emit_event(EventManager.Events.WEAPON_RELOADED, [self, false, 0.0])
 	# Update UI with new ammo count
-	EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [ammo, max_ammo])
+	EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo])
 
 func show_muzzle_flash():
 	var muzzle_flash_instance = muzzle_flash.instantiate()

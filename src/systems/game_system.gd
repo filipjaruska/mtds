@@ -48,6 +48,10 @@ func _ready() -> void:
 	EventManager.register(EventManager.Events.CONNECTION_SUCCEEDED, _on_connection_succeeded)
 	EventManager.register(EventManager.Events.CONNECTION_FAILED, _on_connection_failed)
 
+## match time remaining as a float
+func get_match_time_remaining() -> float:
+	return match_time_remaining
+
 ## Add a new player to the game
 ##
 ## @param player_id 	The unique identifier for the player
