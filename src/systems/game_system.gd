@@ -20,10 +20,22 @@ var current_state: GameState = GameState.MENU
 var game_settings: Dictionary = {
 	"max_players": 4,
 	"game_mode": "deathmatch",
-	"map": "default"
+	"map": "default",
+	"match_duration_seconds": 300.0
 }
 
+var match_time_remaining: float = 0.0
+var match_end_time_msec: int = 0
+
+var _match_timer: Timer
+
 func _ready() -> void:
+	_match_timer = Timer.new()
+	_match_timer.one_shot = true
+	_match_timer.timeout.connect(_on_match_timer_timeout)
+	add_child(_match_timer)
+	
+	set_process(false)
 	# Ensure EventManager is ready before registering events
 	if EventManager._signal_dict.is_empty():
 		await get_tree().process_frame
@@ -126,11 +138,35 @@ func is_connecting() -> bool:
 
 ## Start the game (transition to PLAYING state)
 func start_game() -> void:
+	start_match()
+
+## Begin a timed match. Server runs the countdown and returns players to lobby when it expires.
+func start_match() -> void:
+	var duration: float = game_settings.match_duration_seconds
+	match_time_remaining = duration
 	set_game_state(GameState.PLAYING)
+	set_process(true)
+	
+	if not multiplayer.is_server():
+		return
+	
+	var duration_msec: int = int(duration * 1000.0)
+	match_end_time_msec = Time.get_ticks_msec() + duration_msec
+	sync_match_timer.rpc(match_end_time_msec)
+	_match_timer.start(duration)
 
 ## End the game (transition to GAME_OVER state)
 func end_game() -> void:
+	_stop_match_timer()
 	set_game_state(GameState.GAME_OVER)
+
+## Return to lobby after a match without disconnecting players.
+func return_to_lobby() -> void:
+	_stop_match_timer()
+	match_end_time_msec = 0
+	match_time_remaining = 0.0
+	set_process(false)
+	set_game_state(GameState.LOBBY)
 
 ## Disconnect from current game (transition to DISCONNECTED state)
 func disconnect_from_game() -> void:
@@ -165,3 +201,29 @@ func _on_connection_succeeded() -> void:
 
 func _on_connection_failed() -> void:
 	set_game_state(GameState.MENU)
+
+func _process(_delta: float) -> void:
+	if current_state != GameState.PLAYING or match_end_time_msec <= 0:
+		return
+	
+	match_time_remaining = maxf(0.0, (match_end_time_msec - Time.get_ticks_msec()) / 1000.0)
+
+func _on_match_timer_timeout() -> void:
+	if not multiplayer.is_server():
+		return
+	
+	var lobby = get_tree().get_first_node_in_group("Lobby")
+	if lobby and lobby.has_method("return_to_lobby"):
+		lobby.return_to_lobby.rpc()
+	else:
+		push_warning("GameManager: No lobby found after match timer expired.")
+		return_to_lobby()
+
+func _stop_match_timer() -> void:
+	if _match_timer.time_left > 0.0:
+		_match_timer.stop()
+
+@rpc("authority", "call_local", "reliable")
+func sync_match_timer(end_time_msec: int) -> void:
+	match_end_time_msec = end_time_msec
+	match_time_remaining = maxf(0.0, (match_end_time_msec - Time.get_ticks_msec()) / 1000.0)

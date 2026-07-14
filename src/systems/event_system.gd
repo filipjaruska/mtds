@@ -54,8 +54,8 @@ func _ready() -> void:
 
 func _initialize_event_contracts() -> void:
 	_event_contracts = {
-		Events.PLAYER_DAMAGED: [TYPE_OBJECT, TYPE_INT, TYPE_INT],
-		Events.PLAYER_HEALED: [TYPE_OBJECT, TYPE_INT, TYPE_INT],
+		Events.PLAYER_DAMAGED: [TYPE_OBJECT, TYPE_FLOAT, TYPE_FLOAT],
+		Events.PLAYER_HEALED: [TYPE_OBJECT, TYPE_FLOAT, TYPE_FLOAT],
 		Events.PLAYER_DIED: [TYPE_OBJECT],
 		Events.PLAYER_RESPAWNED: [TYPE_OBJECT],
 		Events.WEAPON_FIRED: [TYPE_OBJECT, TYPE_INT, TYPE_INT],

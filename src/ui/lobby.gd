@@ -2,6 +2,7 @@ extends Control
 
 var available_maps: Array[String] = []
 var player_ready_states: Dictionary = {}
+var _active_map: Node = null
 
 @onready var player_name_input: LineEdit = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer/HBoxContainer/LineEdit
 @onready var start_button: Button = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/ButtonsContainer/StartButton
@@ -10,6 +11,7 @@ var player_ready_states: Dictionary = {}
 @onready var map_dropdown: OptionButton = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/MapSelectionContainer/MapDropdown
 
 func _ready() -> void:
+	add_to_group("Lobby")
 	multiplayer.peer_connected.connect(_on_player_connected)
 	multiplayer.peer_disconnected.connect(_on_player_disconnected)
 	
@@ -44,8 +46,9 @@ func _setup_ui_for_role() -> void:
 
 func _load_available_maps() -> void:
 	map_dropdown.clear()
+	available_maps.clear()
 	
-	available_maps.append("../debug.tscn")
+	available_maps.append("res://src/scenes/debug.tscn")
 	map_dropdown.add_item("debug")
 	
 	var maps_dir = "res://src/scenes/maps/"
@@ -56,7 +59,7 @@ func _load_available_maps() -> void:
 		var file_name = dir.get_next()
 		while file_name != "":
 			if file_name.ends_with(".tscn"):
-				available_maps.append(file_name)
+				available_maps.append(maps_dir + file_name)
 				map_dropdown.add_item(file_name.trim_suffix(".tscn"))
 			file_name = dir.get_next()
 		dir.list_dir_end()
@@ -126,18 +129,42 @@ func _check_ready_state() -> void:
 		start_button.disabled = ready_count < 1
 
 @rpc("any_peer", "call_local")
-func start_game(map_name: String) -> void:
-	var map_path = "res://src/scenes/maps/" + map_name
-	var scene: Node = load(map_path).instantiate()
-	get_tree().root.add_child(scene)
-	self.hide()
+func start_game(map_path: String) -> void:
+	if _active_map and is_instance_valid(_active_map):
+		_active_map.queue_free()
+		_active_map = null
 	
-	GameManager.start_game()
+	_active_map = load(map_path).instantiate()
+	get_tree().root.add_child(_active_map)
+	hide()
+	GameManager.start_match()
+
+@rpc("any_peer", "call_local")
+func return_to_lobby() -> void:
+	if _active_map and is_instance_valid(_active_map):
+		_active_map.queue_free()
+		_active_map = null
+	
+	show()
+	_reset_lobby_for_new_match()
+	GameManager.return_to_lobby()
+
+func _reset_lobby_for_new_match() -> void:
+	for player_id in GameManager.players:
+		player_ready_states[player_id] = player_id == 1
+	
+	if not multiplayer.is_server():
+		ready_button.text = "Ready"
+	
+	if multiplayer.is_server():
+		sync_ready_states.rpc(player_ready_states)
+	
+	_update_player_list()
+	_check_ready_state()
 
 func _on_start_pressed() -> void:
 	if multiplayer.is_server():
-		var selected_map = available_maps[map_dropdown.selected]
-		start_game.rpc(selected_map)
+		start_game.rpc(available_maps[map_dropdown.selected])
 
 func _on_ready_pressed() -> void:
 	var player_id = multiplayer.get_unique_id()
