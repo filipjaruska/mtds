@@ -1,20 +1,17 @@
 name: Build
 
 on:
-  workflow_run:
-    workflows: [Test]
-    types: [completed]
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
 
-# Environment variables
 env:
-  # Configure Godot version
-  GODOT_VERSION: 4.3.0
-  # TEMPORARY: Set to true to mark the release as a pre-release
+  GODOT_VERSION: 4.5.0
   PRE_RELEASE: False
 
 jobs:
   build:
-    if: github.event.workflow_run.conclusion == 'success'
     name: Building for ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     permissions:
@@ -23,7 +20,6 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          # Export for Windows
           - name: 🪟 Windows
             os: windows-latest
             platform: windows
@@ -33,7 +29,6 @@ jobs:
             archive: Windows
             butler-channel: windows
 
-          # Export for Linux
           - name: 🐧 Linux
             os: ubuntu-22.04
             platform: linux
@@ -44,11 +39,9 @@ jobs:
             butler-channel: linux
 
     steps:
-      # Check out the repository
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Setup Godot
       - name: Setup Godot
         uses: chickensoft-games/setup-godot@v2
         with:
@@ -56,13 +49,11 @@ jobs:
           use-dotnet: false
           include-templates: true
 
-      # Import Godot Project
       - name: Initial Godot Import
         shell: bash
         run: |
           godot --headless --import || exit 0
 
-      # Export project
       - name: Export Godot Project
         shell: bash
         run: >
@@ -71,7 +62,6 @@ jobs:
           ${{ matrix.export-args }}
           --export-${{ matrix.export-type }} "${{ matrix.export-preset }}"
 
-      # Upload artifacts
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -80,7 +70,6 @@ jobs:
             ${{ matrix.export-folder }}/*.*
             !**/.gitignore
 
-      # Compress project (if building release)
       - name: Compress Project
         if: >
           github.event_name == 'push' && 
@@ -89,14 +78,12 @@ jobs:
           cd ${{ matrix.export-folder }}
           7z a -tzip ${{ matrix.archive }}.zip *.* -x'!.gitignore'
 
-      # Generate Changelog
       - name: Generate Changelog
         id: changelog
         run: |
           echo "## Changelog" > CHANGELOG.md
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" >> CHANGELOG.md
 
-      # Publish release (if building release)
       - name: Publish Release
         uses: ncipollo/release-action@v1
         if: >
