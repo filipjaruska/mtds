@@ -1,7 +1,6 @@
 extends Node2D
 class_name HealthComponent
 
-@onready var UI = $"../CameraComponent/PlayerCamera/PlayerUI"
 @onready var heal_timer = $HealthRegenTimer
 @onready var health_bar = $"../PlayerHealthBar"
 
@@ -22,7 +21,7 @@ func _ready():
 	if health_bar:
 		health_bar.max_value = max_health
 		health_bar.value = current_health
-	update_ui()
+	_broadcast_health_change()
 
 func _process(_delta):
 	death()
@@ -30,35 +29,26 @@ func _process(_delta):
 @rpc("any_peer", "reliable")
 func update_health(new_health: float):
 	current_health = new_health
-	var player = get_parent()
-	if player and player.is_multiplayer_authority():
-		update_ui()
-		EventManager.emit_event(EventManager.Events.UI_HEALTH_UPDATED, [int(current_health), int(max_health)])
-	if health_bar and is_instance_valid(health_bar):
-		health_bar.value = current_health
+	_broadcast_health_change()
 
 func damage(dmg: float, penetration: float):
 	if dmg < 0.0:
 		return
-		
+
 	var total_resist: float = max(physical_resist + damage_resistance - penetration, 0.0)
 	var final_dmg: float = dmg * (1.0 - total_resist)
 	current_health -= final_dmg
-	if health_bar and is_instance_valid(health_bar):
-		health_bar.value = current_health
 	rpc("update_health", current_health)
-	update_ui()
+	_broadcast_health_change()
 	heal_timer.start(5.0)
-	
+
 	EventManager.emit_event(EventManager.Events.PLAYER_DAMAGED, [get_parent(), final_dmg, current_health])
 
 func heal(amount: float):
 	current_health = min(current_health + amount, max_health)
-	if health_bar and is_instance_valid(health_bar):
-		health_bar.value = current_health
 	rpc("update_health", current_health)
-	update_ui()
-	
+	_broadcast_health_change()
+
 	EventManager.emit_event(EventManager.Events.PLAYER_HEALED, [get_parent(), amount, current_health])
 
 func death():
@@ -66,9 +56,9 @@ func death():
 		is_dying = true
 		var player = get_parent()
 		player.visible = false
-		
+
 		EventManager.emit_event(EventManager.Events.PLAYER_DIED, [player])
-		
+
 		await get_tree().create_timer(1.0).timeout
 		respawn_player(player)
 
@@ -77,7 +67,7 @@ func respawn_player(player):
 	player.position = get_spawn_location(player.name)
 	current_health = max_health
 	rpc("update_health", current_health)
-	update_ui()
+	_broadcast_health_change()
 
 	EventManager.emit_event(EventManager.Events.PLAYER_RESPAWNED, [player])
 	is_dying = false
@@ -92,6 +82,7 @@ func _on_heal_timer_timeout():
 	if get_parent().is_in_group("Player"):
 		heal(max_health - current_health)
 
-func update_ui():
-	if UI and is_instance_valid(UI):
-		UI.update_health(int(current_health), int(max_health))
+func _broadcast_health_change():
+	if health_bar and is_instance_valid(health_bar):
+		health_bar.value = current_health
+	EventManager.emit_event(EventManager.Events.UI_HEALTH_UPDATED, [get_parent(), int(current_health), int(max_health)])

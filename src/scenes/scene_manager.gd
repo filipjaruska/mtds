@@ -9,9 +9,11 @@ extends Node2D
 func _ready():
 	var index: int = 0
 	for i in GameManager.players:
+		var player_id: int = GameManager.players[i].id
 		var currentPlayer = playerScene.instantiate()
-		currentPlayer.name = str(GameManager.players[i].id)
-		currentPlayer.set_player_name(str(GameManager.players[i].name)) # changes the text in player lable to the player nickname
+		currentPlayer.name = str(player_id)
+		currentPlayer.set_multiplayer_authority(player_id)
+		currentPlayer.set_player_name(str(GameManager.players[i].name))
 		add_child(currentPlayer)
 		for spawn in get_tree().get_nodes_in_group("PlayerSpawnLocation"):
 			if spawn.name == str(index):
