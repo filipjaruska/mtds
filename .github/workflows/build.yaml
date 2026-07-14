@@ -10,7 +10,7 @@ env:
   # Configure Godot version
   GODOT_VERSION: 4.3.0
   # TEMPORARY: Set to true to mark the release as a pre-release
-  PRE_RELEASE: True
+  PRE_RELEASE: False
 
 jobs:
   build:
