@@ -1,10 +1,7 @@
 extends Node2D
 
-# Didn't know about MultiplayerSpawner node before making this component.
-# I think that they are the same thing but not sure.
-# It just spawns the player on pre-established locations in the main scene.
-
 @export var playerScene: PackedScene
+@export var default_weapon_scene: PackedScene = preload("res://src/entities/weapons/pistol.tscn")
 
 func _ready():
 	var index: int = 0
@@ -19,3 +16,21 @@ func _ready():
 			if spawn.name == str(index):
 				currentPlayer.global_position = spawn.global_position
 		index += 1
+	
+	call_deferred("_equip_default_weapons")
+
+func _equip_default_weapons() -> void:
+	if default_weapon_scene == null:
+		return
+	
+	for player_data in GameManager.get_all_players():
+		var player_id: int = player_data.id
+		if multiplayer.get_unique_id() != player_id:
+			continue
+		
+		var player_node = get_node_or_null(str(player_id))
+		if player_node == null:
+			continue
+		
+		var weapon_manager = player_node.get_node("PlayerController/WeaponManager")
+		weapon_manager.add_weapon(default_weapon_scene.instantiate(), true)
