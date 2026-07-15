@@ -3,7 +3,7 @@ class_name PowerupSpawner
 
 enum SpawnType {
 	RANDOM,
-	SPEED_BOOST,
+	FASTER_DASH,
 	DAMAGE_BOOST,
 	HEALTH_BOOST,
 	RELOAD_SPEED,
@@ -52,7 +52,7 @@ func _spawn_powerup_at(powerup_type_index: int, spawn_position: Vector2, unique_
 
 func _get_powerup_type_index() -> int:
 	match spawn_type:
-		SpawnType.SPEED_BOOST:
+		SpawnType.FASTER_DASH:
 			return 0
 		SpawnType.DAMAGE_BOOST:
 			return 1
@@ -73,7 +73,7 @@ func _on_powerup_picked_up():
 func _create_card_by_index(index: int) -> BasePowerupCard:
 	match index:
 		0:
-			return PowerupFactory.create_speed_boost()
+			return PowerupFactory.create_faster_dash()
 		1:
 			return PowerupFactory.create_damage_boost()
 		2:
@@ -85,7 +85,7 @@ func _create_card_by_index(index: int) -> BasePowerupCard:
 		5:
 			return PowerupFactory.create_armor()
 		_:
-			return PowerupFactory.create_speed_boost()
+			return PowerupFactory.create_faster_dash()
 
 func _get_spawn_position() -> Vector2:
 	if use_spawn_area and spawn_area_size != Vector2.ZERO:

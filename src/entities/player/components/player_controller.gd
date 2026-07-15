@@ -11,8 +11,10 @@ class_name PlayerController
 var normal_speed: float = 200.0
 var dash_speed: float = 800.0
 var crouch_speed: float = 100.0
-var dash_duration: float = 0.3
+var base_dash_cooldown: float = 3500.0
 var dash_cooldown: float = 3500.0
+var dash_duration: float = 0.3
+var _dash_cooldown_reduction: float = 0.0
 
 enum PlayerState {
 	NORMAL,
@@ -147,3 +149,18 @@ func apply_weapon_slowness(weapon_slowness: float):
 func remove_weapon_slowness(_weapon_slowness: float):
 	slowness_factor = 1.0
 	_recompute_current_speed()
+
+func set_base_dash_cooldown(value: float) -> void:
+	base_dash_cooldown = value
+	_recompute_dash_cooldown()
+
+func apply_dash_cooldown_reduction(reduction: float) -> void:
+	_dash_cooldown_reduction = minf(_dash_cooldown_reduction + reduction, 0.9)
+	_recompute_dash_cooldown()
+
+func remove_dash_cooldown_reduction(reduction: float) -> void:
+	_dash_cooldown_reduction = maxf(_dash_cooldown_reduction - reduction, 0.0)
+	_recompute_dash_cooldown()
+
+func _recompute_dash_cooldown() -> void:
+	dash_cooldown = base_dash_cooldown * (1.0 - _dash_cooldown_reduction)

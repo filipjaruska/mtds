@@ -112,7 +112,7 @@ func _update_components():
 		player_controller.dash_speed = movement_dash_speed
 		player_controller.crouch_speed = movement_crouch_speed
 		player_controller.dash_duration = dash_duration
-		player_controller.dash_cooldown = dash_cooldown
+		player_controller.set_base_dash_cooldown(dash_cooldown)
 	
 	if camera_component:
 		camera_component.lookahead_distance = camera_lookahead_distance

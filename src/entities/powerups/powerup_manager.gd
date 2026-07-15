@@ -223,8 +223,8 @@ func clear_all_active_powerups():
 
 func _create_card_from_type(card_type: int) -> BasePowerupCard:
 	match card_type:
-		BasePowerupCard.PowerupType.SPEED_BOOST:
-			return PowerupFactory.create_speed_boost()
+		BasePowerupCard.PowerupType.FASTER_DASH:
+			return PowerupFactory.create_faster_dash()
 		BasePowerupCard.PowerupType.DAMAGE_BOOST:
 			return PowerupFactory.create_damage_boost()
 		BasePowerupCard.PowerupType.HEALTH_BOOST:
@@ -236,4 +236,4 @@ func _create_card_from_type(card_type: int) -> BasePowerupCard:
 		BasePowerupCard.PowerupType.ARMOR:
 			return PowerupFactory.create_armor()
 		_:
-			return PowerupFactory.create_speed_boost()
+			return PowerupFactory.create_faster_dash()

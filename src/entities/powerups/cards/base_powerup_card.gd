@@ -2,7 +2,7 @@ extends Resource
 class_name BasePowerupCard
 
 enum PowerupType {
-	SPEED_BOOST,
+	FASTER_DASH,
 	DAMAGE_BOOST,
 	HEALTH_BOOST,
 	RELOAD_SPEED,
@@ -61,7 +61,7 @@ func get_type_description() -> String:
 
 func _get_default_description() -> String:
 	match type:
-		PowerupType.SPEED_BOOST: return "Increases movement speed"
+		PowerupType.FASTER_DASH: return "Reduces dash cooldown"
 		PowerupType.DAMAGE_BOOST: return "Increases weapon damage"
 		PowerupType.HEALTH_BOOST: return "Increases maximum health"
 		PowerupType.RELOAD_SPEED: return "Increases reload speed"
