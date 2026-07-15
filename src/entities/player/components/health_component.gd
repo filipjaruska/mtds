@@ -11,7 +11,11 @@ var is_dying: bool = false
 
 @export var physical_resist: float = 0.0 # Percentage
 @export var resist_penetration: float = 0.0 # 0.0 to 1.0
+@export var regen_delay_after_damage: float = 5.0
+@export_range(0.0, 1.0, 0.01) var regen_percent_per_tick: float = 0.10
+@export var regen_tick_interval: float = 1.0
 var damage_resistance: float = 0.0
+var _waiting_for_regen: bool = false
 
 func _ready():
 	max_health = MAX_HEALTH
@@ -40,7 +44,7 @@ func damage(dmg: float, penetration: float):
 	current_health -= final_dmg
 	rpc("update_health", current_health)
 	_broadcast_health_change()
-	heal_timer.start(5.0)
+	_start_regen_delay()
 
 	EventManager.emit_event(EventManager.Events.PLAYER_DAMAGED, [get_parent(), final_dmg, current_health])
 
@@ -53,6 +57,7 @@ func heal(amount: float):
 
 func death():
 	if current_health <= 0 and not is_dying:
+		_stop_regen()
 		is_dying = true
 		var player = get_parent()
 		player.visible = false
@@ -78,9 +83,52 @@ func get_random_spawn_location() -> Vector2:
 		return Vector2.ZERO
 	return spawns.pick_random().global_position
 
-func _on_heal_timer_timeout():
-	if get_parent().is_in_group("Player"):
-		heal(max_health - current_health)
+func _start_regen_delay() -> void:
+	if regen_percent_per_tick <= 0.0 or current_health >= max_health:
+		return
+
+	_waiting_for_regen = true
+	heal_timer.stop()
+	heal_timer.one_shot = true
+	heal_timer.wait_time = regen_delay_after_damage
+	heal_timer.start()
+
+func _schedule_regen_tick() -> void:
+	if current_health >= max_health:
+		_stop_regen()
+		return
+
+	heal_timer.one_shot = true
+	heal_timer.wait_time = regen_tick_interval
+	heal_timer.start()
+
+func _apply_regen_tick() -> void:
+	if not get_parent().is_in_group("Player"):
+		return
+
+	if current_health >= max_health:
+		_stop_regen()
+		return
+
+	var heal_amount := max_health * regen_percent_per_tick
+	heal(heal_amount)
+
+	if current_health < max_health:
+		_schedule_regen_tick()
+	else:
+		_stop_regen()
+
+func _stop_regen() -> void:
+	_waiting_for_regen = false
+	heal_timer.stop()
+
+func _on_heal_timer_timeout() -> void:
+	if _waiting_for_regen:
+		_waiting_for_regen = false
+		_apply_regen_tick()
+		return
+
+	_apply_regen_tick()
 
 func _broadcast_health_change():
 	if health_bar and is_instance_valid(health_bar):
