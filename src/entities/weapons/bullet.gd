@@ -54,7 +54,7 @@ func check_collision() -> void:
 				var health_component = collider.get_parent()
 				if health_component and is_instance_valid(health_component) and health_component.has_method("damage"):
 					if _shooter_authority_id == multiplayer.get_unique_id():
-						health_component.damage(_bullet_damage, _bullet_armor_penetration)
+						health_component.damage(_bullet_damage, _bullet_armor_penetration, _shooter_authority_id)
 					else:
 						return
 		else:

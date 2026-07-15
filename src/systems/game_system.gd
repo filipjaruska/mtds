@@ -26,6 +26,7 @@ var game_settings: Dictionary = {
 
 var match_time_remaining: float = 0.0
 var match_end_time_msec: int = 0
+var match_stats: Dictionary = {}
 
 var _match_timer: Timer
 
@@ -146,6 +147,7 @@ func start_game() -> void:
 
 ## Begin a timed match. Server runs the countdown and returns players to lobby when it expires.
 func start_match() -> void:
+	reset_match_stats()
 	var duration: float = game_settings.match_duration_seconds
 	match_time_remaining = duration
 	set_game_state(GameState.PLAYING)
@@ -169,8 +171,69 @@ func return_to_lobby() -> void:
 	_stop_match_timer()
 	match_end_time_msec = 0
 	match_time_remaining = 0.0
+	reset_match_stats()
 	set_process(false)
 	set_game_state(GameState.LOBBY)
+
+func reset_match_stats() -> void:
+	match_stats.clear()
+	for player_id in players:
+		match_stats[player_id] = {
+			"kills": 0,
+			"deaths": 0,
+			"damage_dealt": 0.0,
+		}
+
+func _ensure_player_stats(player_id: int) -> void:
+	if not match_stats.has(player_id):
+		match_stats[player_id] = {
+			"kills": 0,
+			"deaths": 0,
+			"damage_dealt": 0.0,
+		}
+
+@rpc("any_peer", "call_local", "reliable")
+func report_damage_dealt(attacker_id: int, amount: float) -> void:
+	if not multiplayer.is_server():
+		return
+	if amount <= 0.0:
+		return
+	
+	_ensure_player_stats(attacker_id)
+	match_stats[attacker_id]["damage_dealt"] += amount
+
+@rpc("any_peer", "call_local", "reliable")
+func report_player_death(victim_id: int, killer_id: int) -> void:
+	if not multiplayer.is_server():
+		return
+	
+	_ensure_player_stats(victim_id)
+	match_stats[victim_id]["deaths"] += 1
+	
+	if killer_id > 0 and killer_id != victim_id:
+		_ensure_player_stats(killer_id)
+		match_stats[killer_id]["kills"] += 1
+
+func get_sorted_match_results() -> Array:
+	var results: Array = []
+	for player_id in players:
+		var stats: Dictionary = match_stats.get(player_id, {
+			"kills": 0,
+			"deaths": 0,
+			"damage_dealt": 0.0,
+		})
+		results.append({
+			"id": player_id,
+			"name": players[player_id].get("name", "Player %d" % player_id),
+			"kills": stats.get("kills", 0),
+			"deaths": stats.get("deaths", 0),
+			"damage_dealt": stats.get("damage_dealt", 0.0),
+		})
+	
+	results.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return a["damage_dealt"] > b["damage_dealt"]
+	)
+	return results
 
 ## Disconnect from current game (transition to DISCONNECTED state)
 func disconnect_from_game() -> void:
@@ -216,8 +279,12 @@ func _on_match_timer_timeout() -> void:
 	if not multiplayer.is_server():
 		return
 	
+	end_game()
+	
 	var lobby = get_tree().get_first_node_in_group("Lobby")
-	if lobby and lobby.has_method("return_to_lobby"):
+	if lobby and lobby.has_method("show_match_results"):
+		lobby.show_match_results.rpc(get_sorted_match_results())
+	elif lobby and lobby.has_method("return_to_lobby"):
 		lobby.return_to_lobby.rpc()
 	else:
 		push_warning("GameManager: No lobby found after match timer expired.")

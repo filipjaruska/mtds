@@ -3,6 +3,9 @@ extends Control
 var available_maps: Array[String] = []
 var player_ready_states: Dictionary = {}
 var _active_map: Node = null
+var _match_results_overlay: CanvasLayer = null
+
+const MATCH_RESULTS_SCENE := preload("res://src/ui/menus/match_results.tscn")
 
 @onready var player_name_input: LineEdit = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer/HBoxContainer/LineEdit
 @onready var start_button: Button = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/ButtonsContainer/StartButton
@@ -130,9 +133,7 @@ func _check_ready_state() -> void:
 
 @rpc("any_peer", "call_local")
 func start_game(map_path: String) -> void:
-	if _active_map and is_instance_valid(_active_map):
-		_active_map.queue_free()
-		_active_map = null
+	_free_active_map()
 	
 	_active_map = load(map_path).instantiate()
 	get_tree().root.add_child(_active_map)
@@ -140,14 +141,54 @@ func start_game(map_path: String) -> void:
 	GameManager.start_match()
 
 @rpc("any_peer", "call_local")
+func show_match_results(results: Array) -> void:
+	_clear_match_results_overlay()
+	_halt_map_replication(_active_map)
+	
+	_match_results_overlay = MATCH_RESULTS_SCENE.instantiate()
+	get_tree().root.add_child(_match_results_overlay)
+	_match_results_overlay.setup(results)
+	_match_results_overlay.continue_pressed.connect(_on_match_results_continue)
+
+@rpc("any_peer", "call_local")
 func return_to_lobby() -> void:
-	if _active_map and is_instance_valid(_active_map):
-		_active_map.queue_free()
-		_active_map = null
+	_clear_match_results_overlay()
+	_free_active_map()
 	
 	show()
 	_reset_lobby_for_new_match()
 	GameManager.return_to_lobby()
+
+func _halt_map_replication(map: Node) -> void:
+	if not map or not is_instance_valid(map):
+		return
+	
+	map.process_mode = Node.PROCESS_MODE_DISABLED
+	for sync in map.find_children("*", "MultiplayerSynchronizer", true, false):
+		if sync is MultiplayerSynchronizer:
+			sync.public_visibility = false
+			sync.process_mode = Node.PROCESS_MODE_DISABLED
+
+func _free_active_map() -> void:
+	if not _active_map or not is_instance_valid(_active_map):
+		_active_map = null
+		return
+	
+	var map := _active_map
+	_active_map = null
+	_halt_map_replication(map)
+	
+	if map.get_parent():
+		map.get_parent().remove_child(map)
+	map.queue_free()
+
+func _clear_match_results_overlay() -> void:
+	if _match_results_overlay and is_instance_valid(_match_results_overlay):
+		_match_results_overlay.queue_free()
+		_match_results_overlay = null
+
+func _on_match_results_continue() -> void:
+	return_to_lobby.rpc()
 
 func _reset_lobby_for_new_match() -> void:
 	for player_id in GameManager.players:

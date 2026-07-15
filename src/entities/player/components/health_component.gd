@@ -35,18 +35,25 @@ func update_health(new_health: float):
 	current_health = new_health
 	_broadcast_health_change()
 
-func damage(dmg: float, penetration: float):
+func damage(dmg: float, penetration: float, attacker_id: int = -1):
 	if dmg < 0.0:
 		return
 
 	var total_resist: float = max(physical_resist + damage_resistance - penetration, 0.0)
 	var final_dmg: float = dmg * (1.0 - total_resist)
+	var was_alive: bool = current_health > 0.0
 	current_health -= final_dmg
 	rpc("update_health", current_health)
 	_broadcast_health_change()
 	_start_regen_delay()
 
 	EventManager.emit_event(EventManager.Events.PLAYER_DAMAGED, [get_parent(), final_dmg, current_health])
+	
+	if attacker_id > 0 and final_dmg > 0.0:
+		GameManager.report_damage_dealt.rpc_id(1, attacker_id, final_dmg)
+		if was_alive and current_health <= 0.0:
+			var victim_id: int = int(get_parent().name)
+			GameManager.report_player_death.rpc_id(1, victim_id, attacker_id)
 
 func heal(amount: float):
 	current_health = min(current_health + amount, max_health)
