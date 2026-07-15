@@ -8,7 +8,8 @@ enum SpawnType {
 	HEALTH_BOOST,
 	RELOAD_SPEED,
 	BURST,
-	ARMOR
+	ARMOR,
+	DUAL_WIELD
 }
 
 @export var spawn_type: SpawnType = SpawnType.RANDOM
@@ -64,8 +65,10 @@ func _get_powerup_type_index() -> int:
 			return 4
 		SpawnType.ARMOR:
 			return 5
+		SpawnType.DUAL_WIELD:
+			return 6
 		_:
-			return randi() % 6 # Random (SpawnType.size() - 1)
+			return randi() % 7 # Random (SpawnType.size() - 1)
 
 func _on_powerup_picked_up():
 	current_powerups = max(0, current_powerups - 1)
@@ -84,6 +87,8 @@ func _create_card_by_index(index: int) -> BasePowerupCard:
 			return PowerupFactory.create_burst()
 		5:
 			return PowerupFactory.create_armor()
+		6:
+			return PowerupFactory.create_dual_wield()
 		_:
 			return PowerupFactory.create_faster_dash()
 

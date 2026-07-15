@@ -82,11 +82,12 @@ drag_bottom_margin = 0.1
 script = ExtResource("6_vdean")
 
 [node name="AmmoDisplay" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
-offset_left = 1078.0
+offset_left = 1028.0
 offset_top = 615.0
-offset_right = 1131.0
+offset_right = 1081.0
 offset_bottom = 638.0
 text = "AMMO"
+horizontal_alignment = 1
 
 [node name="HealthDisplay" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
 offset_left = 20.0

@@ -7,7 +7,8 @@ enum PowerupType {
 	HEALTH_BOOST,
 	RELOAD_SPEED,
 	BURST,
-	ARMOR
+	ARMOR,
+	DUAL_WIELD
 }
 
 enum UseTrigger {
@@ -67,6 +68,7 @@ func _get_default_description() -> String:
 		PowerupType.RELOAD_SPEED: return "Increases reload speed"
 		PowerupType.BURST: return "Fire one magazine-wide burst with heavy spread"
 		PowerupType.ARMOR: return "Reduces incoming damage"
+		PowerupType.DUAL_WIELD: return "Dual wield your current weapon; no reload"
 		_: return "Unknown effect"
 
 func _get_player_controller(player: Node) -> Node:

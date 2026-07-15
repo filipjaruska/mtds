@@ -64,7 +64,7 @@ spawn_frequency = 10.0
 
 [node name="PowerupSpawner2" parent="." instance=ExtResource("6_spawner")]
 position = Vector2(540, 92)
-spawn_type = 1
+spawn_type = 7
 spawn_frequency = 2.0
 max_powerups = 1
 spawn_area_size = Vector2(60, 40)

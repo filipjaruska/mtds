@@ -17,6 +17,9 @@ func _ready():
 func update_ammo(ammo: int, max_ammo: int):
 	$AmmoDisplay.text = "%d / %d" % [ammo, max_ammo]
 
+func update_ammo_dual(primary_ammo: int, primary_max: int, offhand_ammo: int, offhand_max: int):
+	$AmmoDisplay.text = "%d / %d | %d / %d" % [primary_ammo, primary_max, offhand_ammo, offhand_max]
+
 func update_health(hp: int, max_hp: int):
 	$HealthDisplay.text = "%d / %d HP" % [hp, max_hp]
 
@@ -25,10 +28,13 @@ func _on_health_updated(player_node: Node, hp: int, max_hp: int):
 		return
 	update_health(hp, max_hp)
 
-func _on_ammo_updated(player_node: Node, ammo: int, max_ammo: int):
+func _on_ammo_updated(player_node: Node, ammo: int, max_ammo: int, offhand_ammo: int = -1, offhand_max: int = -1):
 	if not player_node.is_multiplayer_authority():
 		return
-	update_ammo(ammo, max_ammo)
+	if offhand_ammo >= 0 and offhand_max >= 0:
+		update_ammo_dual(ammo, max_ammo, offhand_ammo, offhand_max)
+	else:
+		update_ammo(ammo, max_ammo)
 
 func _on_powerup_collected(player_node: Node, _powerup_card: BasePowerupCard, _slot: int):
 	var powerup_manager = player_node.get_node("PowerupManager")

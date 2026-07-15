@@ -138,6 +138,13 @@ func _on_powerup_expired(expired_powerup: ActivePowerup):
 	active_powerups_updated.emit(active_powerups)
 	EventManager.emit_event(EventManager.Events.POWERUP_EXPIRED, [player_node, expired_powerup.powerup_card])
 
+func expire_active_powerup_of_type(type: BasePowerupCard.PowerupType) -> void:
+	if not player_node or not player_node.is_multiplayer_authority():
+		return
+	var powerup := _get_active_powerup_of_type(type)
+	if powerup:
+		powerup.force_expire()
+
 func trigger_burst_if_ready(weapon: RangedWeapon) -> bool:
 	var burst_powerup := _get_active_powerup_of_type(BasePowerupCard.PowerupType.BURST)
 	if burst_powerup == null or burst_powerup.get_remaining_uses() <= 0:
@@ -230,5 +237,7 @@ func _create_card_from_type(card_type: int) -> BasePowerupCard:
 			return PowerupFactory.create_burst()
 		BasePowerupCard.PowerupType.ARMOR:
 			return PowerupFactory.create_armor()
+		BasePowerupCard.PowerupType.DUAL_WIELD:
+			return PowerupFactory.create_dual_wield()
 		_:
 			return PowerupFactory.create_faster_dash()

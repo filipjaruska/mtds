@@ -78,3 +78,6 @@ func _expire() -> void:
 	powerup_expired.emit(self)
 	remove_effect()
 	queue_free()
+
+func force_expire() -> void:
+	_expire()

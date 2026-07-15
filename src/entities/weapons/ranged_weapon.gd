@@ -33,26 +33,31 @@ func _ready():
 	last_shot_time = Time.get_ticks_msec()
 	animation_player.play(idle_animation)
 
-func shoot():
+func shoot() -> bool:
+	return shoot_with_spread_penalty(0.0)
+
+func shoot_with_spread_penalty(spread_penalty: float) -> bool:
 	if _burst_in_progress or is_reloading:
-		return
+		return false
 	if Time.get_ticks_msec() - last_shot_time >= 1000 / fire_rate and ammo > 0:
-		_fire_shot(-1.0)
+		_fire_shot(-1.0, spread_penalty)
+		return true
+	return false
 
 func burst_fire(spread_degrees: float, shots_per_second: float = 18.0) -> void:
 	if _burst_in_progress or is_reloading or ammo <= 0:
 		return
 	_burst_fire_async(spread_degrees, shots_per_second)
 
-func _fire_shot(spread_degrees: float) -> void:
+func _fire_shot(spread_degrees: float, spread_penalty: float = 0.0) -> void:
 	animation_player.play(shooting_animation)
-	_shoot_bullet(spread_degrees)
+	_shoot_bullet(spread_degrees, spread_penalty)
 	last_shot_time = Time.get_ticks_msec()
 	ammo -= 1
 	show_muzzle_flash()
 	
 	EventManager.emit_event(EventManager.Events.WEAPON_FIRED, [self, ammo, max_ammo])
-	EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo])
+	EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo, -1, -1])
 
 func _burst_fire_async(spread_degrees: float, shots_per_second: float) -> void:
 	_burst_in_progress = true
@@ -66,18 +71,29 @@ func _burst_fire_async(spread_degrees: float, shots_per_second: float) -> void:
 	
 	_burst_in_progress = false
 
-func _shoot_bullet(spread_degrees: float = -1.0):
-	var weapon_manager = get_parent()
+func _shoot_bullet(spread_degrees: float = -1.0, spread_penalty: float = 0.0):
+	var weapon_manager := _resolve_weapon_manager()
+	if weapon_manager == null:
+		return
 	var deviation: float
 	if spread_degrees >= 0.0:
 		deviation = deg_to_rad(spread_degrees)
 	else:
 		deviation = (1.0 - accuracy / 100.0) * 0.5
+	deviation *= (1.0 + spread_penalty)
 	
 	for i in range(pellets):
 		var spawn_pos = muzzle.global_position
 		var shot_rotation = global_rotation + randf_range(-deviation, deviation)
 		weapon_manager.rpc("spawn_bullet", spawn_pos, shot_rotation, max_range, damage, armor_penetration, multiplayer.get_unique_id())
+
+func _resolve_weapon_manager() -> Node2D:
+	var parent_node := get_parent()
+	if parent_node != null and parent_node.get("weapons") != null:
+		return parent_node
+	if parent_node != null and parent_node.has_node("WeaponManager"):
+		return parent_node.get_node("WeaponManager")
+	return parent_node
 
 func reload():
 	if is_reloading:
@@ -95,7 +111,7 @@ func reload():
 	
 	# Emit reload completed event
 	EventManager.emit_event(EventManager.Events.WEAPON_RELOADED, [self, false, 0.0])
-	EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo])
+	EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo, -1, -1])
 
 func show_muzzle_flash():
 	var muzzle_flash_instance = muzzle_flash.instantiate()

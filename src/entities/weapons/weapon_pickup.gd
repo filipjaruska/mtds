@@ -29,8 +29,7 @@ func spawn_weapon_scene() -> void:
 func _process(_delta):
 	if player and InputManager.is_interact_pressed():
 		var weapon_manager = player.get_weapon_manager()
-		if weapon_manager:
-			weapon_manager.on_weapon_picked_up(weapon_scene)
+		if weapon_manager and weapon_manager.on_weapon_picked_up(weapon_scene):
 			rpc("delete_pickup")
 			queue_free()
 
