@@ -166,9 +166,18 @@ func clear_inventory_on_death() -> void:
 		return
 	_sync_clear_inventory.rpc()
 
+func clear_active_powerups_on_death() -> void:
+	if player_node.get_node("MultiplayerSynchronizer").get_multiplayer_authority() != multiplayer.get_unique_id():
+		return
+	_sync_clear_active_powerups.rpc()
+
 @rpc("any_peer", "call_local", "reliable")
 func _sync_clear_inventory() -> void:
 	clear_inventory()
+
+@rpc("any_peer", "call_local", "reliable")
+func _sync_clear_active_powerups() -> void:
+	clear_all_active_powerups()
 
 func clear_all_active_powerups():
 	for powerup in active_powerups:

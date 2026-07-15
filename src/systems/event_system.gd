@@ -20,7 +20,7 @@ enum Events {
 	# Weapon events
 	WEAPON_FIRED, # [weapon_node, current_ammo, max_ammo]
 	WEAPON_RELOADED, # [weapon_node, is_reloading_start: bool, remaining_reload_time: float]
-	WEAPON_SWITCHED, # [player_node, weapon_index, weapon_node]
+	WEAPON_SWITCHED, # [player_node, weapon_index, weapon_node or null]
 	WEAPON_PICKED_UP, # [player_node, weapon_node]
 	WEAPON_DROPPED, # [player_node, weapon_node]
 	
@@ -60,7 +60,7 @@ func _initialize_event_contracts() -> void:
 		Events.PLAYER_RESPAWNED: [TYPE_OBJECT],
 		Events.WEAPON_FIRED: [TYPE_OBJECT, TYPE_INT, TYPE_INT],
 		Events.WEAPON_RELOADED: [TYPE_OBJECT, TYPE_BOOL, TYPE_FLOAT],
-		Events.WEAPON_SWITCHED: [TYPE_OBJECT, TYPE_INT, TYPE_OBJECT],
+		Events.WEAPON_SWITCHED: [TYPE_OBJECT, TYPE_INT, [TYPE_OBJECT, TYPE_NIL]],
 		Events.WEAPON_PICKED_UP: [TYPE_OBJECT, TYPE_OBJECT],
 		Events.WEAPON_DROPPED: [TYPE_OBJECT, TYPE_OBJECT],
 		Events.UI_HEALTH_UPDATED: [TYPE_OBJECT, TYPE_INT, TYPE_INT],

@@ -48,4 +48,9 @@ func add_stack(additional_cards: int = 1):
 	remaining_duration = powerup_card.duration
 
 func get_remaining_time_percentage() -> float:
+	if powerup_card.duration <= 0.0:
+		return 0.0
 	return remaining_duration / powerup_card.duration
+
+func get_remaining_seconds() -> float:
+	return maxf(remaining_duration, 0.0)

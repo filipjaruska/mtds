@@ -120,7 +120,6 @@ func equip_weapon(index: int) -> void:
 	update_hud()
 	update_weapon_slots()
 	
-	# Don't emit event if equipping same weapon or during initialization
 	if previous_weapon != current_weapon() and previous_weapon != null:
 		EventManager.emit_event(EventManager.Events.WEAPON_SWITCHED, [player, current_weapon_index, current_weapon()])
 
