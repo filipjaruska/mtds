@@ -75,6 +75,11 @@ func get_remaining_seconds() -> float:
 func _expire() -> void:
 	if not is_inside_tree():
 		return
+	if target_player and target_player.is_multiplayer_authority():
+		var powerup_manager = target_player.get_node_or_null("PowerupManager")
+		if powerup_manager:
+			powerup_manager._sync_powerup_expired.rpc(powerup_card.type)
+		return
 	powerup_expired.emit(self)
 	remove_effect()
 	queue_free()

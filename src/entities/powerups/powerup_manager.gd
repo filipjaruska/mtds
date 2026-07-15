@@ -85,6 +85,7 @@ func _sync_use_powerup(card_type: int, slot_index: int):
 		inventory_updated.emit(powerup_inventory)
 		powerup_activated.emit(powerup_card, slot_index)
 		EventManager.emit_event(EventManager.Events.POWERUP_USED, [player_node, powerup_card, slot_index])
+		_sync_weapon_state_after_powerup_change()
 	active_powerups_updated.emit(active_powerups)
 
 func use_multiple_powerups(slot_indices: Array[int]):
@@ -134,16 +135,38 @@ func _get_active_powerup_of_type(type: BasePowerupCard.PowerupType) -> ActivePow
 	return null
 
 func _on_powerup_expired(expired_powerup: ActivePowerup):
-	active_powerups.erase(expired_powerup)
+	if player_node and player_node.is_multiplayer_authority():
+		_sync_powerup_expired.rpc(expired_powerup.powerup_card.type)
+	else:
+		_remove_active_powerup_local(expired_powerup.powerup_card.type)
+
+func _remove_active_powerup_local(card_type: BasePowerupCard.PowerupType) -> void:
+	var powerup := _get_active_powerup_of_type(card_type)
+	if not powerup:
+		return
+	var card = powerup.powerup_card
+	powerup.remove_effect()
+	active_powerups.erase(powerup)
+	powerup.queue_free()
 	active_powerups_updated.emit(active_powerups)
-	EventManager.emit_event(EventManager.Events.POWERUP_EXPIRED, [player_node, expired_powerup.powerup_card])
+	EventManager.emit_event(EventManager.Events.POWERUP_EXPIRED, [player_node, card])
+
+@rpc("any_peer", "call_local", "reliable")
+func _sync_powerup_expired(card_type: int) -> void:
+	_remove_active_powerup_local(card_type)
+	if player_node and player_node.is_multiplayer_authority():
+		_sync_weapon_state_after_powerup_change()
 
 func expire_active_powerup_of_type(type: BasePowerupCard.PowerupType) -> void:
 	if not player_node or not player_node.is_multiplayer_authority():
 		return
-	var powerup := _get_active_powerup_of_type(type)
-	if powerup:
-		powerup.force_expire()
+	if _get_active_powerup_of_type(type):
+		_sync_powerup_expired.rpc(type)
+
+func _sync_weapon_state_after_powerup_change() -> void:
+	var weapon_manager = player_node.get_node_or_null("PlayerController/WeaponManager")
+	if weapon_manager and weapon_manager.has_method("_sync_weapons_to_peers"):
+		weapon_manager._sync_weapons_to_peers()
 
 func trigger_burst_if_ready(weapon: RangedWeapon) -> bool:
 	var burst_powerup := _get_active_powerup_of_type(BasePowerupCard.PowerupType.BURST)
