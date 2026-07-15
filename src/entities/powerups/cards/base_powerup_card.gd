@@ -6,8 +6,13 @@ enum PowerupType {
 	DAMAGE_BOOST,
 	HEALTH_BOOST,
 	RELOAD_SPEED,
-	FIRE_RATE,
+	BURST,
 	ARMOR
+}
+
+enum UseTrigger {
+	NONE,
+	WEAPON_FIRED,
 }
 
 @export var type: PowerupType
@@ -18,6 +23,9 @@ enum PowerupType {
 
 @export var base_effect_value: float = 0.0
 @export var duration: float = 30.0
+@export var max_uses: int = 0
+@export var uses_per_stack: int = 0
+@export var use_trigger: UseTrigger = UseTrigger.NONE
 @export var stack_multiplier: float = 2.0
 @export var max_stack_count: int = 4
 @export var stack_bonus_per_card: float = 0.1
@@ -34,6 +42,17 @@ func get_stacked_effect_value(stack_count: int) -> float:
 	var bonus = (stack_count - 1) * stack_bonus_per_card
 	return base_effect_value * (stack_multiplier + bonus)
 
+func has_use_limit() -> bool:
+	return max_uses > 0
+
+func get_max_uses(stack_count: int) -> int:
+	if not has_use_limit():
+		return -1
+	return max_uses + max(stack_count - 1, 0) * uses_per_stack
+
+func should_consume_use_on_weapon_fired() -> bool:
+	return use_trigger == UseTrigger.WEAPON_FIRED
+
 func get_display_name() -> String:
 	return name if name != "" else PowerupType.keys()[type].replace("_", " ").capitalize()
 
@@ -46,7 +65,7 @@ func _get_default_description() -> String:
 		PowerupType.DAMAGE_BOOST: return "Increases weapon damage"
 		PowerupType.HEALTH_BOOST: return "Increases maximum health"
 		PowerupType.RELOAD_SPEED: return "Increases reload speed"
-		PowerupType.FIRE_RATE: return "Increases weapon fire rate"
+		PowerupType.BURST: return "Fire one magazine-wide burst with heavy spread"
 		PowerupType.ARMOR: return "Reduces incoming damage"
 		_: return "Unknown effect"
 

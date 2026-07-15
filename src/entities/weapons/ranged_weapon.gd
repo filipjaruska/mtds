@@ -22,6 +22,7 @@ class_name RangedWeapon
 
 var last_shot_time: float = 0.0
 var is_reloading: bool = false
+var _burst_in_progress: bool = false
 
 func get_display_name() -> String:
 	if not resource_path.is_empty():
@@ -33,23 +34,49 @@ func _ready():
 	animation_player.play(idle_animation)
 
 func shoot():
-	if not is_reloading and Time.get_ticks_msec() - last_shot_time >= 1000 / fire_rate:
-		if ammo > 0:
-			animation_player.play(shooting_animation)
-			_shoot_bullet()
-			last_shot_time = Time.get_ticks_msec()
-			ammo -= 1
-			show_muzzle_flash()
-			
-			EventManager.emit_event(EventManager.Events.WEAPON_FIRED, [self, ammo, max_ammo])
-			EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo])
+	if _burst_in_progress or is_reloading:
+		return
+	if Time.get_ticks_msec() - last_shot_time >= 1000 / fire_rate and ammo > 0:
+		_fire_shot(-1.0)
 
-func _shoot_bullet():
+func burst_fire(spread_degrees: float, shots_per_second: float = 18.0) -> void:
+	if _burst_in_progress or is_reloading or ammo <= 0:
+		return
+	_burst_fire_async(spread_degrees, shots_per_second)
+
+func _fire_shot(spread_degrees: float) -> void:
+	animation_player.play(shooting_animation)
+	_shoot_bullet(spread_degrees)
+	last_shot_time = Time.get_ticks_msec()
+	ammo -= 1
+	show_muzzle_flash()
+	
+	EventManager.emit_event(EventManager.Events.WEAPON_FIRED, [self, ammo, max_ammo])
+	EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo])
+
+func _burst_fire_async(spread_degrees: float, shots_per_second: float) -> void:
+	_burst_in_progress = true
+	var interval := 1.0 / maxf(shots_per_second, 1.0)
+	
+	while ammo > 0:
+		_fire_shot(spread_degrees)
+		if ammo <= 0:
+			break
+		await get_tree().create_timer(interval).timeout
+	
+	_burst_in_progress = false
+
+func _shoot_bullet(spread_degrees: float = -1.0):
 	var weapon_manager = get_parent()
+	var deviation: float
+	if spread_degrees >= 0.0:
+		deviation = deg_to_rad(spread_degrees)
+	else:
+		deviation = (1.0 - accuracy / 100.0) * 0.5
+	
 	for i in range(pellets):
 		var spawn_pos = muzzle.global_position
-		var deviation = (1.0 - accuracy / 100.0) * 0.5
-		var shot_rotation = global_rotation + randf() * deviation - deviation / 2
+		var shot_rotation = global_rotation + randf_range(-deviation, deviation)
 		weapon_manager.rpc("spawn_bullet", spawn_pos, shot_rotation, max_range, damage, armor_penetration, multiplayer.get_unique_id())
 
 func reload():

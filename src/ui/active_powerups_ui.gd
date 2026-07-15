@@ -58,7 +58,7 @@ func _create_effect_display(powerup: ActivePowerup) -> HBoxContainer:
 		icon.texture = card.icon_texture
 	
 	name_label.text = card.get_display_name()
-	timer_label.text = _format_remaining_time(powerup.get_remaining_seconds())
+	timer_label.text = _format_status_text(powerup)
 	
 	if powerup.stack_count > 1:
 		stack_label.text = "x%d" % powerup.stack_count
@@ -75,6 +75,12 @@ func _create_effect_display(powerup: ActivePowerup) -> HBoxContainer:
 func _format_remaining_time(seconds: float) -> String:
 	return "%.1fs" % maxf(seconds, 0.0)
 
+func _format_status_text(powerup: ActivePowerup) -> String:
+	var time_text := _format_remaining_time(powerup.get_remaining_seconds())
+	if powerup.has_use_limit():
+		return "%s (%d)" % [time_text, powerup.get_remaining_uses()]
+	return time_text
+
 func _update_effect_timers():
 	for display in active_effect_displays:
 		if not is_instance_valid(display):
@@ -87,10 +93,11 @@ func _update_effect_timers():
 		var timer_label: Label = display.get_node("TimerLabel")
 		var percentage: float = powerup.get_remaining_time_percentage()
 		
-		timer_label.text = _format_remaining_time(powerup.get_remaining_seconds())
+		timer_label.text = _format_status_text(powerup)
 		
 		var card = powerup.powerup_card
-		if percentage < 0.25:
+		var uses_low: bool = powerup.has_use_limit() and powerup.get_remaining_uses() <= 3
+		if uses_low or percentage < 0.25:
 			timer_label.modulate = Color.RED
 		elif percentage < 0.5:
 			timer_label.modulate = Color.ORANGE

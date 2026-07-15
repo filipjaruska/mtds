@@ -1,6 +1,8 @@
 extends Node
 class_name PowerupFactory
 
+const BurstCardScript := preload("res://src/entities/powerups/cards/burst_card.gd")
+
 static func create_speed_boost() -> SpeedBoostCard:
 	return SpeedBoostCard.new()
 
@@ -13,8 +15,8 @@ static func create_health_boost() -> HealthBoostCard:
 static func create_reload_speed() -> ReloadSpeedCard:
 	return ReloadSpeedCard.new()
 
-static func create_fire_rate() -> FireRateCard:
-	return FireRateCard.new()
+static func create_burst() -> BasePowerupCard:
+	return BurstCardScript.new()
 
 static func create_armor() -> ArmorCard:
 	return ArmorCard.new()
@@ -25,7 +27,7 @@ static func create_random_powerup() -> BasePowerupCard:
 		create_damage_boost,
 		create_health_boost,
 		create_reload_speed,
-		create_fire_rate,
+		create_burst,
 		create_armor
 	]
 	var random_type = powerup_types[randi() % powerup_types.size()]

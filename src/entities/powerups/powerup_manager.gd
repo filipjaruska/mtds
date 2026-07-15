@@ -20,6 +20,10 @@ func _ready():
 		player_node = get_parent()
 	powerup_inventory.resize(MAX_INVENTORY_SLOTS)
 	set_process(true)
+	EventManager.register(EventManager.Events.WEAPON_FIRED, _on_weapon_fired)
+
+func _exit_tree() -> void:
+	EventManager.unregister(EventManager.Events.WEAPON_FIRED, _on_weapon_fired)
 
 func _process(_delta):
 	if player_node.get_node("MultiplayerSynchronizer").get_multiplayer_authority() == multiplayer.get_unique_id():
@@ -139,6 +143,37 @@ func _on_powerup_expired(expired_powerup: ActivePowerup):
 	active_powerups_updated.emit(active_powerups)
 	EventManager.emit_event(EventManager.Events.POWERUP_EXPIRED, [player_node, expired_powerup.powerup_card])
 
+func trigger_burst_if_ready(weapon: RangedWeapon) -> bool:
+	var burst_powerup := _get_active_powerup_of_type(BasePowerupCard.PowerupType.BURST)
+	if burst_powerup == null or burst_powerup.get_remaining_uses() <= 0:
+		return false
+	if weapon == null or weapon.ammo <= 0 or weapon.is_reloading:
+		return false
+	
+	var card = burst_powerup.powerup_card
+	if not card.has_method("execute_burst"):
+		return false
+	
+	card.execute_burst(weapon, burst_powerup.stack_count)
+	burst_powerup.consume_use()
+	active_powerups_updated.emit(active_powerups)
+	return true
+
+func _on_weapon_fired(weapon_node: Node, _current_ammo: int, _max_ammo: int) -> void:
+	if not player_node or not player_node.is_multiplayer_authority():
+		return
+	
+	var weapon_manager = weapon_node.get_parent()
+	if weapon_manager == null or weapon_manager.get("player") != player_node:
+		return
+	
+	for active_powerup in active_powerups.duplicate():
+		if not active_powerup.has_use_limit():
+			continue
+		if not active_powerup.powerup_card.should_consume_use_on_weapon_fired():
+			continue
+		active_powerup.consume_use()
+
 func get_inventory_slot_count() -> int:
 	return MAX_INVENTORY_SLOTS
 
@@ -196,8 +231,8 @@ func _create_card_from_type(card_type: int) -> BasePowerupCard:
 			return PowerupFactory.create_health_boost()
 		BasePowerupCard.PowerupType.RELOAD_SPEED:
 			return PowerupFactory.create_reload_speed()
-		BasePowerupCard.PowerupType.FIRE_RATE:
-			return PowerupFactory.create_fire_rate()
+		BasePowerupCard.PowerupType.BURST:
+			return PowerupFactory.create_burst()
 		BasePowerupCard.PowerupType.ARMOR:
 			return PowerupFactory.create_armor()
 		_:

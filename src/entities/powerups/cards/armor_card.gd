@@ -6,7 +6,7 @@ func _init():
 	name = "Steel Skin"
 	description = "Reduces incoming damage by 15%"
 	base_effect_value = 0.15
-	duration = 40.0
+	duration = 20.0
 	stack_multiplier = 1.5
 	stack_bonus_per_card = 0.10
 	rarity_color = Color.GRAY

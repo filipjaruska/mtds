@@ -7,7 +7,7 @@ enum SpawnType {
 	DAMAGE_BOOST,
 	HEALTH_BOOST,
 	RELOAD_SPEED,
-	FIRE_RATE,
+	BURST,
 	ARMOR
 }
 
@@ -60,7 +60,7 @@ func _get_powerup_type_index() -> int:
 			return 2
 		SpawnType.RELOAD_SPEED:
 			return 3
-		SpawnType.FIRE_RATE:
+		SpawnType.BURST:
 			return 4
 		SpawnType.ARMOR:
 			return 5
@@ -81,7 +81,7 @@ func _create_card_by_index(index: int) -> BasePowerupCard:
 		3:
 			return PowerupFactory.create_reload_speed()
 		4:
-			return PowerupFactory.create_fire_rate()
+			return PowerupFactory.create_burst()
 		5:
 			return PowerupFactory.create_armor()
 		_:

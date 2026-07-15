@@ -4,6 +4,7 @@ class_name ActivePowerup
 var powerup_card: BasePowerupCard
 var stack_count: int = 1
 var remaining_duration: float
+var remaining_uses: int = -1
 var effect_value: float
 var target_player: Node
 
@@ -15,18 +16,19 @@ func _init(card: BasePowerupCard, player: Node, initial_stack_count: int = 1):
 	stack_count = initial_stack_count
 	remaining_duration = card.duration
 	effect_value = card.get_stacked_effect_value(stack_count)
+	remaining_uses = card.get_max_uses(stack_count)
 
 func _ready():
 	set_process(true)
 	apply_effect()
 
 func _process(delta):
-	if target_player and target_player.is_multiplayer_authority():
-		remaining_duration -= delta
-		if remaining_duration <= 0:
-			powerup_expired.emit(self)
-			remove_effect()
-			queue_free()
+	if not target_player or not target_player.is_multiplayer_authority():
+		return
+	
+	remaining_duration -= delta
+	if remaining_duration <= 0:
+		_expire()
 
 func apply_effect():
 	if not target_player or not powerup_card:
@@ -46,6 +48,21 @@ func add_stack(additional_cards: int = 1):
 	effect_value = powerup_card.get_stacked_effect_value(stack_count)
 	apply_effect()
 	remaining_duration = powerup_card.duration
+	remaining_uses = powerup_card.get_max_uses(stack_count)
+
+func has_use_limit() -> bool:
+	return remaining_uses >= 0
+
+func get_remaining_uses() -> int:
+	return maxi(remaining_uses, 0)
+
+func consume_use() -> void:
+	if not has_use_limit() or remaining_uses <= 0:
+		return
+	
+	remaining_uses -= 1
+	if remaining_uses <= 0:
+		_expire()
 
 func get_remaining_time_percentage() -> float:
 	if powerup_card.duration <= 0.0:
@@ -54,3 +71,10 @@ func get_remaining_time_percentage() -> float:
 
 func get_remaining_seconds() -> float:
 	return maxf(remaining_duration, 0.0)
+
+func _expire() -> void:
+	if not is_inside_tree():
+		return
+	powerup_expired.emit(self)
+	remove_effect()
+	queue_free()
