@@ -8,14 +8,13 @@ on:
 
 env:
   GODOT_VERSION: 4.5.0
-  PRE_RELEASE: False
+  GAME_NAME: Multiplayer Top-down Shooter
+  PRE_RELEASE: false
 
 jobs:
   build:
     name: Building for ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
     strategy:
       fail-fast: true
       matrix:
@@ -26,7 +25,7 @@ jobs:
             export-preset: "Windows x86_64"
             export-type: release
             export-folder: build/windows
-            archive: Windows
+            archive: windows_x86_64
             butler-channel: windows
 
           - name: 🐧 Linux
@@ -35,7 +34,7 @@ jobs:
             export-preset: "Linux x86_64"
             export-type: release
             export-folder: build/linux
-            archive: Linux
+            archive: linux_x86_64
             butler-channel: linux
 
     steps:
@@ -62,6 +61,13 @@ jobs:
           ${{ matrix.export-args }}
           --export-${{ matrix.export-type }} "${{ matrix.export-preset }}"
 
+      - name: Compress Project
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        shell: bash
+        run: |
+          cd "${{ matrix.export-folder }}"
+          7z a -tzip "${{ matrix.archive }}.zip" *.* -x'!.gitignore'
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -70,30 +76,89 @@ jobs:
             ${{ matrix.export-folder }}/*.*
             !**/.gitignore
 
-      - name: Compress Project
-        if: >
-          github.event_name == 'push' && 
-          github.ref_type == 'tag'
-        run: |
-          cd ${{ matrix.export-folder }}
-          7z a -tzip ${{ matrix.archive }}.zip *.* -x'!.gitignore'
-
-      - name: Generate Changelog
-        id: changelog
-        run: |
-          echo "## Changelog" > CHANGELOG.md
-          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" >> CHANGELOG.md
-
-      - name: Publish Release
-        uses: ncipollo/release-action@v1
-        if: >
-          github.event_name == 'push' && 
-          github.ref_type == 'tag'
+  release:
+    name: Publish Release
+    needs: build
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          allowUpdates: true
-          artifacts: "${{ matrix.export-folder }}/${{ matrix.archive }}.zip"
-          omitNameDuringUpdate: true
-          omitBodyDuringUpdate: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-Artifacts
+          path: release/windows
+
+      - name: Download Linux Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux_x86_64-Artifacts
+          path: release/linux
+
+      - name: Prepare Release Body
+        shell: bash
+        env:
+          VERSION: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          VERSION="${VERSION#v}"
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -n "$PREVIOUS_TAG" ]; then
+            CHANGES=$(git log "${PREVIOUS_TAG}..HEAD" --pretty=format:"- %s")
+          else
+            CHANGES=$(git log --pretty=format:"- %s")
+          fi
+
+          if [ -z "$CHANGES" ]; then
+            CHANGES="- No commit messages found for this release."
+          fi
+
+          cat > release_body.md <<EOF
+          ## ${{ env.GAME_NAME }} v${VERSION}
+
+          Built with **Godot:** ${{ env.GODOT_VERSION }}
+
+          ### Installation
+          1. Download the ZIP for your platform below.
+          2. Extract the archive to a folder of your choice.
+          3. Run the game executable inside the extracted folder.
+
+          ### Downloads
+          - **Windows:** \`windows_x86_64.zip\`
+          - **Linux:** \`linux_x86_64.zip\`
+
+          ### Full Changelog
+          https://github.com/${REPOSITORY}/commits/v${VERSION}
+
+          ### Changes in this release
+          <details>
+          <summary>Click here to see commit messages since the last release</summary>
+
+          ${CHANGES}
+
+          </details>
+          EOF
+
+          sed -i 's/^          //' release_body.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.GAME_NAME }} v${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          draft: false
           prerelease: ${{ env.PRE_RELEASE }}
-          body: ${{ steps.changelog.outputs.changelog }}
+          body_path: release_body.md
+          files: |
+            release/windows/windows_x86_64.zip
+            release/linux/linux_x86_64.zip
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
