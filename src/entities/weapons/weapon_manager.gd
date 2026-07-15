@@ -9,6 +9,7 @@ extends Node2D
 @onready var weapon_slots_ui = $"../../CameraComponent/PlayerCamera/PlayerUI/WeaponSlots"
 
 const MAX_WEAPONS: int = 2
+const BULLET_SCENE := preload("res://src/entities/weapons/bullet.tscn")
 
 var weapons: Array = []
 var current_weapon_index: int = 0
@@ -245,3 +246,22 @@ func remove_weapon(index: int) -> void:
 		var weapon = weapons[index]
 		weapons.remove_at(index)
 		weapon.queue_free()
+
+@rpc("any_peer", "call_local", "reliable")
+func spawn_bullet(pos: Vector2, rot: float, weapon_range: float, dmg: float, pen: float, shooter_id: int) -> void:
+	if not BULLET_SCENE:
+		return
+	
+	var bullet = BULLET_SCENE.instantiate()
+	get_tree().root.add_child(bullet)
+	
+	bullet.global_position = pos
+	bullet.global_rotation = rot
+	bullet.target_position = Vector2(weapon_range, 0)
+	bullet.set_visual_range(weapon_range)
+	bullet.set_bullet_damage(dmg, pen)
+	bullet.set_shooter_authority(shooter_id)
+	
+	await get_tree().process_frame
+	bullet.force_raycast_update()
+	bullet.force_raycast_update()

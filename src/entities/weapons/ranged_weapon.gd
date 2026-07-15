@@ -17,7 +17,6 @@ class_name RangedWeapon
 @export var muzzle: Marker2D # muzzle position
 @export var sprite: Sprite2D # weapon sprite
 
-@onready var bullet_scene = preload("res://src/entities/weapons/bullet.tscn")
 @onready var muzzle_flash = preload("res://src/entities/weapons/muzzle_flash.tscn")
 @export var animation_player: AnimationPlayer
 
@@ -41,30 +40,12 @@ func shoot():
 			EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo])
 
 func _shoot_bullet():
+	var weapon_manager = get_parent()
 	for i in range(pellets):
-		if bullet_scene:
-			var spawn_pos = muzzle.global_position
-			var deviation = (1.0 - accuracy / 100.0) * 0.5
-			var shot_rotation = global_rotation + randf() * deviation - deviation / 2
-			
-			spawn_bullet.rpc(spawn_pos, shot_rotation, max_range, damage, armor_penetration, multiplayer.get_unique_id())
-			
-@rpc("any_peer", "call_local", "reliable")
-func spawn_bullet(pos: Vector2, rot: float, weapon_range: float, dmg: float, pen: float, shooter_id: int):
-	if bullet_scene:
-		var bullet = bullet_scene.instantiate()
-		get_tree().root.add_child(bullet)
-		
-		bullet.global_position = pos
-		bullet.global_rotation = rot
-		bullet.target_position = Vector2(weapon_range, 0)
-		bullet.set_visual_range(weapon_range)
-		bullet.set_bullet_damage(dmg, pen)
-		bullet.set_shooter_authority(shooter_id)
-		
-		await get_tree().process_frame
-		bullet.force_raycast_update()
-		bullet.force_raycast_update()
+		var spawn_pos = muzzle.global_position
+		var deviation = (1.0 - accuracy / 100.0) * 0.5
+		var shot_rotation = global_rotation + randf() * deviation - deviation / 2
+		weapon_manager.rpc("spawn_bullet", spawn_pos, shot_rotation, max_range, damage, armor_penetration, multiplayer.get_unique_id())
 
 func reload():
 	if is_reloading:
@@ -82,7 +63,6 @@ func reload():
 	
 	# Emit reload completed event
 	EventManager.emit_event(EventManager.Events.WEAPON_RELOADED, [self, false, 0.0])
-	# Update UI with new ammo count
 	EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo])
 
 func show_muzzle_flash():
