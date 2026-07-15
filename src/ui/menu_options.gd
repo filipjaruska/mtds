@@ -1,7 +1,8 @@
 extends Control
 
 
-@onready var resolution: OptionButton = $MarginContainer/VBoxContainer/HBoxContainer/Resolution as OptionButton
+@onready var resolution: OptionButton = $MarginContainer/VBoxContainer/TabContainer/Graphics/VBoxContainer/ResolutionRow/Resolution as OptionButton
+@onready var fullscreen: CheckButton = $MarginContainer/VBoxContainer/TabContainer/Graphics/VBoxContainer/Fullscreen as CheckButton
 const RESOLUTION: Dictionary = {
 		"1152 x 648": Vector2i(1152, 648),
 		"1280 x 720": Vector2i(1280, 720),
@@ -12,6 +13,8 @@ func _ready():
 	resolution.item_selected.connect(on_resolution_selected)
 	for i in RESOLUTION:
 		resolution.add_item(i)
+
+	fullscreen.button_pressed = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
 	
 func on_resolution_selected(index: int):
 	var selected_text = resolution.get_item_text(index)
