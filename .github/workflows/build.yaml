@@ -92,8 +92,8 @@ jobs:
       - name: Download Windows Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: windows-Artifacts
-          path: release/windows
+          name: windows_x86_64-Artifacts
+          path: release/windows_x86_64
 
       - name: Download Linux Artifacts
         uses: actions/download-artifact@v4
@@ -157,7 +157,7 @@ jobs:
           prerelease: ${{ env.PRE_RELEASE }}
           body_path: release_body.md
           files: |
-            release/windows/windows_x86_64.zip
+            release/windows_x86_64/windows_x86_64.zip
             release/linux/linux_x86_64.zip
           fail_on_unmatched_files: true
         env:
