@@ -30,14 +30,9 @@ func _process(_delta):
 		_check_powerup_inputs()
 
 func _check_powerup_inputs():
-	if Input.is_action_just_pressed("powerup_slot_1"):
-		use_powerup_at_slot(0)
-	elif Input.is_action_just_pressed("powerup_slot_2"):
-		use_powerup_at_slot(1)
-	elif Input.is_action_just_pressed("powerup_slot_3"):
-		use_powerup_at_slot(2)
-	elif Input.is_action_just_pressed("powerup_slot_4"):
-		use_powerup_at_slot(3)
+	var slot_index: int = InputManager.get_powerup_slot_use_index()
+	if slot_index >= 0:
+		use_powerup_at_slot(slot_index)
 
 func collect_powerup(_powerup_card: BasePowerupCard) -> bool:
 	return find_empty_slot() != -1

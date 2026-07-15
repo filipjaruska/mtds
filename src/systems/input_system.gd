@@ -15,6 +15,7 @@ var last_movement_input := Vector2.ZERO
 var last_aim_direction := Vector2.RIGHT
 
 const INPUT_THRESHOLD: float = 0.5
+const TRIGGER_THRESHOLD: float = 0.5
 const AIM_DEADZONE: float = 0.2 # for gamepad
 const MOVEMENT_DEADZONE: float = 0.1
 
@@ -57,10 +58,18 @@ func _is_keyboard_mouse_input_detected() -> bool:
 ##
 ## @return Vector2 representing the movement direction and magnitude
 func get_movement_vector() -> Vector2:
-	var input_vector := Vector2(
-		Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"),
-		Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
-	)
+	var input_vector := Vector2.ZERO
+	
+	if current_device == InputDevice.GAMEPAD:
+		input_vector = Vector2(
+			Input.get_joy_axis(0, JOY_AXIS_LEFT_X),
+			Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+		)
+	else:
+		input_vector = Vector2(
+			Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"),
+			Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
+		)
 	
 	if input_vector.length() < MOVEMENT_DEADZONE:
 		input_vector = Vector2.ZERO
@@ -84,7 +93,7 @@ func is_shoot_pressed() -> bool:
 	if current_device == InputDevice.KEYBOARD_MOUSE:
 		return Input.is_action_pressed("shoot")
 	else:
-		return Input.is_joy_button_pressed(0, JOY_BUTTON_RIGHT_SHOULDER)
+		return Input.get_joy_axis(0, JOY_AXIS_TRIGGER_RIGHT) > TRIGGER_THRESHOLD
 
 func is_reload_pressed() -> bool:
 	if current_device == InputDevice.KEYBOARD_MOUSE:
@@ -96,7 +105,7 @@ func is_crouch_pressed() -> bool:
 	if current_device == InputDevice.KEYBOARD_MOUSE:
 		return Input.is_action_pressed("ui_crouch")
 	else:
-		return Input.is_joy_button_pressed(0, JOY_BUTTON_LEFT_STICK)
+		return Input.get_joy_axis(0, JOY_AXIS_TRIGGER_LEFT) > TRIGGER_THRESHOLD
 
 func is_interact_pressed() -> bool:
 	if current_device == InputDevice.KEYBOARD_MOUSE:
@@ -111,22 +120,34 @@ func is_weapon_switch_pressed() -> bool:
 		return Input.is_joy_button_pressed(0, JOY_BUTTON_Y)
 
 func is_weapon_1_pressed() -> bool:
-	if current_device == InputDevice.KEYBOARD_MOUSE:
-		return Input.is_action_just_pressed("switch_weapon_1")
-	else:
-		return Input.is_joy_button_pressed(0, JOY_BUTTON_DPAD_LEFT)
+	if current_device == InputDevice.GAMEPAD:
+		return false
+	return Input.is_action_just_pressed("switch_weapon_1")
 
 func is_weapon_2_pressed() -> bool:
-	if current_device == InputDevice.KEYBOARD_MOUSE:
-		return Input.is_action_just_pressed("switch_weapon_2")
-	else:
-		return Input.is_joy_button_pressed(0, JOY_BUTTON_DPAD_RIGHT)
+	if current_device == InputDevice.GAMEPAD:
+		return false
+	return Input.is_action_just_pressed("switch_weapon_2")
 
 func is_drop_weapon_pressed() -> bool:
 	if current_device == InputDevice.KEYBOARD_MOUSE:
 		return Input.is_action_just_pressed("ui_drop_weapon")
 	else:
-		return Input.is_joy_button_pressed(0, JOY_BUTTON_DPAD_DOWN)
+		return Input.is_joy_button_pressed(0, JOY_BUTTON_RIGHT_STICK)
+
+func is_powerup_details_held() -> bool:
+	return Input.is_action_pressed("powerup_details")
+
+func get_powerup_slot_use_index() -> int:
+	if Input.is_action_just_pressed("powerup_slot_1"):
+		return 0
+	if Input.is_action_just_pressed("powerup_slot_2"):
+		return 1
+	if Input.is_action_just_pressed("powerup_slot_3"):
+		return 2
+	if Input.is_action_just_pressed("powerup_slot_4"):
+		return 3
+	return -1
 
 ## Get the global mouse position in world coordinates
 ##
