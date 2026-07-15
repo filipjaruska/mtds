@@ -7,7 +7,7 @@ on:
       - "*"
 
 env:
-  GODOT_VERSION: 4.5.0
+  GODOT_VERSION: 4.7.1
   GAME_NAME: Multiplayer Top-down Shooter
   PRE_RELEASE: false
 

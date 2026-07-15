@@ -162,8 +162,8 @@ func player_reset_to_defaults():
 	health_resist_penetration = 0.0
 	print("Player settings reset to defaults")
 
-func _get_property_list() -> Array:
-	var properties: Array = []
+func _get_property_list() -> Array[Dictionary]:
+	var properties: Array[Dictionary] = []
 	
 	properties.append({
 		"name": "Player Configuration",
