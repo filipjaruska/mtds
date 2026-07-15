@@ -23,6 +23,11 @@ class_name RangedWeapon
 var last_shot_time: float = 0.0
 var is_reloading: bool = false
 
+func get_display_name() -> String:
+	if not resource_path.is_empty():
+		return resource_path.get_file().get_basename().capitalize()
+	return name
+
 func _ready():
 	last_shot_time = Time.get_ticks_msec()
 	animation_player.play(idle_animation)

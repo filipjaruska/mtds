@@ -11,6 +11,7 @@ func _ready():
 	EventManager.register(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)
 	EventManager.register(EventManager.Events.POWERUP_COLLECTED, _on_powerup_collected)
 	EventManager.register(EventManager.Events.POWERUP_USED, _on_powerup_used)
+	EventManager.register(EventManager.Events.PLAYER_DIED, _on_player_died)
 
 func update_ammo(ammo: int, max_ammo: int):
 	$AmmoDisplay.text = "%d / %d" % [ammo, max_ammo]
@@ -42,6 +43,13 @@ func _on_powerup_used(player_node: Node, _powerup_card: BasePowerupCard, slot: i
 	if active_powerups_ui:
 		active_powerups_ui.update_active_powerups(powerup_manager.active_powerups)
 
+func _on_player_died(player_node: Node) -> void:
+	if not player_node.is_multiplayer_authority():
+		return
+	var powerup_manager = player_node.get_node_or_null("PowerupManager")
+	if powerup_manager and powerup_inventory_ui:
+		powerup_inventory_ui.update_inventory(powerup_manager.powerup_inventory)
+
 func update_powerup_displays(player_node: Node):
 	var powerup_manager = player_node.get_node("PowerupManager")
 	if not powerup_manager:
@@ -58,3 +66,4 @@ func _exit_tree():
 	EventManager.unregister(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)
 	EventManager.unregister(EventManager.Events.POWERUP_COLLECTED, _on_powerup_collected)
 	EventManager.unregister(EventManager.Events.POWERUP_USED, _on_powerup_used)
+	EventManager.unregister(EventManager.Events.PLAYER_DIED, _on_player_died)

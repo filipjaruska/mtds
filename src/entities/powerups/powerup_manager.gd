@@ -161,6 +161,15 @@ func clear_inventory():
 	powerup_inventory.resize(MAX_INVENTORY_SLOTS)
 	inventory_updated.emit(powerup_inventory)
 
+func clear_inventory_on_death() -> void:
+	if player_node.get_node("MultiplayerSynchronizer").get_multiplayer_authority() != multiplayer.get_unique_id():
+		return
+	_sync_clear_inventory.rpc()
+
+@rpc("any_peer", "call_local", "reliable")
+func _sync_clear_inventory() -> void:
+	clear_inventory()
+
 func clear_all_active_powerups():
 	for powerup in active_powerups:
 		powerup.remove_effect()

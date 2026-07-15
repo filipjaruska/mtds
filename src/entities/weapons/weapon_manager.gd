@@ -10,6 +10,7 @@ extends Node2D
 
 const MAX_WEAPONS: int = 2
 const BULLET_SCENE := preload("res://src/entities/weapons/bullet.tscn")
+const DEFAULT_WEAPON_SCENE := preload("res://src/entities/weapons/pistol.tscn")
 
 var weapons: Array = []
 var current_weapon_index: int = 0
@@ -136,8 +137,9 @@ func update_weapon_slots() -> void:
 	var slot_info = []
 	for i in range(MAX_WEAPONS):
 		if i < weapons.size():
-			weapon_slots_ui.update_slot(i, weapons[i].name)
-			slot_info.append(weapons[i].name)
+			var display_name = weapons[i].get_display_name()
+			weapon_slots_ui.update_slot(i, display_name)
+			slot_info.append(display_name)
 		else:
 			weapon_slots_ui.update_slot(i, "")
 			slot_info.append("")
@@ -209,6 +211,44 @@ func on_weapon_picked_up(weapon_scene: PackedScene) -> void:
 		
 	add_weapon(weapon_scene.instantiate(), true)
 	await get_tree().process_frame
+
+func reset_weapons_on_death() -> void:
+	if multiplayer_sync.get_multiplayer_authority() != multiplayer.get_unique_id():
+		return
+	
+	var default_path := DEFAULT_WEAPON_SCENE.resource_path
+	var non_default_paths: Array[String] = []
+	for path in weapon_paths:
+		if path != default_path:
+			non_default_paths.append(path)
+	
+	var drop_path := ""
+	if not non_default_paths.is_empty():
+		drop_path = non_default_paths.pick_random()
+	
+	_sync_reset_weapons_on_death.rpc(player.global_position, drop_path)
+
+func _load_default_weapon_loadout() -> void:
+	for w in weapons:
+		w.queue_free()
+	weapons.clear()
+	
+	var default_weapon: RangedWeapon = DEFAULT_WEAPON_SCENE.instantiate()
+	default_weapon.hide()
+	weapons.append(default_weapon)
+	add_child(default_weapon)
+	
+	weapon_paths = [DEFAULT_WEAPON_SCENE.resource_path]
+	current_weapon_index = 0
+	equip_weapon(0)
+	update_weapon_slots()
+	update_hud()
+
+@rpc("any_peer", "call_local", "reliable")
+func _sync_reset_weapons_on_death(death_position: Vector2, drop_weapon_path: String) -> void:
+	if not drop_weapon_path.is_empty():
+		spawn_weapon_pickup(drop_weapon_path, death_position)
+	_load_default_weapon_loadout()
 
 @rpc("any_peer", "reliable")
 func request_inventory_sync():

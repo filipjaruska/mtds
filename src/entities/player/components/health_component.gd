@@ -62,6 +62,14 @@ func death():
 		var player = get_parent()
 		player.visible = false
 
+		var powerup_manager = player.get_node_or_null("PowerupManager")
+		if powerup_manager:
+			powerup_manager.clear_inventory_on_death()
+
+		var weapon_manager = player.get_node_or_null("PlayerController/WeaponManager")
+		if weapon_manager:
+			weapon_manager.reset_weapons_on_death()
+
 		EventManager.emit_event(EventManager.Events.PLAYER_DIED, [player])
 
 		await get_tree().create_timer(1.0).timeout
