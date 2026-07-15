@@ -91,7 +91,13 @@ theme_override_constants/separation = 5
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/GametypeContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Gametype Selection (boilerplate)"
+text = "Gametype Selection (boilerplate)
+non - stack cards by using them
+shuffle - stack cards by sorting them
+in inventory and then using them
+poker - stack cards by using 
+the drawn card (showen next to
+time at the top)"
 
 [node name="GametypeDropdown" type="OptionButton" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/GametypeContainer"]
 layout_mode = 2
