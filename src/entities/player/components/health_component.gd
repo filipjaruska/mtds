@@ -64,7 +64,7 @@ func death():
 
 func respawn_player(player):
 	player.visible = true
-	player.position = get_spawn_location(player.name)
+	player.global_position = get_random_spawn_location()
 	current_health = max_health
 	rpc("update_health", current_health)
 	_broadcast_health_change()
@@ -72,11 +72,11 @@ func respawn_player(player):
 	EventManager.emit_event(EventManager.Events.PLAYER_RESPAWNED, [player])
 	is_dying = false
 
-func get_spawn_location(player_name: String) -> Vector2:
-	for spawn in get_tree().get_nodes_in_group("PlayerSpawnLocation"):
-		if spawn.name == player_name:
-			return spawn.global_position
-	return Vector2.ZERO
+func get_random_spawn_location() -> Vector2:
+	var spawns := get_tree().get_nodes_in_group("PlayerSpawnLocation")
+	if spawns.is_empty():
+		return Vector2.ZERO
+	return spawns.pick_random().global_position
 
 func _on_heal_timer_timeout():
 	if get_parent().is_in_group("Player"):
