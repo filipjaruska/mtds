@@ -40,8 +40,9 @@ func apply_effect(target_player: Node, effect_value: float) -> void:
 
 func remove_effect(target_player: Node, _effect_value: float) -> void:
 	var weapon_manager = _get_weapon_manager(target_player)
-	if not weapon_manager or not weapon_manager.is_dual_wield_active():
-		_ammo_snapshot = {}
+	# Clear snapshot on remove so an empty dual cannot be restarted with stale ammo.
+	_ammo_snapshot = {}
+	if not weapon_manager:
 		return
-	_ammo_snapshot = weapon_manager.get_dual_wield_ammo_snapshot()
+	# Always force cleanup so a desynced dual flag cannot permanently lock switching.
 	weapon_manager.disable_dual_wield()

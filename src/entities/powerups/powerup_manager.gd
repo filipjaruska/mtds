@@ -164,18 +164,26 @@ func _sync_weapon_state_after_powerup_change() -> void:
 	if weapon_manager and weapon_manager.has_method("_sync_weapons_to_peers"):
 		weapon_manager._sync_weapons_to_peers()
 
-func trigger_burst_if_ready(weapon: RangedWeapon) -> bool:
+func trigger_burst_if_ready(weapon: RangedWeapon, offhand_weapon: RangedWeapon = null) -> bool:
 	var burst_powerup := _get_active_powerup_of_type(BasePowerupCard.PowerupType.BURST)
 	if burst_powerup == null or burst_powerup.get_remaining_uses() <= 0:
 		return false
-	if weapon == null or weapon.ammo <= 0 or weapon.is_reloading:
+	
+	var primary_ready := weapon != null and weapon.ammo > 0 and not weapon.is_reloading
+	var offhand_ready := offhand_weapon != null and offhand_weapon.ammo > 0 and not offhand_weapon.is_reloading
+	if not primary_ready and not offhand_ready:
 		return false
 	
 	var card = burst_powerup.powerup_card
 	if not card.has_method("execute_burst"):
 		return false
 	
-	card.execute_burst(weapon, burst_powerup.stack_count)
+	var stack_count: int = burst_powerup.stack_count
+	# Dual wield: one burst card dumps both magazines, then dual ends after bursts finish.
+	if primary_ready:
+		card.execute_burst(weapon, stack_count)
+	if offhand_ready:
+		card.execute_burst(offhand_weapon, stack_count)
 	burst_powerup.consume_use()
 	active_powerups_updated.emit(active_powerups)
 	return true

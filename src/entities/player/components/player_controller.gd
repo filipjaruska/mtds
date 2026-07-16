@@ -51,6 +51,7 @@ func _setup_multiplayer_authority():
 	var authority_id: int = str(player_root.name).to_int()
 	weapon_manager.multiplayer_sync.set_multiplayer_authority(authority_id)
 	player_root.get_node("MultiplayerSynchronizer").set_multiplayer_authority(authority_id)
+	weapon_manager.refresh_authority_state()
 	
 	var is_authority = player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() == multiplayer.get_unique_id()
 	if camera_component:
@@ -61,7 +62,6 @@ func _process(delta):
 	if player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() == multiplayer.get_unique_id():
 		_check_state_transitions()
 		_process_current_state(delta)
-		weapon_manager._process(delta)
 	
 	_update_dash_cooldown_indicator()
 

@@ -31,18 +31,31 @@ func get_display_name() -> String:
 
 func _ready():
 	last_shot_time = Time.get_ticks_msec()
-	animation_player.play(idle_animation)
+	if animation_player and not idle_animation.is_empty():
+		animation_player.play(idle_animation)
+
+func can_shoot() -> bool:
+	if _burst_in_progress or is_reloading or ammo <= 0:
+		return false
+	return Time.get_ticks_msec() - last_shot_time >= 1000.0 / maxf(fire_rate, 0.01)
+
+func is_burst_in_progress() -> bool:
+	return _burst_in_progress
 
 func shoot() -> bool:
 	return shoot_with_spread_penalty(0.0)
 
 func shoot_with_spread_penalty(spread_penalty: float) -> bool:
-	if _burst_in_progress or is_reloading:
+	if not can_shoot():
 		return false
-	if Time.get_ticks_msec() - last_shot_time >= 1000 / fire_rate and ammo > 0:
-		_fire_shot(-1.0, spread_penalty)
-		return true
-	return false
+	_fire_shot(-1.0, spread_penalty)
+	return true
+
+func force_shoot_with_spread_penalty(spread_penalty: float) -> bool:
+	if _burst_in_progress or is_reloading or ammo <= 0:
+		return false
+	_fire_shot(-1.0, spread_penalty)
+	return true
 
 func burst_fire(spread_degrees: float, shots_per_second: float = 18.0) -> void:
 	if _burst_in_progress or is_reloading or ammo <= 0:
@@ -50,14 +63,22 @@ func burst_fire(spread_degrees: float, shots_per_second: float = 18.0) -> void:
 	_burst_fire_async(spread_degrees, shots_per_second)
 
 func _fire_shot(spread_degrees: float, spread_penalty: float = 0.0) -> void:
-	animation_player.play(shooting_animation)
+	play_shoot_visuals()
 	_shoot_bullet(spread_degrees, spread_penalty)
 	last_shot_time = Time.get_ticks_msec()
 	ammo -= 1
-	show_muzzle_flash()
+	
+	var weapon_manager := _resolve_weapon_manager()
+	if weapon_manager and weapon_manager.has_method("notify_weapon_shot_fx"):
+		weapon_manager.notify_weapon_shot_fx(self)
 	
 	EventManager.emit_event(EventManager.Events.WEAPON_FIRED, [self, ammo, max_ammo])
 	EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo, -1, -1])
+
+func play_shoot_visuals() -> void:
+	if animation_player and not shooting_animation.is_empty():
+		animation_player.play(shooting_animation)
+	show_muzzle_flash()
 
 func _burst_fire_async(spread_degrees: float, shots_per_second: float) -> void:
 	_burst_in_progress = true
@@ -114,11 +135,13 @@ func reload():
 	EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [get_parent(), ammo, max_ammo, -1, -1])
 
 func show_muzzle_flash():
+	if muzzle == null:
+		return
 	var muzzle_flash_instance = muzzle_flash.instantiate()
 	muzzle_flash_instance.global_position = muzzle.global_position
 	muzzle_flash_instance.global_rotation = global_rotation
 	add_child(muzzle_flash_instance)
 
 func _on_animation_player_animation_finished(anim_name):
-	if anim_name == shooting_animation:
+	if anim_name == shooting_animation and animation_player and not idle_animation.is_empty():
 		animation_player.play(idle_animation)

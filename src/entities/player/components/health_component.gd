@@ -31,8 +31,15 @@ func _process(_delta):
 	death()
 
 @rpc("any_peer", "reliable")
-func update_health(new_health: float):
+func update_health(new_health: float, new_max_health: float = -1.0):
+	if new_max_health > 0.0:
+		max_health = new_max_health
 	current_health = new_health
+	_broadcast_health_change()
+
+func sync_health_state() -> void:
+	if get_parent() and get_parent().is_multiplayer_authority():
+		rpc("update_health", current_health, max_health)
 	_broadcast_health_change()
 
 func damage(dmg: float, penetration: float, attacker_id: int = -1):
@@ -43,7 +50,7 @@ func damage(dmg: float, penetration: float, attacker_id: int = -1):
 	var final_dmg: float = dmg * (1.0 - total_resist)
 	var was_alive: bool = current_health > 0.0
 	current_health -= final_dmg
-	rpc("update_health", current_health)
+	rpc("update_health", current_health, max_health)
 	_broadcast_health_change()
 	_start_regen_delay()
 
@@ -57,7 +64,7 @@ func damage(dmg: float, penetration: float, attacker_id: int = -1):
 
 func heal(amount: float):
 	current_health = min(current_health + amount, max_health)
-	rpc("update_health", current_health)
+	rpc("update_health", current_health, max_health)
 	_broadcast_health_change()
 
 	EventManager.emit_event(EventManager.Events.PLAYER_HEALED, [get_parent(), amount, current_health])
@@ -87,7 +94,7 @@ func respawn_player(player):
 	player.visible = true
 	player.global_position = get_random_spawn_location()
 	current_health = max_health
-	rpc("update_health", current_health)
+	rpc("update_health", current_health, max_health)
 	_broadcast_health_change()
 
 	EventManager.emit_event(EventManager.Events.PLAYER_RESPAWNED, [player])
@@ -148,5 +155,6 @@ func _on_heal_timer_timeout() -> void:
 
 func _broadcast_health_change():
 	if health_bar and is_instance_valid(health_bar):
+		health_bar.max_value = max_health
 		health_bar.value = current_health
 	EventManager.emit_event(EventManager.Events.UI_HEALTH_UPDATED, [get_parent(), int(current_health), int(max_health)])

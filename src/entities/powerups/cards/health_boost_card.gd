@@ -12,14 +12,19 @@ func _init():
 	rarity_color = Color.BLUE
 
 func apply_effect(target_player: Node, effect_value: float):
+	if not target_player or not target_player.is_multiplayer_authority():
+		return
 	var health_component = _get_health_component(target_player)
 	if not health_component:
 		return
 	var health_boost = int(health_component.max_health * effect_value)
 	health_component.max_health += health_boost
 	health_component.current_health += health_boost
+	health_component.sync_health_state()
 
 func remove_effect(target_player: Node, effect_value: float):
+	if not target_player or not target_player.is_multiplayer_authority():
+		return
 	var health_component = _get_health_component(target_player)
 	if not health_component:
 		return
@@ -27,3 +32,4 @@ func remove_effect(target_player: Node, effect_value: float):
 	health_component.max_health -= health_boost
 	if health_component.current_health > health_component.max_health:
 		health_component.current_health = health_component.max_health
+	health_component.sync_health_state()
