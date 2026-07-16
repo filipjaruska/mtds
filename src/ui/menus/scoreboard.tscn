@@ -1,0 +1,78 @@
+[gd_scene load_steps=4 format=3 uid="uid://wxkqxg2tpr05"]
+
+[ext_resource type="Script" uid="uid://bscoreboardui01" path="res://src/ui/scoreboard.gd" id="1_scoreboard"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.06, 0.06, 0.08, 0.72)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.18)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_list"]
+
+[node name="Scoreboard" type="CanvasLayer"]
+layer = 80
+script = ExtResource("1_scoreboard")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 96
+theme_override_constants/margin_top = 80
+theme_override_constants/margin_right = 96
+theme_override_constants/margin_bottom = 80
+
+[node name="Panel" type="PanelContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Padding" type="MarginContainer" parent="MarginContainer/Panel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/Panel/Padding"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Title" type="Label" parent="MarginContainer/Panel/Padding/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.95)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 26
+text = "Match Stats"
+horizontal_alignment = 1
+
+[node name="ResultsList" type="ItemList" parent="MarginContainer/Panel/Padding/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.92, 0.92, 0.94, 1)
+theme_override_colors/font_hovered_color = Color(0.92, 0.92, 0.94, 1)
+theme_override_colors/font_selected_color = Color(0.92, 0.92, 0.94, 1)
+theme_override_styles/panel = SubResource("StyleBoxEmpty_list")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_list")
+theme_override_font_sizes/font_size = 15
+allow_reselect = true
+auto_height = true

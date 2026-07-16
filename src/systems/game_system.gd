@@ -34,6 +34,9 @@ var match_stats: Dictionary = {}
 var poker_featured_card_type: int = -1
 
 var _match_timer: Timer
+var _match_stats_dirty: bool = false
+var _match_stats_sync_cooldown: float = 0.0
+const MATCH_STATS_SYNC_INTERVAL := 0.25
 
 func _ready() -> void:
 	_match_timer = Timer.new()
@@ -212,6 +215,7 @@ func reset_match_stats() -> void:
 			"deaths": 0,
 			"damage_dealt": 0.0,
 		}
+	_broadcast_match_stats()
 
 func _ensure_player_stats(player_id: int) -> void:
 	if not match_stats.has(player_id):
@@ -230,6 +234,7 @@ func report_damage_dealt(attacker_id: int, amount: float) -> void:
 	
 	_ensure_player_stats(attacker_id)
 	match_stats[attacker_id]["damage_dealt"] += amount
+	_match_stats_dirty = true
 
 @rpc("any_peer", "call_local", "reliable")
 func report_player_death(victim_id: int, killer_id: int) -> void:
@@ -242,6 +247,8 @@ func report_player_death(victim_id: int, killer_id: int) -> void:
 	if killer_id > 0 and killer_id != victim_id:
 		_ensure_player_stats(killer_id)
 		match_stats[killer_id]["kills"] += 1
+	_broadcast_match_stats()
+	_match_stats_dirty = false
 
 func get_sorted_match_results() -> Array:
 	var results: Array = []
@@ -263,6 +270,32 @@ func get_sorted_match_results() -> Array:
 		return a["damage_dealt"] > b["damage_dealt"]
 	)
 	return results
+
+func _broadcast_match_stats() -> void:
+	if not multiplayer.has_multiplayer_peer():
+		return
+	if not multiplayer.is_server():
+		return
+	sync_match_stats.rpc(_serialize_match_stats())
+	_match_stats_sync_cooldown = MATCH_STATS_SYNC_INTERVAL
+
+func _serialize_match_stats() -> Dictionary:
+	var serialized: Dictionary = {}
+	for player_id in match_stats:
+		serialized[str(player_id)] = match_stats[player_id].duplicate()
+	return serialized
+
+@rpc("authority", "call_local", "reliable")
+func sync_match_stats(stats: Dictionary) -> void:
+	match_stats.clear()
+	for key in stats:
+		var player_id := int(key)
+		var entry: Dictionary = stats[key]
+		match_stats[player_id] = {
+			"kills": int(entry.get("kills", 0)),
+			"deaths": int(entry.get("deaths", 0)),
+			"damage_dealt": float(entry.get("damage_dealt", 0.0)),
+		}
 
 ## Disconnect from current game (transition to DISCONNECTED state)
 func disconnect_from_game() -> void:
@@ -298,8 +331,18 @@ func _on_connection_succeeded() -> void:
 func _on_connection_failed() -> void:
 	set_game_state(GameState.MENU)
 
-func _process(_delta: float) -> void:
-	if current_state != GameState.PLAYING or match_end_time_msec <= 0:
+func _process(delta: float) -> void:
+	if current_state != GameState.PLAYING:
+		return
+	
+	if multiplayer.is_server() and _match_stats_dirty:
+		_match_stats_sync_cooldown = maxf(0.0, _match_stats_sync_cooldown - delta)
+		if _match_stats_sync_cooldown <= 0.0:
+			_broadcast_match_stats()
+			_match_stats_dirty = false
+			_match_stats_sync_cooldown = MATCH_STATS_SYNC_INTERVAL
+	
+	if match_end_time_msec <= 0:
 		return
 	
 	match_time_remaining = maxf(0.0, (match_end_time_msec - Time.get_ticks_msec()) / 1000.0)

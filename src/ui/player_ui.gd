@@ -1,18 +1,26 @@
 extends CanvasLayer
 
+const SCOREBOARD_SCENE := preload("res://src/ui/menus/scoreboard.tscn")
+
 @onready var powerup_inventory_ui = $PowerupInventoryUI
 @onready var active_powerups_ui = $ActivePowerupsUI
 @onready var featured_card_label: Label = $FeaturedCard
 
 var _player_node: Node = null
+var _scoreboard: CanvasLayer = null
 
 func _process(_delta: float):
 	$Time.text = "%d" % [GameManager.get_match_time_remaining()]
 	_update_featured_card_label()
-	if _player_node and _player_node.is_multiplayer_authority():
-		var powerup_manager = _player_node.get_node_or_null("PowerupManager")
-		if powerup_manager and powerup_inventory_ui:
-			powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
+	if _player_node == null or not _player_node.is_multiplayer_authority():
+		if _scoreboard:
+			_scoreboard.visible = false
+		return
+	_ensure_scoreboard()
+	var powerup_manager = _player_node.get_node_or_null("PowerupManager")
+	if powerup_manager and powerup_inventory_ui:
+		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
+	_update_scoreboard_visibility()
 
 func _ready():
 	_player_node = get_parent().get_parent().get_parent()
@@ -23,6 +31,21 @@ func _ready():
 	EventManager.register(EventManager.Events.POWERUP_EXPIRED, _on_powerup_expired)
 	EventManager.register(EventManager.Events.PLAYER_DIED, _on_player_died)
 	_update_featured_card_label()
+
+func _ensure_scoreboard() -> void:
+	if _scoreboard != null and is_instance_valid(_scoreboard):
+		return
+	_scoreboard = SCOREBOARD_SCENE.instantiate()
+	get_tree().root.add_child(_scoreboard)
+	_scoreboard.visible = false
+
+func _update_scoreboard_visibility() -> void:
+	if _scoreboard == null:
+		return
+	var should_show := InputManager.is_scoreboard_held()
+	_scoreboard.visible = should_show
+	if should_show:
+		_scoreboard.update_results(GameManager.get_sorted_match_results())
 
 func update_ammo(ammo: int, max_ammo: int):
 	$AmmoDisplay.text = "%d / %d" % [ammo, max_ammo]
@@ -97,6 +120,9 @@ func _update_featured_card_label() -> void:
 		featured_card_label.text = "4x %s" % featured_name
 
 func _exit_tree():
+	if _scoreboard and is_instance_valid(_scoreboard):
+		_scoreboard.queue_free()
+		_scoreboard = null
 	EventManager.unregister(EventManager.Events.UI_HEALTH_UPDATED, _on_health_updated)
 	EventManager.unregister(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)
 	EventManager.unregister(EventManager.Events.POWERUP_COLLECTED, _on_powerup_collected)

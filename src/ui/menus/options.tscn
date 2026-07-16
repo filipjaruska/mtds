@@ -533,7 +533,24 @@ text = "Powerup Details"
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = "Tab"
+text = "F1"
+horizontal_alignment = 2
+
+[node name="Scoreboard" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Scoreboard"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Scoreboard"
+
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Scoreboard"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Tab (hold)"
 horizontal_alignment = 2
 
 [node name="Controller" type="MarginContainer" parent="MarginContainer/ContentPanel/TabContainer"]

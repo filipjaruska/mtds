@@ -136,7 +136,10 @@ func is_drop_weapon_pressed() -> bool:
 		return Input.is_joy_button_pressed(0, JOY_BUTTON_RIGHT_STICK)
 
 func is_powerup_details_held() -> bool:
-	return Input.is_action_pressed("powerup_details")
+	return Input.is_action_pressed("powerup_details") or Input.is_key_pressed(KEY_F1)
+
+func is_scoreboard_held() -> bool:
+	return Input.is_action_pressed("scoreboard") or Input.is_key_pressed(KEY_TAB)
 
 func get_powerup_slot_use_index() -> int:
 	if Input.is_action_just_pressed("powerup_slot_1"):
