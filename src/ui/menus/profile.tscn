@@ -1,0 +1,127 @@
+[gd_scene format=3 uid="uid://cl344e3jw3a3y"]
+
+[ext_resource type="Script" uid="uid://cprofilemenu01a" path="res://src/ui/menu_profile.gd" id="1_profile"]
+[ext_resource type="PackedScene" uid="uid://bc8fb0d072pqj" path="res://src/ui/library/menu_nav_bar.tscn" id="2_navbar"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+bg_color = Color(0.08, 0.08, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_subpanel"]
+bg_color = Color(1, 1, 1, 0.03)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.08)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="ProfileMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_profile")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.12, 0.14, 1)
+
+[node name="MenuNavBar" parent="." instance=ExtResource("2_navbar")]
+layout_mode = 1
+active_item = 4
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 64.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="ContentPanel" type="PanelContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="Header" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "Profile"
+
+[node name="Subtitle" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "Your recent match history"
+
+[node name="ColumnHeaders" type="HBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Result" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/ColumnHeaders"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.82, 0.82, 0.86, 1)
+theme_override_font_sizes/font_size = 13
+text = "Result  |  Mode  |  Kills / Deaths  |  Date"
+
+[node name="MatchHistoryPanel" type="PanelContainer" parent="MarginContainer/ContentPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_subpanel")
+
+[node name="Padding" type="MarginContainer" parent="MarginContainer/ContentPanel/VBoxContainer/MatchHistoryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="MatchList" type="ItemList" parent="MarginContainer/ContentPanel/VBoxContainer/MatchHistoryPanel/Padding"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.9, 0.9, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+allow_reselect = true
