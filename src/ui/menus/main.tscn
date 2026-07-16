@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://cj7khgmp38rev"]
+[gd_scene load_steps=3 format=3 uid="uid://cj7khgmp38rev"]
 
 [ext_resource type="Script" uid="uid://p8j8a1molwus" path="res://src/ui/menu_main.gd" id="1_l7fxj"]
+[ext_resource type="PackedScene" uid="uid://e7nav2bar9lib" path="res://src/ui/library/menu_nav_bar.tscn" id="2_navbar"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -18,84 +19,28 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.306923, 0.306923, 0.306923, 1)
+color = Color(0.12, 0.12, 0.14, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MenuNavBar" parent="." instance=ExtResource("2_navbar")]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 100
-
-[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_constants/shadow_offset_x = 12
-theme_override_constants/shadow_offset_y = 12
-theme_override_font_sizes/font_size = 64
-text = "Multiplayer Top-Down Shooter"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 60
-alignment = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 40
-
-[node name="Multiplayer" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(120, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "Multiplayer"
-
-[node name="vsAI" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(120, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "vs AI"
-
-[node name="Options" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(120, 50)
-layout_mode = 2
-text = "Options"
-
-[node name="Exit" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(120, 50)
-layout_mode = 2
-theme_override_colors/font_hover_color = Color(1, 0, 0, 1)
-text = "Exit
-"
-
-[node name="Spacer2" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
-layout_mode = 2
+active_item = 0
 
 [node name="LinkButton" type="LinkButton" parent="."]
-layout_mode = 0
-offset_left = 965.0
-offset_top = 618.0
-offset_right = 1145.0
-offset_bottom = 641.0
-text = "download latest relase "
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -28.0
+offset_right = -16.0
+offset_bottom = -12.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
+theme_override_colors/font_hover_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "download latest release"
 underline = 1
 uri = "https://github.com/filipjaruska/mtds/releases/latest"
-
-[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/Multiplayer" to="." method="_on_multiplayer_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/vsAI" to="." method="_on_vsai_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/Options" to="." method="_on_options_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/Exit" to="." method="_on_exit_pressed"]

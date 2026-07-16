@@ -17,7 +17,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Multiplayer Top-down Shooter"
 config/description="A Description"
 config/version="0.0.1"
-run/main_scene="res://src/ui/menus/main.tscn"
+run/main_scene="res://src/ui/menus/splash.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://src/assets/icon.svg"
 
@@ -26,6 +26,7 @@ config/icon="res://src/assets/icon.svg"
 GameManager="*res://src/systems/game_system.gd"
 InputManager="*res://src/systems/input_system.gd"
 EventManager="*res://src/systems/event_system.gd"
+GameSettings="*res://src/systems/game_settings.gd"
 
 [display]
 

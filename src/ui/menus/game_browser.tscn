@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bv86tuktn4dh1"]
+[gd_scene load_steps=3 format=3 uid="uid://bv86tuktn4dh1"]
 
 [ext_resource type="Script" uid="uid://bdieepsumujil" path="res://src/ui/game_browser.gd" id="1_browser"]
+[ext_resource type="PackedScene" uid="uid://e7nav2bar9lib" path="res://src/ui/library/menu_nav_bar.tscn" id="2_navbar"]
 
 [node name="GameBrowser" type="Control"]
 layout_mode = 3
@@ -18,13 +19,18 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.306923, 0.306923, 0.306923, 1)
+color = Color(0.12, 0.12, 0.14, 1)
+
+[node name="MenuNavBar" parent="." instance=ExtResource("2_navbar")]
+layout_mode = 1
+active_item = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 64.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 20
@@ -36,26 +42,11 @@ theme_override_constants/margin_bottom = 20
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="TopBar" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(100, 40)
-layout_mode = 2
-text = "< Back"
-
-[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/TopBar"]
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Game Browser"
-
-[node name="Spacer2" type="Control" parent="MarginContainer/VBoxContainer/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
+horizontal_alignment = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2

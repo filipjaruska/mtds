@@ -9,9 +9,9 @@ var connection_timer: Timer
 @onready var player_name_input: LineEdit = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer/HBoxContainer/LineEdit
 @onready var address_input: LineEdit = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/HBoxContainer/AddressInput
 @onready var port_input: LineEdit = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/HBoxContainer/PortInput
+@onready var nav_bar: MenuNavBar = $MenuNavBar
 @onready var join_button: Button = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/ButtonContainer/JoinButton
 @onready var host_button: Button = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/ButtonContainer/HostButton
-@onready var back_button: Button = $MarginContainer/VBoxContainer/TopBar/BackButton
 @onready var game_list: ItemList = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/GameListContainer/GameList
 @onready var refresh_button: Button = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/GameListContainer/RefreshButton
 
@@ -24,7 +24,6 @@ func _ready() -> void:
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	
-	back_button.pressed.connect(_on_back_pressed)
 	join_button.pressed.connect(_on_join_pressed)
 	host_button.pressed.connect(_on_host_pressed)
 	refresh_button.pressed.connect(_on_refresh_pressed)
@@ -60,9 +59,6 @@ func _on_connection_timeout() -> void: # Takes too long, so I handle it manually
 	
 	EventManager.emit_event(EventManager.Events.CONNECTION_FAILED)
 	_enable_ui()
-
-func _on_back_pressed() -> void:
-	get_tree().change_scene_to_file("res://src/ui/menus/main.tscn")
 
 func _on_join_pressed() -> void:
 	_join_game()
@@ -147,7 +143,7 @@ func _disable_ui() -> void:
 	join_button.disabled = true
 	host_button.disabled = true
 	refresh_button.disabled = true
-	back_button.disabled = true
+	nav_bar.set_navigation_enabled(false)
 	game_list.set_deferred("disabled", true)
 
 func _enable_ui() -> void:
@@ -157,7 +153,7 @@ func _enable_ui() -> void:
 	join_button.disabled = false
 	host_button.disabled = false
 	refresh_button.disabled = false
-	back_button.disabled = false
+	nav_bar.set_navigation_enabled(true)
 	game_list.set_deferred("disabled", false)
 
 func _populate_game_list() -> void:

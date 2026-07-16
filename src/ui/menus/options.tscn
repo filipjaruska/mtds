@@ -1,7 +1,50 @@
-[gd_scene load_steps=3 format=3 uid="uid://b6j40ehxmqs5w"]
+[gd_scene load_steps=9 format=3 uid="uid://b6j40ehxmqs5w"]
 
 [ext_resource type="Script" uid="uid://5e4e2vxapxsb" path="res://src/ui/menu_options.gd" id="1_r01yr"]
 [ext_resource type="Script" uid="uid://bi7ihcayo8glu" path="res://src/ui/menu_audio.gd" id="2_3ig2g"]
+[ext_resource type="PackedScene" uid="uid://bc8fb0d072pqj" path="res://src/ui/library/menu_nav_bar.tscn" id="3_navbar"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.08, 0.08, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_unselected"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_hovered"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(1, 1, 1, 0.06)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_selected"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 10.0
+bg_color = Color(1, 1, 1, 0.04)
+border_width_bottom = 2
+border_color = Color(0.98, 0.58, 0.08, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_panel"]
+content_margin_left = 28.0
+content_margin_top = 24.0
+content_margin_right = 28.0
+content_margin_bottom = 28.0
+bg_color = Color(0, 0, 0, 0)
 
 [node name="OptionsMenu" type="Control"]
 layout_mode = 3
@@ -19,731 +62,739 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.29219, 0.29219, 0.29219, 1)
+color = Color(0.12, 0.12, 0.14, 1)
+
+[node name="MenuNavBar" parent="." instance=ExtResource("3_navbar")]
+layout_mode = 1
+active_item = 3
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 64.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="ContentPanel" type="PanelContainer" parent="MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 20
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 5
-theme_override_font_sizes/font_size = 32
-text = "Options"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="TabContainer" type="TabContainer" parent="MarginContainer/VBoxContainer"]
+[node name="TabContainer" type="TabContainer" parent="MarginContainer/ContentPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_selected_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hovered_color = Color(0.92, 0.92, 0.95, 1)
+theme_override_colors/font_unselected_color = Color(0.65, 0.65, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/panel = SubResource("StyleBoxFlat_tab_panel")
+theme_override_styles/tab_selected = SubResource("StyleBoxFlat_tab_selected")
+theme_override_styles/tab_hovered = SubResource("StyleBoxFlat_tab_hovered")
+theme_override_styles/tab_unselected = SubResource("StyleBoxFlat_tab_unselected")
 current_tab = 0
 
-[node name="Graphics" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+[node name="GameSettings" type="MarginContainer" parent="MarginContainer/ContentPanel/TabContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 metadata/_tab_index = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Graphics"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/GameSettings"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 24
 
-[node name="ResolutionRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Graphics/VBoxContainer"]
+[node name="SkipSplash" type="CheckButton" parent="MarginContainer/ContentPanel/TabContainer/GameSettings/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
-alignment = 1
+size_flags_horizontal = 0
+button_pressed = true
+theme_override_colors/font_color = Color(0.82, 0.82, 0.86, 1)
+theme_override_font_sizes/font_size = 15
+text = "Skip startup splash"
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Graphics/VBoxContainer/ResolutionRow"]
-custom_minimum_size = Vector2(140, 0)
+[node name="Graphics" type="MarginContainer" parent="MarginContainer/ContentPanel/TabContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+metadata/_tab_index = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Graphics"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="ResolutionRow" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Graphics/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Graphics/VBoxContainer/ResolutionRow"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.82, 0.86, 1)
+theme_override_font_sizes/font_size = 15
 text = "Resolution"
-horizontal_alignment = 2
+vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="MarginContainer/VBoxContainer/TabContainer/Graphics/VBoxContainer/ResolutionRow"]
+[node name="Resolution" type="OptionButton" parent="MarginContainer/ContentPanel/TabContainer/Graphics/VBoxContainer/ResolutionRow"]
+custom_minimum_size = Vector2(220, 36)
 layout_mode = 2
+size_flags_horizontal = 3
 
-[node name="Resolution" type="OptionButton" parent="MarginContainer/VBoxContainer/TabContainer/Graphics/VBoxContainer/ResolutionRow"]
+[node name="Fullscreen" type="CheckButton" parent="MarginContainer/ContentPanel/TabContainer/Graphics/VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
-
-[node name="Fullscreen" type="CheckButton" parent="MarginContainer/VBoxContainer/TabContainer/Graphics/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 16
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.82, 0.82, 0.86, 1)
+theme_override_font_sizes/font_size = 15
 text = "Fullscreen"
 
-[node name="Audio" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+[node name="Audio" type="MarginContainer" parent="MarginContainer/ContentPanel/TabContainer"]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-metadata/_tab_index = 1
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+metadata/_tab_index = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Audio"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Audio"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 24
 
-[node name="Master" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer"]
+[node name="Master" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Audio/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
-alignment = 1
+theme_override_constants/separation = 24
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer/Master"]
-custom_minimum_size = Vector2(140, 0)
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Audio/VBoxContainer/Master"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.82, 0.82, 0.86, 1)
+theme_override_font_sizes/font_size = 15
 text = "Master Volume"
-horizontal_alignment = 2
+vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer/Master"]
+[node name="Slider" type="HSlider" parent="MarginContainer/ContentPanel/TabContainer/Audio/VBoxContainer/Master"]
+custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
-
-[node name="Slider" type="HSlider" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer/Master"]
-custom_minimum_size = Vector2(200, 0)
-layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 size_flags_vertical = 1
 max_value = 1.0
 step = 0.001
 script = ExtResource("2_3ig2g")
 bus_name = "Master"
 
-[node name="Music" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer"]
+[node name="Music" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Audio/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
-alignment = 1
+theme_override_constants/separation = 24
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer/Music"]
-custom_minimum_size = Vector2(140, 0)
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Audio/VBoxContainer/Music"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.82, 0.82, 0.86, 1)
+theme_override_font_sizes/font_size = 15
 text = "Music Volume"
-horizontal_alignment = 2
+vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer/Music"]
+[node name="Slider" type="HSlider" parent="MarginContainer/ContentPanel/TabContainer/Audio/VBoxContainer/Music"]
+custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
-
-[node name="Slider" type="HSlider" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer/Music"]
-custom_minimum_size = Vector2(200, 0)
-layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 size_flags_vertical = 1
 max_value = 1.0
 step = 0.001
 script = ExtResource("2_3ig2g")
 bus_name = "Music"
 
-[node name="SFX" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer"]
+[node name="SFX" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Audio/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
-alignment = 1
+theme_override_constants/separation = 24
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer/SFX"]
-custom_minimum_size = Vector2(140, 0)
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Audio/VBoxContainer/SFX"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.82, 0.82, 0.86, 1)
+theme_override_font_sizes/font_size = 15
 text = "SFX Volume"
-horizontal_alignment = 2
+vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer/SFX"]
+[node name="Slider" type="HSlider" parent="MarginContainer/ContentPanel/TabContainer/Audio/VBoxContainer/SFX"]
+custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
-
-[node name="Slider" type="HSlider" parent="MarginContainer/VBoxContainer/TabContainer/Audio/VBoxContainer/SFX"]
-custom_minimum_size = Vector2(200, 0)
-layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 size_flags_vertical = 1
 max_value = 1.0
 step = 0.001
 script = ExtResource("2_3ig2g")
 bus_name = "SFX"
 
-[node name="Keybinds" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+[node name="Keybinds" type="MarginContainer" parent="MarginContainer/ContentPanel/TabContainer"]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-metadata/_tab_index = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+metadata/_tab_index = 3
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 8
 
-[node name="MoveUp" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="MoveUp" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveUp"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveUp"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Move Up"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveUp"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveUp"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "W"
 horizontal_alignment = 2
 
-[node name="MoveDown" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="MoveDown" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveDown"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveDown"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Move Down"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveDown"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveDown"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "S"
 horizontal_alignment = 2
 
-[node name="MoveLeft" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="MoveLeft" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveLeft"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveLeft"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Move Left"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveLeft"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveLeft"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "A"
 horizontal_alignment = 2
 
-[node name="MoveRight" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="MoveRight" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveRight"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveRight"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Move Right"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveRight"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/MoveRight"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "D"
 horizontal_alignment = 2
 
-[node name="Shoot" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="Shoot" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Shoot"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Shoot"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Shoot"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Shoot"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Shoot"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Left Mouse Button"
 horizontal_alignment = 2
 
-[node name="Reload" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="Reload" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Reload"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Reload"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Reload"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Reload"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Reload"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "R"
 horizontal_alignment = 2
 
-[node name="SwitchWeapon" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="SwitchWeapon" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/SwitchWeapon"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/SwitchWeapon"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Switch Weapon"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/SwitchWeapon"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/SwitchWeapon"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Q"
 horizontal_alignment = 2
 
-[node name="Dash" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="Dash" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Dash"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Dash"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Dash"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Dash"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Dash"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Space / Shift"
 horizontal_alignment = 2
 
-[node name="Interact" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="Interact" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Interact"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Interact"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Interact"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Interact"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Interact"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "E"
 horizontal_alignment = 2
 
-[node name="Crouch" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="Crouch" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Crouch"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Crouch"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Crouch"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Crouch"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/Crouch"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Ctrl"
 horizontal_alignment = 2
 
-[node name="DropWeapon" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="DropWeapon" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/DropWeapon"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/DropWeapon"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Drop Weapon"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/DropWeapon"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/DropWeapon"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "X"
 horizontal_alignment = 2
 
-[node name="PowerupSlot1" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="PowerupSlot1" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot1"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot1"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Powerup Slot 1"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot1"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot1"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "1"
 horizontal_alignment = 2
 
-[node name="PowerupSlot2" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="PowerupSlot2" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot2"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot2"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Powerup Slot 2"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot2"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot2"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "2"
 horizontal_alignment = 2
 
-[node name="PowerupSlot3" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="PowerupSlot3" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot3"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot3"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Powerup Slot 3"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot3"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot3"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "3"
 horizontal_alignment = 2
 
-[node name="PowerupSlot4" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="PowerupSlot4" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot4"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot4"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Powerup Slot 4"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot4"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupSlot4"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "4"
 horizontal_alignment = 2
 
-[node name="PowerupDetails" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+[node name="PowerupDetails" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupDetails"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupDetails"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Powerup Details"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupDetails"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupDetails"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Tab"
 horizontal_alignment = 2
 
-[node name="Controller" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+[node name="Controller" type="MarginContainer" parent="MarginContainer/ContentPanel/TabContainer"]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-metadata/_tab_index = 3
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+metadata/_tab_index = 4
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 8
 
-[node name="Move" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="Move" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Move"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Move"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Move"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Move"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Move"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Left Stick"
 horizontal_alignment = 2
 
-[node name="Aim" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="Aim" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Aim"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Aim"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Aim"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Aim"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Aim"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Right Stick"
 horizontal_alignment = 2
 
-[node name="Shoot" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="Shoot" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Shoot"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Shoot"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Shoot"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Shoot"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Shoot"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "RT (Right Trigger)"
 horizontal_alignment = 2
 
-[node name="Reload" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="Reload" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Reload"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Reload"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Reload"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Reload"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Reload"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "X"
 horizontal_alignment = 2
 
-[node name="Dash" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="Dash" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Dash"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Dash"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Dash"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Dash"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Dash"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "A"
 horizontal_alignment = 2
 
-[node name="Interact" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="Interact" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Interact"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Interact"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Interact"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Interact"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Interact"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "B"
 horizontal_alignment = 2
 
-[node name="Crouch" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="Crouch" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Crouch"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Crouch"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Crouch"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/Crouch"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/Crouch"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "LT (Left Trigger)"
 horizontal_alignment = 2
 
-[node name="SwitchWeapon" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="SwitchWeapon" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/SwitchWeapon"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/SwitchWeapon"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Switch Weapon"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/SwitchWeapon"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/SwitchWeapon"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Y"
 horizontal_alignment = 2
 
-[node name="DropWeapon" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="DropWeapon" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/DropWeapon"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/DropWeapon"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Drop Weapon"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/DropWeapon"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/DropWeapon"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Right Stick Press"
 horizontal_alignment = 2
 
-[node name="PowerupSlot1" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="PowerupSlot1" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot1"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot1"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Powerup Slot 1"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot1"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot1"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "D-Pad Up"
 horizontal_alignment = 2
 
-[node name="PowerupSlot2" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="PowerupSlot2" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot2"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot2"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Powerup Slot 2"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot2"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot2"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "D-Pad Left"
 horizontal_alignment = 2
 
-[node name="PowerupSlot3" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="PowerupSlot3" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot3"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot3"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Powerup Slot 3"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot3"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot3"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "D-Pad Right"
 horizontal_alignment = 2
 
-[node name="PowerupSlot4" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="PowerupSlot4" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot4"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot4"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Powerup Slot 4"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot4"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupSlot4"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "D-Pad Down"
 horizontal_alignment = 2
 
-[node name="PowerupDetails" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+[node name="PowerupDetails" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 24
 
-[node name="Action" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupDetails"]
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupDetails"]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Powerup Details"
 
-[node name="Binding" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupDetails"]
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupDetails"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Select / View"
 horizontal_alignment = 2
 
-[node name="Back" type="Button" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(120, 50)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 8
-text = "Back"
-
-[connection signal="toggled" from="MarginContainer/VBoxContainer/TabContainer/Graphics/VBoxContainer/Fullscreen" to="." method="_on_check_button_toggled"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/Back" to="." method="_on_exit_pressed"]
+[connection signal="toggled" from="MarginContainer/ContentPanel/TabContainer/GameSettings/VBoxContainer/SkipSplash" to="." method="_on_skip_splash_toggled"]
+[connection signal="toggled" from="MarginContainer/ContentPanel/TabContainer/Graphics/VBoxContainer/Fullscreen" to="." method="_on_check_button_toggled"]

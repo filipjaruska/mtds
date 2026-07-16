@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://bp5k1qbfnf8a"]
+
+[ext_resource type="Script" uid="uid://gowh3udo3giy" path="res://src/ui/splash.gd" id="1_splash"]
+[ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://src/assets/icon.svg" id="2_logo"]
+
+[node name="Splash" type="Control" unique_id=1245386025]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_splash")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1426259389]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.306923, 0.306923, 0.306923, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=189489716]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Logo" type="TextureRect" parent="CenterContainer" unique_id=11195267]
+custom_minimum_size = Vector2(256, 256)
+layout_mode = 2
+texture = ExtResource("2_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="CenterContainer" unique_id=376609451]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 12
+theme_override_constants/shadow_offset_y = 12
+theme_override_font_sizes/font_size = 64
+text = "Multiplayer Top-Down Shooter"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Title2" type="Label" parent="CenterContainer/Title" unique_id=716451900]
+layout_mode = 0
+offset_left = -16.0
+offset_top = 80.0
+offset_right = 929.0
+offset_bottom = 168.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 12
+theme_override_constants/shadow_offset_y = 12
+theme_override_font_sizes/font_size = 32
+text = "by mtej pushka and fiip jedlhruska"
+horizontal_alignment = 1
+vertical_alignment = 1
