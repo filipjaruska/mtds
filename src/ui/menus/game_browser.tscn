@@ -1,7 +1,43 @@
-[gd_scene load_steps=3 format=3 uid="uid://bv86tuktn4dh1"]
+[gd_scene load_steps=6 format=3 uid="uid://bv86tuktn4dh1"]
 
 [ext_resource type="Script" uid="uid://bdieepsumujil" path="res://src/ui/game_browser.gd" id="1_browser"]
-[ext_resource type="PackedScene" uid="uid://e7nav2bar9lib" path="res://src/ui/library/menu_nav_bar.tscn" id="2_navbar"]
+[ext_resource type="PackedScene" uid="uid://bc8fb0d072pqj" path="res://src/ui/library/menu_nav_bar.tscn" id="2_navbar"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.08, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_subpanel"]
+bg_color = Color(1, 1, 1, 0.03)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.08)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_action"]
+bg_color = Color(0.98, 0.58, 0.08, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.84, 0.35, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [node name="GameBrowser" type="Control"]
 layout_mode = 3
@@ -33,157 +69,233 @@ anchor_bottom = 1.0
 offset_top = 64.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Game Browser"
-horizontal_alignment = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 40
-
-[node name="LeftPanel" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="ContentPanel" type="PanelContainer" parent="MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 30
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="PlayerInfoContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel"]
 layout_mode = 2
-theme_override_constants/separation = 10
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 14
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer"]
+[node name="Header" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Player Information"
+theme_override_constants/separation = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer"]
+[node name="Eyebrow" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/Header"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "ONLINE"
 
-[node name="Label2" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer/HBoxContainer"]
+[node name="Title" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/Header"]
 layout_mode = 2
-text = "Name:"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "Game Browser"
 
-[node name="LineEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer/HBoxContainer"]
+[node name="Subtitle" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 13
+text = "Join a live session or host one locally."
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="LeftPanel" type="PanelContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_subpanel")
+
+[node name="Padding" type="MarginContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 16
+
+[node name="PlayerInfoContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "Player Setup"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label2" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 15
+text = "Name"
+vertical_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Player"
 placeholder_text = "Enter your name"
 
-[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel"]
+[node name="InfoPanel" type="PanelContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer"]
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_subpanel")
 
-[node name="InfoPanel" type="Panel" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel"]
-custom_minimum_size = Vector2(0, 200)
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer/InfoPanel"]
 layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 14
 
-[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/InfoPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 15
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 15
-theme_override_constants/margin_bottom = 15
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer/InfoPanel/MarginContainer"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+text = "[b]Loadout preview[/b]\n\nThis panel can later show your selected character, cosmetics, or party details before joining a match."
 
-[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/InfoPanel"]
-layout_mode = 0
-offset_left = 198.0
-offset_top = 57.0
-offset_right = 323.0
-offset_bottom = 130.0
-text = "Idk, character/class select or something."
-
-[node name="RightPanel" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="RightPanel" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 20
+size_flags_vertical = 3
+theme_override_constants/separation = 14
 
-[node name="GameListContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel"]
+[node name="GameListPanel" type="PanelContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 10
+theme_override_styles/panel = SubResource("StyleBoxFlat_subpanel")
 
-[node name="HeaderContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/GameListContainer"]
+[node name="Padding" type="MarginContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel"]
 layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 16
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/GameListContainer/HeaderContainer"]
+[node name="GameListContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="HeaderContainer" type="HBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding/GameListContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding/GameListContainer/HeaderContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
 text = "Available Games"
 
-[node name="RefreshButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/GameListContainer"]
-custom_minimum_size = Vector2(0, 40)
+[node name="RefreshButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding/GameListContainer/HeaderContainer"]
+custom_minimum_size = Vector2(140, 40)
 layout_mode = 2
-text = "Refresh List"
+theme_override_styles/normal = SubResource("StyleBoxFlat_subpanel")
+text = "Refresh"
 
-[node name="GameList" type="ItemList" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/GameListContainer"]
-custom_minimum_size = Vector2(0, 200)
+[node name="GameList" type="ItemList" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding/GameListContainer"]
+custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ServerConnectContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel"]
+[node name="ServerConnectPanel" type="PanelContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_styles/panel = SubResource("StyleBoxFlat_subpanel")
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer"]
+[node name="Padding" type="MarginContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 16
+
+[node name="ServerConnectContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
 text = "Direct Connect"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 12
 
-[node name="AddressLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/HBoxContainer"]
+[node name="AddressLabel" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/HBoxContainer"]
+custom_minimum_size = Vector2(70, 0)
 layout_mode = 2
-text = "Address:"
+theme_override_colors/font_color = Color(0.72, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 15
+text = "Address"
+vertical_alignment = 1
 
-[node name="AddressInput" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/HBoxContainer"]
+[node name="AddressInput" type="LineEdit" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "localhost"
 placeholder_text = "IP Address"
 
-[node name="PortLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/HBoxContainer"]
+[node name="PortLabel" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/HBoxContainer"]
+custom_minimum_size = Vector2(42, 0)
 layout_mode = 2
-text = "Port:"
+theme_override_colors/font_color = Color(0.72, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 15
+text = "Port"
+vertical_alignment = 1
 
-[node name="PortInput" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/HBoxContainer"]
-custom_minimum_size = Vector2(80, 0)
+[node name="PortInput" type="LineEdit" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/HBoxContainer"]
+custom_minimum_size = Vector2(110, 38)
 layout_mode = 2
 text = "8080"
 placeholder_text = "Port"
 
-[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer"]
+[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 12
 
-[node name="JoinButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/ButtonContainer"]
-custom_minimum_size = Vector2(0, 50)
+[node name="JoinButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/ButtonContainer"]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_action")
 text = "Join Game"
 
-[node name="HostButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/ButtonContainer"]
-custom_minimum_size = Vector2(0, 50)
+[node name="HostButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/ButtonContainer"]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_subpanel")
 text = "Host Game"

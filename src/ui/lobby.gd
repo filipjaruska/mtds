@@ -7,11 +7,11 @@ var _match_results_overlay: CanvasLayer = null
 
 const MATCH_RESULTS_SCENE := preload("res://src/ui/menus/match_results.tscn")
 
-@onready var player_name_input: LineEdit = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer/HBoxContainer/LineEdit
-@onready var start_button: Button = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/ButtonsContainer/StartButton
-@onready var ready_button: Button = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/ButtonsContainer/ReadyButton
-@onready var player_list: ItemList = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/PlayerListContainer/PlayerList
-@onready var map_dropdown: OptionButton = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/MapSelectionContainer/MapDropdown
+@onready var player_name_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer/HBoxContainer/LineEdit
+@onready var start_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/StartButton
+@onready var ready_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/ReadyButton
+@onready var player_list: ItemList = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer/PlayerList
+@onready var map_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/MapSelectionContainer/MapDropdown
 
 func _ready() -> void:
 	add_to_group("Lobby")

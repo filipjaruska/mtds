@@ -6,14 +6,14 @@ var address: String = "0.0.0.0"
 var peer: ENetMultiplayerPeer
 var connection_timer: Timer
 
-@onready var player_name_input: LineEdit = $MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer/HBoxContainer/LineEdit
-@onready var address_input: LineEdit = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/HBoxContainer/AddressInput
-@onready var port_input: LineEdit = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/HBoxContainer/PortInput
+@onready var player_name_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer/HBoxContainer/LineEdit
+@onready var address_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/HBoxContainer/AddressInput
+@onready var port_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/HBoxContainer/PortInput
 @onready var nav_bar: MenuNavBar = $MenuNavBar
-@onready var join_button: Button = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/ButtonContainer/JoinButton
-@onready var host_button: Button = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/ServerConnectContainer/ButtonContainer/HostButton
-@onready var game_list: ItemList = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/GameListContainer/GameList
-@onready var refresh_button: Button = $MarginContainer/VBoxContainer/HBoxContainer/RightPanel/GameListContainer/RefreshButton
+@onready var join_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/ButtonContainer/JoinButton
+@onready var host_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/ButtonContainer/HostButton
+@onready var game_list: ItemList = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding/GameListContainer/GameList
+@onready var refresh_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding/GameListContainer/HeaderContainer/RefreshButton
 
 func _ready() -> void:
 	connection_timer = Timer.new()

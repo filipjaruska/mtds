@@ -1,6 +1,31 @@
-[gd_scene load_steps=2 format=3 uid="uid://ce1oauidq2qpa"]
+[gd_scene load_steps=5 format=3 uid="uid://ce1oauidq2qpa"]
 
 [ext_resource type="Script" uid="uid://dtv5x0l1b4p3m" path="res://src/ui/lobby.gd" id="1_lobby"]
+[ext_resource type="PackedScene" uid="uid://bc8fb0d072pqj" path="res://src/ui/library/menu_nav_bar.tscn" id="2_navbar"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.08, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_subpanel"]
+bg_color = Color(1, 1, 1, 0.03)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.08)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="StartGame" type="Control"]
 layout_mode = 3
@@ -18,88 +43,146 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.306923, 0.306923, 0.306923, 1)
+color = Color(0.12, 0.12, 0.14, 1)
+
+[node name="MenuNavBar" parent="." instance=ExtResource("2_navbar")]
+layout_mode = 1
+active_item = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 64.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 12
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="ContentPanel" type="PanelContainer" parent="MarginContainer"]
 layout_mode = 2
-theme_override_constants/separation = 100
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 14
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="Header" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Eyebrow" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "LOBBY"
+
+[node name="Title" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "Team Setup"
+
+[node name="Subtitle" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 13
+text = "Choose a map, lock in, and wait for the host to launch the match."
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 40
-alignment = 1
+theme_override_constants/separation = 16
 
-[node name="LeftPanel" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="LeftPanel" type="PanelContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
-theme_override_constants/separation = 20
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_subpanel")
 
-[node name="PlayerInfoContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel"]
+[node name="Padding" type="MarginContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel"]
 layout_mode = 2
-theme_override_constants/separation = 5
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 16
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer"]
+[node name="Content" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="PlayerInfoContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
 text = "Player Info"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer"]
 layout_mode = 2
+theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
-text = "Name:"
+theme_override_colors/font_color = Color(0.72, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 15
+text = "Name"
+vertical_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/PlayerInfoContainer/HBoxContainer"]
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "name"
 editable = false
 
-[node name="MapSelectionContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel"]
+[node name="MapSelectionContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content"]
 layout_mode = 2
-theme_override_constants/separation = 5
+theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/MapSelectionContainer"]
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/MapSelectionContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "Map Selection"
 
-[node name="MapDropdown" type="OptionButton" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/MapSelectionContainer"]
+[node name="MapDropdown" type="OptionButton" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/MapSelectionContainer"]
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 
-[node name="GametypeContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel"]
+[node name="GametypeContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content"]
 layout_mode = 2
-theme_override_constants/separation = 5
+theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/GametypeContainer"]
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "Gametype Selection (boilerplate)
-non - stack cards by using them
-shuffle - stack cards by sorting them
-in inventory and then using them
-poker - stack cards by using 
-the drawn card (showen next to
-time at the top)"
+text = "Gametype"
 
-[node name="GametypeDropdown" type="OptionButton" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/GametypeContainer"]
+[node name="Description" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+text = "Deathmatch variants change how cards stack and rotate during play."
+
+[node name="GametypeDropdown" type="OptionButton" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer"]
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 item_count = 3
 popup/item_0/text = "deathmatch"
@@ -109,45 +192,53 @@ popup/item_1/id = 1
 popup/item_2/text = "deathmatch+poker"
 popup/item_2/id = 2
 
-[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel"]
+[node name="ButtonsContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content"]
 layout_mode = 2
-size_flags_vertical = 3
-
-[node name="ButtonsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel"]
-layout_mode = 2
+size_flags_vertical = 8
 theme_override_constants/separation = 10
 
-[node name="StartButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/ButtonsContainer"]
+[node name="StartButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Start Game"
 
-[node name="ReadyButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/ButtonsContainer"]
+[node name="ReadyButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Ready"
 
-[node name="RightPanel" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(400, 0)
+[node name="RightPanel" type="PanelContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_subpanel")
 
-[node name="PlayerListContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel"]
+[node name="Padding" type="MarginContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 16
+
+[node name="PlayerListContainer" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 5
+theme_override_constants/separation = 14
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/PlayerListContainer"]
+[node name="Label" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
 text = "Players in Lobby"
 
-[node name="PlayerList" type="ItemList" parent="MarginContainer/VBoxContainer/HBoxContainer/RightPanel/PlayerListContainer"]
+[node name="PlayerList" type="ItemList" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer"]
+custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
 size_flags_vertical = 3
 
-[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/ButtonsContainer/StartButton" to="." method="_on_start_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/LeftPanel/ButtonsContainer/ReadyButton" to="." method="_on_ready_pressed"]
+[connection signal="pressed" from="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/StartButton" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/ReadyButton" to="." method="_on_ready_pressed"]
