@@ -50,6 +50,17 @@ func add_stack(additional_cards: int = 1):
 	remaining_duration = powerup_card.duration
 	remaining_uses = powerup_card.get_max_uses(stack_count)
 
+func set_stack_count(new_stack_count: int) -> void:
+	stack_count = clampi(new_stack_count, 1, powerup_card.max_stack_count)
+	remove_effect()
+	effect_value = powerup_card.get_stacked_effect_value(stack_count)
+	apply_effect()
+	remaining_duration = powerup_card.duration
+	remaining_uses = powerup_card.get_max_uses(stack_count)
+
+func refresh() -> void:
+	set_stack_count(stack_count)
+
 func has_use_limit() -> bool:
 	return remaining_uses >= 0
 

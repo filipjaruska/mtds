@@ -392,6 +392,14 @@ offset_right = 601.0
 offset_bottom = 36.0
 text = "TIME"
 
+[node name="FeaturedCard" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
+visible = false
+offset_left = 616.0
+offset_top = 13.0
+offset_right = 792.0
+offset_bottom = 36.0
+text = "4x CARD"
+
 [node name="PlayerNameLabel" type="Label" parent="."]
 z_index = 10
 offset_left = -23.0

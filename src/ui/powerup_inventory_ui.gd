@@ -16,7 +16,7 @@ const GAMEPAD_HOTKEYS := ["←", "↑", "→", "↓"]
 @onready var slot_4 = $HBoxContainer/PowerupSlot4
 
 var inventory_slots: Array[Control] = []
-var current_inventory: Array[BasePowerupCard] = []
+var current_inventory: Array[Dictionary] = []
 var _expanded := false
 
 func _ready():
@@ -44,20 +44,24 @@ func _set_expanded(expanded: bool) -> void:
 	for i in range(inventory_slots.size()):
 		var slot = inventory_slots[i]
 		slot.custom_minimum_size = SLOT_EXPANDED_MIN_SIZE if _expanded else Vector2.ZERO
-		var card = current_inventory[i] if i < current_inventory.size() else null
+		var slot_data := current_inventory[i] if i < current_inventory.size() else {}
+		var card: BasePowerupCard = slot_data.get("card", null)
 		_update_slot_overlay(slot, card)
 		var label: Label = slot.get_node("Label")
 		label.visible = not _expanded and card != null
 
-func update_inventory(inventory: Array[BasePowerupCard]):
+func update_inventory(inventory: Array[Dictionary]):
 	current_inventory = inventory
 	_update_display(inventory)
 
-func _update_display(inventory: Array[BasePowerupCard]):
+func _update_display(inventory: Array[Dictionary]):
 	for i in range(inventory_slots.size()):
 		var slot = inventory_slots[i]
-		var card = inventory[i] if i < inventory.size() else null
-		_update_slot(slot, card, i + 1)
+		var slot_data := inventory[i] if i < inventory.size() else {}
+		var card: BasePowerupCard = slot_data.get("card", null)
+		var stack_count: int = slot_data.get("count", 0)
+		var selected: bool = slot_data.get("selected", false)
+		_update_slot(slot, card, stack_count, i + 1, selected)
 
 func _create_detail_overlay(slot: Control) -> void:
 	var overlay := Control.new()
@@ -99,7 +103,7 @@ func _create_detail_overlay(slot: Control) -> void:
 	description_label.modulate = Color(0.88, 0.88, 0.88)
 	content.add_child(description_label)
 
-func _update_slot(slot: Control, card: BasePowerupCard, slot_number: int):
+func _update_slot(slot: Control, card: BasePowerupCard, stack_count: int, slot_number: int, selected: bool):
 	var icon = slot.get_node("Icon")
 	var label = slot.get_node("Label")
 	var hotkey = slot.get_node("Hotkey")
@@ -111,6 +115,7 @@ func _update_slot(slot: Control, card: BasePowerupCard, slot_number: int):
 		icon.visible = true
 		label.visible = not _expanded
 		background.color = card.rarity_color
+		background.modulate = Color(1.0, 0.95, 0.6, 1.0) if selected else Color.WHITE
 		
 		if card.icon_texture:
 			icon.texture = card.icon_texture
@@ -118,6 +123,8 @@ func _update_slot(slot: Control, card: BasePowerupCard, slot_number: int):
 			icon.texture = _get_default_icon_for_type(card.type)
 		
 		label.text = card.get_display_name()
+		if stack_count > 1:
+			label.text += " x%d" % stack_count
 		
 		var tween = create_tween()
 		tween.set_loops()

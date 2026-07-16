@@ -6,12 +6,24 @@ var _active_map: Node = null
 var _match_results_overlay: CanvasLayer = null
 
 const MATCH_RESULTS_SCENE := preload("res://src/ui/menus/match_results.tscn")
+const GAME_MODE_OPTIONS := [
+	"deathmatch",
+	"deathmatch+shuffle",
+	"deathmatch+poker",
+]
+const GAME_MODE_DESCRIPTIONS := {
+	"deathmatch": "Cards stack only after you activate matching pickups.",
+	"deathmatch+shuffle": "Hold the details key and press slots to merge matching cards in inventory up to x4.",
+	"deathmatch+poker": "One random card type is worth x4 for the whole match; all others stay single-stack.",
+}
 
 @onready var player_name_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer/HBoxContainer/LineEdit
 @onready var start_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/StartButton
 @onready var ready_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/ReadyButton
 @onready var player_list: ItemList = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer/PlayerList
 @onready var map_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/MapSelectionContainer/MapDropdown
+@onready var game_mode_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/GametypeDropdown
+@onready var game_mode_description: Label = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/Description
 
 func _ready() -> void:
 	add_to_group("Lobby")
@@ -25,6 +37,7 @@ func _ready() -> void:
 	player_name_input.editable = false
 	
 	_load_available_maps()
+	_sync_game_mode_dropdown(GameManager.get_game_mode())
 	_setup_ui_for_role()
 	
 	if multiplayer.get_unique_id() != 1:
@@ -40,11 +53,13 @@ func _setup_ui_for_role() -> void:
 		start_button.disabled = false
 		ready_button.visible = false
 		map_dropdown.disabled = false
+		game_mode_dropdown.disabled = false
 	else:
 		start_button.visible = false
 		ready_button.visible = true
 		ready_button.disabled = false
 		map_dropdown.disabled = true
+		game_mode_dropdown.disabled = true
 		player_ready_states[multiplayer.get_unique_id()] = false
 
 func _load_available_maps() -> void:
@@ -69,6 +84,18 @@ func _load_available_maps() -> void:
 	
 	map_dropdown.select(0)
 
+func _sync_game_mode_dropdown(game_mode: String) -> void:
+	var mode_index := GAME_MODE_OPTIONS.find(game_mode)
+	if mode_index == -1:
+		mode_index = 0
+	game_mode_dropdown.select(mode_index)
+	game_mode_description.text = GAME_MODE_DESCRIPTIONS.get(game_mode, GAME_MODE_DESCRIPTIONS["deathmatch"])
+
+@rpc("authority", "call_local", "reliable")
+func sync_lobby_game_mode(game_mode: String) -> void:
+	GameManager.set_game_mode(game_mode)
+	_sync_game_mode_dropdown(game_mode)
+
 func _on_player_connected(_id: int) -> void:
 	_update_player_list()
 	_check_ready_state()
@@ -89,6 +116,7 @@ func send_player(id: int, player_name: String) -> void:
 		for player_id in GameManager.players:
 			var player_data = GameManager.get_player(player_id)
 			send_player.rpc(player_id, player_data.name)
+		sync_lobby_game_mode.rpc_id(id, GameManager.get_game_mode())
 		sync_ready_states.rpc(player_ready_states)
 	
 	_update_player_list()
@@ -196,6 +224,7 @@ func _reset_lobby_for_new_match() -> void:
 	
 	if not multiplayer.is_server():
 		ready_button.text = "Ready"
+	_sync_game_mode_dropdown(GameManager.get_game_mode())
 	
 	if multiplayer.is_server():
 		sync_ready_states.rpc(player_ready_states)
@@ -205,6 +234,8 @@ func _reset_lobby_for_new_match() -> void:
 
 func _on_start_pressed() -> void:
 	if multiplayer.is_server():
+		var selected_mode: String = GAME_MODE_OPTIONS[game_mode_dropdown.selected]
+		sync_lobby_game_mode.rpc(selected_mode)
 		start_game.rpc(available_maps[map_dropdown.selected])
 
 func _on_ready_pressed() -> void:
@@ -215,3 +246,10 @@ func _on_ready_pressed() -> void:
 	ready_button.text = "Unready" if new_ready_state else "Ready"
 	
 	set_player_ready.rpc(player_id, new_ready_state)
+
+func _on_gametype_dropdown_item_selected(index: int) -> void:
+	if not multiplayer.is_server():
+		return
+	if index < 0 or index >= GAME_MODE_OPTIONS.size():
+		return
+	sync_lobby_game_mode.rpc(GAME_MODE_OPTIONS[index])

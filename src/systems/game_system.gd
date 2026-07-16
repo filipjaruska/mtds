@@ -16,10 +16,14 @@ enum GameState {
 	DISCONNECTED
 }
 
+const GAME_MODE_DEATHMATCH := "deathmatch"
+const GAME_MODE_SHUFFLE := "deathmatch+shuffle"
+const GAME_MODE_POKER := "deathmatch+poker"
+
 var current_state: GameState = GameState.MENU
 var game_settings: Dictionary = {
 	"max_players": 4,
-	"game_mode": "deathmatch",
+	"game_mode": GAME_MODE_DEATHMATCH,
 	"map": "default",
 	"match_duration_seconds": 300.0
 }
@@ -27,6 +31,7 @@ var game_settings: Dictionary = {
 var match_time_remaining: float = 0.0
 var match_end_time_msec: int = 0
 var match_stats: Dictionary = {}
+var poker_featured_card_type: int = -1
 
 var _match_timer: Timer
 
@@ -52,6 +57,26 @@ func _ready() -> void:
 ## match time remaining as a float
 func get_match_time_remaining() -> float:
 	return match_time_remaining
+
+func set_game_mode(game_mode: String) -> void:
+	game_settings["game_mode"] = game_mode
+
+func get_game_mode() -> String:
+	return game_settings.get("game_mode", GAME_MODE_DEATHMATCH)
+
+func is_shuffle_mode() -> bool:
+	return get_game_mode() == GAME_MODE_SHUFFLE
+
+func is_poker_mode() -> bool:
+	return get_game_mode() == GAME_MODE_POKER
+
+func get_poker_featured_card_type() -> int:
+	return poker_featured_card_type
+
+func get_poker_featured_card_display_name() -> String:
+	if poker_featured_card_type < 0:
+		return ""
+	return BasePowerupCard.PowerupType.keys()[poker_featured_card_type].replace("_", " ").capitalize()
 
 ## Add a new player to the game
 ##
@@ -96,7 +121,7 @@ func get_player_count() -> int:
 ##
 ## @return True if at max capacity, false otherwise
 func is_game_full() -> bool:
-	return players.size() >= game_settings.max_players
+	return players.size() >= int(game_settings.get("max_players", 4))
 
 ## Set the current game state
 ##
@@ -148,7 +173,9 @@ func start_game() -> void:
 ## Begin a timed match. Server runs the countdown and returns players to lobby when it expires.
 func start_match() -> void:
 	reset_match_stats()
-	var duration: float = game_settings.match_duration_seconds
+	if multiplayer.is_server():
+		_prepare_match_mode_state()
+	var duration: float = float(game_settings.get("match_duration_seconds", 300.0))
 	match_time_remaining = duration
 	set_game_state(GameState.PLAYING)
 	set_process(true)
@@ -158,6 +185,7 @@ func start_match() -> void:
 	
 	var duration_msec: int = int(duration * 1000.0)
 	match_end_time_msec = Time.get_ticks_msec() + duration_msec
+	sync_match_mode_state.rpc(get_game_mode(), poker_featured_card_type)
 	sync_match_timer.rpc(match_end_time_msec)
 	_match_timer.start(duration)
 
@@ -171,6 +199,7 @@ func return_to_lobby() -> void:
 	_stop_match_timer()
 	match_end_time_msec = 0
 	match_time_remaining = 0.0
+	poker_featured_card_type = -1
 	reset_match_stats()
 	set_process(false)
 	set_game_state(GameState.LOBBY)
@@ -293,6 +322,17 @@ func _on_match_timer_timeout() -> void:
 func _stop_match_timer() -> void:
 	if _match_timer.time_left > 0.0:
 		_match_timer.stop()
+
+func _prepare_match_mode_state() -> void:
+	poker_featured_card_type = -1
+	if is_poker_mode():
+		var card_type_keys: Array = BasePowerupCard.PowerupType.keys()
+		poker_featured_card_type = randi_range(0, card_type_keys.size() - 1)
+
+@rpc("authority", "call_local", "reliable")
+func sync_match_mode_state(game_mode: String, featured_card_type: int) -> void:
+	set_game_mode(game_mode)
+	poker_featured_card_type = featured_card_type
 
 @rpc("authority", "call_local", "reliable")
 func sync_match_timer(end_time_msec: int) -> void:

@@ -2,17 +2,27 @@ extends CanvasLayer
 
 @onready var powerup_inventory_ui = $PowerupInventoryUI
 @onready var active_powerups_ui = $ActivePowerupsUI
+@onready var featured_card_label: Label = $FeaturedCard
+
+var _player_node: Node = null
 
 func _process(_delta: float):
 	$Time.text = "%d" % [GameManager.get_match_time_remaining()]
+	_update_featured_card_label()
+	if _player_node and _player_node.is_multiplayer_authority():
+		var powerup_manager = _player_node.get_node_or_null("PowerupManager")
+		if powerup_manager and powerup_inventory_ui:
+			powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 
 func _ready():
+	_player_node = get_parent().get_parent().get_parent()
 	EventManager.register(EventManager.Events.UI_HEALTH_UPDATED, _on_health_updated)
 	EventManager.register(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)
 	EventManager.register(EventManager.Events.POWERUP_COLLECTED, _on_powerup_collected)
 	EventManager.register(EventManager.Events.POWERUP_USED, _on_powerup_used)
 	EventManager.register(EventManager.Events.POWERUP_EXPIRED, _on_powerup_expired)
 	EventManager.register(EventManager.Events.PLAYER_DIED, _on_player_died)
+	_update_featured_card_label()
 
 func update_ammo(ammo: int, max_ammo: int):
 	$AmmoDisplay.text = "%d / %d" % [ammo, max_ammo]
@@ -39,12 +49,12 @@ func _on_ammo_updated(player_node: Node, ammo: int, max_ammo: int, offhand_ammo:
 func _on_powerup_collected(player_node: Node, _powerup_card: BasePowerupCard, _slot: int):
 	var powerup_manager = player_node.get_node("PowerupManager")
 	if powerup_manager and powerup_inventory_ui:
-		powerup_inventory_ui.update_inventory(powerup_manager.powerup_inventory)
+		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 
 func _on_powerup_used(player_node: Node, _powerup_card: BasePowerupCard, slot: int):
 	var powerup_manager = player_node.get_node("PowerupManager")
 	if powerup_manager and powerup_inventory_ui:
-		powerup_inventory_ui.update_inventory(powerup_manager.powerup_inventory)
+		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 		powerup_inventory_ui.highlight_slot(slot)
 
 	if active_powerups_ui:
@@ -62,7 +72,7 @@ func _on_player_died(player_node: Node) -> void:
 		return
 	var powerup_manager = player_node.get_node_or_null("PowerupManager")
 	if powerup_manager and powerup_inventory_ui:
-		powerup_inventory_ui.update_inventory(powerup_manager.powerup_inventory)
+		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 	if powerup_manager and active_powerups_ui:
 		active_powerups_ui.update_active_powerups(powerup_manager.active_powerups)
 
@@ -72,10 +82,19 @@ func update_powerup_displays(player_node: Node):
 		return
 
 	if powerup_inventory_ui:
-		powerup_inventory_ui.update_inventory(powerup_manager.powerup_inventory)
+		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 
 	if active_powerups_ui:
 		active_powerups_ui.update_active_powerups(powerup_manager.active_powerups)
+
+func _update_featured_card_label() -> void:
+	if not featured_card_label:
+		return
+	var featured_name: String = GameManager.get_poker_featured_card_display_name()
+	var should_show_label: bool = GameManager.is_poker_mode() and not featured_name.is_empty()
+	featured_card_label.visible = should_show_label
+	if should_show_label:
+		featured_card_label.text = "4x %s" % featured_name
 
 func _exit_tree():
 	EventManager.unregister(EventManager.Events.UI_HEALTH_UPDATED, _on_health_updated)

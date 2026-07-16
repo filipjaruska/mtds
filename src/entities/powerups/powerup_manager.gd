@@ -4,10 +4,12 @@ class_name PowerupManager
 const MAX_INVENTORY_SLOTS = 4
 
 var powerup_inventory: Array[BasePowerupCard] = []
+var powerup_inventory_stack_counts: Array[int] = []
 var active_powerups: Array[ActivePowerup] = []
 var player_node: Node
+var _shuffle_selected_slot: int = -1
 
-signal inventory_updated(inventory: Array[BasePowerupCard])
+signal inventory_updated(inventory: Array)
 signal powerup_activated(powerup_card: BasePowerupCard, slot: int)
 signal active_powerups_updated(active_powerups: Array[ActivePowerup])
 
@@ -19,6 +21,7 @@ func _ready():
 	if not player_node:
 		player_node = get_parent()
 	powerup_inventory.resize(MAX_INVENTORY_SLOTS)
+	powerup_inventory_stack_counts.resize(MAX_INVENTORY_SLOTS)
 	set_process(true)
 	EventManager.register(EventManager.Events.WEAPON_FIRED, _on_weapon_fired)
 
@@ -31,7 +34,15 @@ func _process(_delta):
 
 func _check_powerup_inputs():
 	var slot_index: int = InputManager.get_powerup_slot_use_index()
-	if slot_index >= 0:
+	if slot_index < 0:
+		if not InputManager.is_powerup_details_held():
+			_shuffle_selected_slot = -1
+		return
+	
+	if GameManager.is_shuffle_mode() and InputManager.is_powerup_details_held():
+		_handle_shuffle_slot_pressed(slot_index)
+	else:
+		_shuffle_selected_slot = -1
 		use_powerup_at_slot(slot_index)
 
 func collect_powerup(_powerup_card: BasePowerupCard) -> bool:
@@ -45,15 +56,15 @@ func find_empty_slot() -> int:
 
 func add_powerup_to_slot(card_type: int, slot_index: int):
 	var powerup_card = _create_card_from_type(card_type)
-	powerup_inventory[slot_index] = powerup_card
-	inventory_updated.emit(powerup_inventory)
+	_set_inventory_slot(slot_index, powerup_card, 1)
+	inventory_updated.emit(get_inventory_display_data())
 	EventManager.emit_event(EventManager.Events.POWERUP_COLLECTED, [player_node, powerup_card, slot_index])
 
 @rpc("any_peer", "call_local", "reliable")
 func _sync_collect_powerup(card_type: int, slot_index: int):
 	var powerup_card = _create_card_from_type(card_type)
-	powerup_inventory[slot_index] = powerup_card
-	inventory_updated.emit(powerup_inventory)
+	_set_inventory_slot(slot_index, powerup_card, 1)
+	inventory_updated.emit(get_inventory_display_data())
 	EventManager.emit_event(EventManager.Events.POWERUP_COLLECTED, [player_node, powerup_card, slot_index])
 
 func use_powerup_at_slot(slot_index: int):
@@ -64,25 +75,18 @@ func use_powerup_at_slot(slot_index: int):
 	if powerup_card == null:
 		return
 	
-	_sync_use_powerup.rpc(powerup_card.type, slot_index)
+	_sync_use_powerup.rpc(powerup_card.type, slot_index, get_inventory_stack_count(slot_index))
 
 @rpc("any_peer", "call_local", "reliable")
-func _sync_use_powerup(card_type: int, slot_index: int):
+func _sync_use_powerup(card_type: int, slot_index: int, inventory_stack_count: int = 1):
 	var powerup_card = _create_card_from_type(card_type)
-	
-	var existing_powerup = _get_active_powerup_of_type(powerup_card.type)
-	
-	if existing_powerup:
-		existing_powerup.add_stack(1)
-	else:
-		var active_powerup = ActivePowerup.new(powerup_card, player_node)
-		active_powerup.powerup_expired.connect(_on_powerup_expired)
-		active_powerups.append(active_powerup)
-		add_child(active_powerup)
+	var activation_stack_count := _get_activation_stack_count(powerup_card, inventory_stack_count)
+	_apply_powerup_activation(powerup_card, activation_stack_count)
 	
 	if player_node and player_node.is_multiplayer_authority():
-		powerup_inventory[slot_index] = null
-		inventory_updated.emit(powerup_inventory)
+		_reset_inventory_slot(slot_index)
+		_shuffle_selected_slot = -1
+		inventory_updated.emit(get_inventory_display_data())
 		powerup_activated.emit(powerup_card, slot_index)
 		EventManager.emit_event(EventManager.Events.POWERUP_USED, [player_node, powerup_card, slot_index])
 		_sync_weapon_state_after_powerup_change()
@@ -111,21 +115,13 @@ func use_multiple_powerups(slot_indices: Array[int]):
 	for type in card_groups.keys():
 		var group = card_groups[type]
 		var first_card = group[0]["card"]
-		
-		var existing_powerup = _get_active_powerup_of_type(type)
-		if existing_powerup:
-			existing_powerup.add_stack(group.size())
-		else:
-			var active_powerup = ActivePowerup.new(first_card, player_node, group.size())
-			active_powerup.powerup_expired.connect(_on_powerup_expired)
-			active_powerups.append(active_powerup)
-			add_child(active_powerup)
+		_apply_powerup_activation(first_card, group.size())
 		
 		for card_info in group:
-			powerup_inventory[card_info["slot"]] = null
+			_reset_inventory_slot(card_info["slot"])
 			powerup_activated.emit(card_info["card"], card_info["slot"])
 	
-	inventory_updated.emit(powerup_inventory)
+	inventory_updated.emit(get_inventory_display_data())
 	active_powerups_updated.emit(active_powerups)
 
 func _get_active_powerup_of_type(type: BasePowerupCard.PowerupType) -> ActivePowerup:
@@ -202,6 +198,23 @@ func _on_weapon_fired(weapon_node: Node, _current_ammo: int, _max_ammo: int) -> 
 func get_inventory_slot_count() -> int:
 	return MAX_INVENTORY_SLOTS
 
+func get_inventory_stack_count(slot_index: int) -> int:
+	if slot_index < 0 or slot_index >= powerup_inventory_stack_counts.size():
+		return 0
+	if powerup_inventory[slot_index] == null:
+		return 0
+	return maxi(powerup_inventory_stack_counts[slot_index], 1)
+
+func get_inventory_display_data() -> Array[Dictionary]:
+	var display_data: Array[Dictionary] = []
+	for i in range(MAX_INVENTORY_SLOTS):
+		display_data.append({
+			"card": powerup_inventory[i],
+			"count": get_inventory_stack_count(i),
+			"selected": i == _shuffle_selected_slot,
+		})
+	return display_data
+
 func get_used_inventory_slots() -> int:
 	var count = 0
 	for card in powerup_inventory:
@@ -219,7 +232,10 @@ func get_powerup_effect_value(type: BasePowerupCard.PowerupType) -> float:
 func clear_inventory():
 	powerup_inventory.clear()
 	powerup_inventory.resize(MAX_INVENTORY_SLOTS)
-	inventory_updated.emit(powerup_inventory)
+	powerup_inventory_stack_counts.clear()
+	powerup_inventory_stack_counts.resize(MAX_INVENTORY_SLOTS)
+	_shuffle_selected_slot = -1
+	inventory_updated.emit(get_inventory_display_data())
 
 func clear_inventory_on_death() -> void:
 	if player_node.get_node("MultiplayerSynchronizer").get_multiplayer_authority() != multiplayer.get_unique_id():
@@ -264,3 +280,83 @@ func _create_card_from_type(card_type: int) -> BasePowerupCard:
 			return PowerupFactory.create_dual_wield()
 		_:
 			return PowerupFactory.create_faster_dash()
+
+func _handle_shuffle_slot_pressed(slot_index: int) -> void:
+	if slot_index < 0 or slot_index >= MAX_INVENTORY_SLOTS:
+		return
+	if powerup_inventory[slot_index] == null:
+		return
+	if _shuffle_selected_slot == -1:
+		_shuffle_selected_slot = slot_index
+		return
+	if _shuffle_selected_slot == slot_index:
+		_shuffle_selected_slot = -1
+		return
+	_merge_inventory_slots(_shuffle_selected_slot, slot_index)
+	_shuffle_selected_slot = -1
+
+func _merge_inventory_slots(source_slot: int, target_slot: int) -> void:
+	var source_card := powerup_inventory[source_slot]
+	var target_card := powerup_inventory[target_slot]
+	if source_card == null or target_card == null:
+		return
+	if source_card.type != target_card.type:
+		return
+	var source_count := get_inventory_stack_count(source_slot)
+	var target_count := get_inventory_stack_count(target_slot)
+	var max_stack_count: int = mini(source_card.max_stack_count, target_card.max_stack_count)
+	if target_count >= max_stack_count:
+		return
+	var moved_count := mini(source_count, max_stack_count - target_count)
+	if moved_count <= 0:
+		return
+	powerup_inventory_stack_counts[target_slot] = target_count + moved_count
+	var remaining_source_count := source_count - moved_count
+	if remaining_source_count <= 0:
+		_reset_inventory_slot(source_slot)
+	else:
+		powerup_inventory_stack_counts[source_slot] = remaining_source_count
+	inventory_updated.emit(get_inventory_display_data())
+	EventManager.emit_event(EventManager.Events.POWERUP_COLLECTED, [player_node, target_card, target_slot])
+
+func _get_activation_stack_count(powerup_card: BasePowerupCard, inventory_stack_count: int) -> int:
+	if GameManager.is_poker_mode() and powerup_card.type == GameManager.get_poker_featured_card_type():
+		return powerup_card.max_stack_count
+	if GameManager.is_shuffle_mode():
+		return clampi(inventory_stack_count, 1, powerup_card.max_stack_count)
+	return 1
+
+func _apply_powerup_activation(powerup_card: BasePowerupCard, activation_stack_count: int) -> void:
+	var existing_powerup = _get_active_powerup_of_type(powerup_card.type)
+	if GameManager.is_poker_mode():
+		if powerup_card.type == GameManager.get_poker_featured_card_type():
+			if existing_powerup:
+				existing_powerup.set_stack_count(activation_stack_count)
+			else:
+				_create_active_powerup(powerup_card, activation_stack_count)
+			return
+		if existing_powerup:
+			existing_powerup.set_stack_count(1)
+			return
+		_create_active_powerup(powerup_card, 1)
+		return
+	if existing_powerup:
+		existing_powerup.add_stack(activation_stack_count)
+	else:
+		_create_active_powerup(powerup_card, activation_stack_count)
+
+func _create_active_powerup(powerup_card: BasePowerupCard, stack_count: int) -> void:
+	var active_powerup = ActivePowerup.new(powerup_card, player_node, stack_count)
+	active_powerup.powerup_expired.connect(_on_powerup_expired)
+	active_powerups.append(active_powerup)
+	add_child(active_powerup)
+
+func _set_inventory_slot(slot_index: int, powerup_card: BasePowerupCard, stack_count: int) -> void:
+	powerup_inventory[slot_index] = powerup_card
+	powerup_inventory_stack_counts[slot_index] = stack_count if powerup_card != null else 0
+
+func _reset_inventory_slot(slot_index: int) -> void:
+	if slot_index < 0 or slot_index >= MAX_INVENTORY_SLOTS:
+		return
+	powerup_inventory[slot_index] = null
+	powerup_inventory_stack_counts[slot_index] = 0
