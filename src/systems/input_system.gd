@@ -140,6 +140,9 @@ func is_drop_weapon_pressed() -> bool:
 func is_powerup_details_held() -> bool:
 	return Input.is_action_pressed("powerup_details")
 
+func is_powerup_shuffle_held() -> bool:
+	return Input.is_action_pressed("powerup_shuffle")
+
 func is_scoreboard_held() -> bool:
 	return Input.is_action_pressed("scoreboard")
 

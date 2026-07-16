@@ -35,11 +35,11 @@ func _process(_delta):
 func _check_powerup_inputs():
 	var slot_index: int = InputManager.get_powerup_slot_use_index()
 	if slot_index < 0:
-		if not InputManager.is_powerup_details_held():
+		if not InputManager.is_powerup_shuffle_held():
 			_shuffle_selected_slot = -1
 		return
 	
-	if GameManager.is_shuffle_mode() and InputManager.is_powerup_details_held():
+	if GameManager.is_shuffle_mode() and InputManager.is_powerup_shuffle_held():
 		_handle_shuffle_slot_pressed(slot_index)
 	else:
 		_shuffle_selected_slot = -1

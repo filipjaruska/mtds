@@ -397,7 +397,7 @@ text = "Dash"
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = "Space / Shift"
+text = "Space"
 horizontal_alignment = 2
 
 [node name="Interact" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
@@ -534,6 +534,23 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "F1"
+horizontal_alignment = 2
+
+[node name="PowerupShuffle" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupShuffle"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Shuffle Merge"
+
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer/PowerupShuffle"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Shift"
 horizontal_alignment = 2
 
 [node name="Scoreboard" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer"]
@@ -811,6 +828,23 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "Select / View"
+horizontal_alignment = 2
+
+[node name="PowerupShuffle" type="HBoxContainer" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Action" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupShuffle"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Shuffle Merge"
+
+[node name="Binding" type="Label" parent="MarginContainer/ContentPanel/TabContainer/Controller/ScrollContainer/VBoxContainer/PowerupShuffle"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "RB"
 horizontal_alignment = 2
 
 [connection signal="toggled" from="MarginContainer/ContentPanel/TabContainer/GameSettings/VBoxContainer/SkipSplash" to="." method="_on_skip_splash_toggled"]

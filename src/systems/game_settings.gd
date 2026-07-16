@@ -21,6 +21,7 @@ const REBINDABLE_ACTIONS: Array[String] = [
 	"powerup_slot_3",
 	"powerup_slot_4",
 	"powerup_details",
+	"powerup_shuffle",
 	"scoreboard",
 ]
 
@@ -36,6 +37,7 @@ func _ready() -> void:
 	_settings_path = _resolve_settings_path()
 	_store_default_keybinds()
 	load_settings()
+	_ensure_dash_does_not_use_shift()
 
 
 func _resolve_settings_path() -> String:
@@ -128,6 +130,25 @@ func _load_keybinds(config: ConfigFile) -> void:
 			var event := deserialize_event(item)
 			if event:
 				InputMap.action_add_event(action, event)
+
+	_ensure_dash_does_not_use_shift()
+
+
+## Shift is reserved for shuffle merge; strip it from dash even if saved keybinds still have it.
+func _ensure_dash_does_not_use_shift() -> void:
+	if not InputMap.has_action("dash"):
+		return
+	var removed := false
+	for event: InputEvent in InputMap.action_get_events("dash"):
+		if event is InputEventKey and (event as InputEventKey).physical_keycode == KEY_SHIFT:
+			InputMap.action_erase_event("dash", event)
+			removed = true
+	if removed and InputMap.action_get_events("dash").is_empty():
+		var space := InputEventKey.new()
+		space.physical_keycode = KEY_SPACE
+		InputMap.action_add_event("dash", space)
+	if removed:
+		save_settings()
 
 
 func reset_keybinds_to_defaults() -> void:

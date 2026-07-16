@@ -29,6 +29,7 @@ const KEYBIND_ROWS: Dictionary = {
 	"PowerupSlot3": "powerup_slot_3",
 	"PowerupSlot4": "powerup_slot_4",
 	"PowerupDetails": "powerup_details",
+	"PowerupShuffle": "powerup_shuffle",
 	"Scoreboard": "scoreboard",
 }
 

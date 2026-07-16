@@ -13,7 +13,7 @@ const GAME_MODE_OPTIONS := [
 ]
 const GAME_MODE_DESCRIPTIONS := {
 	"deathmatch": "Cards stack only after you activate matching pickups.",
-	"deathmatch+shuffle": "Hold the details key and press slots to merge matching cards in inventory up to x4.",
+	"deathmatch+shuffle": "Hold Shift (RB on controller) and press slots to merge matching cards in inventory up to x4.",
 	"deathmatch+poker": "One random card type is worth x4 for the whole match; all others stay single-stack.",
 }
 
