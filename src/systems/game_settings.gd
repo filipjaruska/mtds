@@ -27,6 +27,7 @@ const REBINDABLE_ACTIONS: Array[String] = [
 const MOVEMENT_ACTIONS: Array[String] = ["ui_up", "ui_down", "ui_left", "ui_right"]
 
 var skip_splash: bool = true
+var player_color: Color = Color.WHITE
 var _settings_path: String = ""
 var _default_keybinds: Dictionary = {}
 
@@ -65,6 +66,12 @@ func load_settings() -> void:
 		return
 
 	skip_splash = bool(config.get_value(SECTION, "skip_splash", false))
+	var saved_color: Variant = config.get_value(SECTION, "player_color", Color.WHITE)
+	if saved_color is Color:
+		player_color = saved_color
+	elif typeof(saved_color) == TYPE_STRING:
+		player_color = Color.html(str(saved_color))
+	player_color.a = 1.0
 	_load_keybinds(config)
 
 
@@ -72,12 +79,19 @@ func save_settings() -> void:
 	var config := ConfigFile.new()
 	config.load(_settings_path)
 	config.set_value(SECTION, "skip_splash", skip_splash)
+	config.set_value(SECTION, "player_color", player_color)
 	_save_keybinds(config)
 	config.save(_settings_path)
 
 
 func set_skip_splash(enabled: bool) -> void:
 	skip_splash = enabled
+	save_settings()
+
+
+func set_player_color(color: Color) -> void:
+	player_color = color
+	player_color.a = 1.0
 	save_settings()
 
 

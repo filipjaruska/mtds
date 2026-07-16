@@ -11,6 +11,7 @@ func _ready():
 		currentPlayer.name = str(player_id)
 		currentPlayer.set_multiplayer_authority(player_id)
 		currentPlayer.set_player_name(str(GameManager.players[i].name))
+		currentPlayer.set_player_color(_player_color_from_data(GameManager.players[i]))
 		add_child(currentPlayer)
 		for spawn in get_tree().get_nodes_in_group("PlayerSpawnLocation"):
 			if spawn.name == str(index):
@@ -18,6 +19,18 @@ func _ready():
 		index += 1
 	
 	call_deferred("_equip_default_weapons")
+
+func _player_color_from_data(player_data: Dictionary) -> Color:
+	var color_value: Variant = player_data.get("color", Color.WHITE)
+	if color_value is Color:
+		var tint: Color = color_value
+		tint.a = 1.0
+		return tint
+	if typeof(color_value) == TYPE_STRING:
+		var tint := Color.html(str(color_value))
+		tint.a = 1.0
+		return tint
+	return Color.WHITE
 
 func _equip_default_weapons() -> void:
 	if default_weapon_scene == null:

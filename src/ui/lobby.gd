@@ -40,10 +40,12 @@ func _ready() -> void:
 	_sync_game_mode_dropdown(GameManager.get_game_mode())
 	_setup_ui_for_role()
 	
+	var player_color: Color = GameSettings.player_color
+	player_color.a = 1.0
 	if multiplayer.get_unique_id() != 1:
-		send_player.rpc_id(1, multiplayer.get_unique_id(), player_name)
+		send_player.rpc_id(1, multiplayer.get_unique_id(), player_name, player_color)
 	else:
-		GameManager.add_player(1, {"id": 1, "name": player_name})
+		GameManager.add_player(1, {"id": 1, "name": player_name, "color": player_color})
 		player_ready_states[1] = true
 		_update_player_list()
 
@@ -107,15 +109,21 @@ func _on_player_disconnected(id: int) -> void:
 	_check_ready_state()
 
 @rpc("any_peer")
-func send_player(id: int, player_name: String) -> void:
+func send_player(id: int, player_name: String, color: Color = Color.WHITE) -> void:
+	var tint := color
+	tint.a = 1.0
 	if not GameManager.players.has(id):
-		GameManager.add_player(id, {"id": id, "name": player_name})
+		GameManager.add_player(id, {"id": id, "name": player_name, "color": tint})
 		player_ready_states[id] = false
+	else:
+		GameManager.players[id]["name"] = player_name
+		GameManager.players[id]["color"] = tint
 	
 	if multiplayer.is_server():
 		for player_id in GameManager.players:
 			var player_data = GameManager.get_player(player_id)
-			send_player.rpc(player_id, player_data.name)
+			var synced_color: Color = player_data.get("color", Color.WHITE)
+			send_player.rpc(player_id, player_data.name, synced_color)
 		sync_lobby_game_mode.rpc_id(id, GameManager.get_game_mode())
 		sync_ready_states.rpc(player_ready_states)
 	
