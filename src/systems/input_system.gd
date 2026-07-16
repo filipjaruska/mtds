@@ -51,8 +51,10 @@ func _is_gamepad_input_detected() -> bool:
 func _is_keyboard_mouse_input_detected() -> bool:
 	return Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or \
 		   Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) or \
-		   Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_A) or \
-		   Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_D)
+		   Input.get_action_strength("ui_left") > 0.0 or \
+		   Input.get_action_strength("ui_right") > 0.0 or \
+		   Input.get_action_strength("ui_up") > 0.0 or \
+		   Input.get_action_strength("ui_down") > 0.0
 
 ## Get the movement vector from input with proper analog magnitude and deadzone handling
 ##
@@ -136,10 +138,10 @@ func is_drop_weapon_pressed() -> bool:
 		return Input.is_joy_button_pressed(0, JOY_BUTTON_RIGHT_STICK)
 
 func is_powerup_details_held() -> bool:
-	return Input.is_action_pressed("powerup_details") or Input.is_key_pressed(KEY_F1)
+	return Input.is_action_pressed("powerup_details")
 
 func is_scoreboard_held() -> bool:
-	return Input.is_action_pressed("scoreboard") or Input.is_key_pressed(KEY_TAB)
+	return Input.is_action_pressed("scoreboard")
 
 func get_powerup_slot_use_index() -> int:
 	if Input.is_action_just_pressed("powerup_slot_1"):
