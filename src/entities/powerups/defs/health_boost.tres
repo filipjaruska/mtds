@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PowerupDef" format=3]
+
+[ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"health_boost"
+display_name = "Warmog"
+description = "Increases maximum health by 25%"
+rarity_color = Color(0, 0, 1, 1)
+duration = 45.0
+max_uses = 0
+uses_per_stack = 0
+consume_use_on_fire = false
+max_stack_count = 4
+stack_multiplier = 1.5
+stack_bonus_per_card = 0.15
+modifiers = {
+"max_health_mult": 0.25
+}
+ability = &""
+ability_params = {}

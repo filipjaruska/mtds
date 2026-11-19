@@ -34,6 +34,12 @@ var dash_timer: SceneTreeTimer = null
 
 func _ready():
 	last_dash_time = Time.get_ticks_msec() - dash_cooldown
+	var powerup_manager: PowerupManager = get_parent().get_node_or_null("PowerupManager")
+	if powerup_manager:
+		powerup_manager.active_changed.connect(func(_active: Array) -> void:
+			_dash_cooldown_reduction = minf(float(powerup_manager.get_modifiers().get("dash_cooldown_reduction", 0.0)), 0.9)
+			_recompute_dash_cooldown()
+		)
 	_recompute_current_speed()
 	# TODO: defers cool, ensures all components are ready
 	call_deferred("_setup_multiplayer_authority")
@@ -161,14 +167,6 @@ func _update_fire_slow() -> void:
 
 func set_base_dash_cooldown(value: float) -> void:
 	base_dash_cooldown = value
-	_recompute_dash_cooldown()
-
-func apply_dash_cooldown_reduction(reduction: float) -> void:
-	_dash_cooldown_reduction = minf(_dash_cooldown_reduction + reduction, 0.9)
-	_recompute_dash_cooldown()
-
-func remove_dash_cooldown_reduction(reduction: float) -> void:
-	_dash_cooldown_reduction = maxf(_dash_cooldown_reduction - reduction, 0.0)
 	_recompute_dash_cooldown()
 
 func _recompute_dash_cooldown() -> void:

@@ -80,6 +80,70 @@ func _run() -> void:
 	await frames(3)
 	check(holder.loadout.slots.size() == 1 and LoadoutRules.active(holder.loadout).def == &"pistol", "reset to pistol on death")
 	check(map.has_node("DroppedWeapon_2"), "death dropped the shotgun")
+	await _powerups(map, player, holder)
 
 	print("SMOKE: %d failures" % _failures.size())
 	quit(1 if not _failures.is_empty() else 0)
+
+func wait_until(condition: Callable, timeout_sec: float) -> bool:
+	var deadline := Time.get_ticks_msec() + int(timeout_sec * 1000.0)
+	while Time.get_ticks_msec() < deadline:
+		if condition.call():
+			return true
+		await process_frame
+	return false
+
+func _collect(map: Node, player: Node2D, spawner_name: String) -> bool:
+	var found := await wait_until(func(): return _pickup_of(map, spawner_name) != null, 5.0)
+	if not found:
+		return false
+	player.global_position = _pickup_of(map, spawner_name).global_position
+	await frames(4)
+	await tap("interact")
+	await frames(3)
+	return true
+
+func _pickup_of(map: Node, spawner_name: String) -> Node2D:
+	for child in map.get_children():
+		if String(child.name).begins_with("Powerup_%s_" % spawner_name):
+			return child
+	return null
+
+func _powerups(map: Node, player: Node2D, holder) -> void:
+	var pm = player.get_node("PowerupManager")
+	
+	# Dual Wield (PowerupSpawner2): collect, use, empty both magazines.
+	check(await _collect(map, player, "PowerupSpawner2"), "dual wield pickup spawned")
+	check(pm.inventory[0].def == &"dual_wield", "dual wield in slot 1, inventory=%s" % [pm.inventory])
+	await wait_until(func(): return not WeaponRules.is_reloading(LoadoutRules.active(holder.loadout), Time.get_ticks_msec()), 3.0)
+	await tap("powerup_slot_1")
+	check(LoadoutRules.is_dual(holder.loadout), "dual wield enabled by the powerup")
+	check(holder.loadout.offhand.get("def") == &"pistol", "off hand mirrors the pistol")
+	Input.action_press("shoot")
+	await wait_until(func(): return not LoadoutRules.is_dual(holder.loadout), 25.0)
+	Input.action_release("shoot")
+	check(not LoadoutRules.is_dual(holder.loadout), "dual ends when both magazines are empty")
+	check(PowerupRules.entry_with_ability(pm.active, &"dual_wield").is_empty(), "dual powerup expired with it")
+	
+	# Burst (PowerupSpawner3): one trigger pull empties the magazine.
+	await tap("reload")
+	await wait_until(func(): return LoadoutRules.active(holder.loadout).ammo == 16, 3.0)
+	check(await _collect(map, player, "PowerupSpawner3"), "burst pickup spawned")
+	await tap("powerup_slot_1")
+	check(not PowerupRules.entry_with_ability(pm.active, &"burst").is_empty(), "burst active")
+	await tap("shoot")
+	check(await wait_until(func(): return LoadoutRules.active(holder.loadout).ammo == 0, 3.0), "burst emptied the magazine, ammo=%s" % LoadoutRules.active(holder.loadout).ammo)
+	check(await wait_until(func(): return PowerupRules.entry_with_ability(pm.active, &"burst").is_empty(), 1.0), "burst used up")
+	
+	# Stat powerups are derived, not mutated: they apply and vanish cleanly.
+	pm._sync_activate.rpc(&"damage_boost", 1)
+	check(is_equal_approx(holder.stats_for(&"pistol").damage, 12.0), "damage boost applies")
+	pm.expire(&"damage_boost")
+	check(is_equal_approx(holder.stats_for(&"pistol").damage, 10.0), "damage back to base")
+	
+	var health = player.get_health_component()
+	pm._sync_activate.rpc(&"health_boost", 1)
+	check(is_equal_approx(health.max_health, 125.0), "health boost raises max health, got %s" % health.max_health)
+	pm.expire(&"health_boost")
+	check(is_equal_approx(health.max_health, 100.0), "max health back to base")
+	print("powerup scenarios done, dual/burst/boosts checked")

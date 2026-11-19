@@ -13,15 +13,11 @@ const DUAL_WIELD_VERTICAL_SPACING := 18.0
 
 @onready var player: Node2D = $"../.."
 @onready var player_controller: Node2D = get_parent()
-@onready var powerup_manager: Node = player.get_node_or_null("PowerupManager")
+@onready var powerup_manager: PowerupManager = player.get_node_or_null("PowerupManager")
 @onready var health: HealthComponent = player.get_node_or_null("HealthComponent")
 
 ## The single source of truth for this player's weapons (see LoadoutRules).
 var loadout: Dictionary = LoadoutRules.empty()
-
-# Interim stat modifiers written by the powerup cards.
-var damage_multiplier: float = 1.0
-var reload_speed_multiplier: float = 1.0
 
 var _views: Array[WeaponView] = []
 var _view_defs: Array[StringName] = []
@@ -33,6 +29,8 @@ var _next_drop_at: int = 0
 
 func _ready() -> void:
 	_rng.randomize()
+	if powerup_manager:
+		powerup_manager.active_changed.connect(_on_powerups_changed)
 	# Authority is assigned before the player enters the tree; wait one frame so
 	# every peer has spawned its copy of this player before syncing.
 	call_deferred("_initialize")
@@ -168,7 +166,26 @@ func _fire_shots(hand: StringName, offsets: Array[float], stats: Dictionary) -> 
 func _end_dual_wield() -> void:
 	_commit(LoadoutRules.disable_dual(loadout), true)
 	if powerup_manager:
-		powerup_manager.expire_active_powerup_of_type(BasePowerupCard.PowerupType.DUAL_WIELD)
+		powerup_manager.expire_ability(&"dual_wield")
+
+## Dual wielding follows the Dual Wield powerup: derive it instead of being told.
+func _on_powerups_changed(_active: Array) -> void:
+	if not is_multiplayer_authority():
+		return
+	var spread := powerup_manager.get_dual_wield_spread()
+	var is_dual := LoadoutRules.is_dual(loadout)
+	if spread < 0.0:
+		if is_dual:
+			_commit(LoadoutRules.disable_dual(loadout), true)
+		return
+	if is_dual and is_equal_approx(spread, loadout.dual_spread):
+		return
+	var next := LoadoutRules.enable_dual(loadout, spread)
+	if LoadoutRules.is_dual(next):
+		_commit(next, true)
+	else:
+		# Nothing to mirror (e.g. empty magazine): the powerup ends right away.
+		powerup_manager.expire_ability(&"dual_wield")
 
 # --- Helpers ----------------------------------------------------------------
 
@@ -188,11 +205,9 @@ func stats_for(def_id: StringName) -> Dictionary:
 	return WeaponRules.effective_stats(WeaponDefs.get_def(def_id), _modifiers())
 
 func _modifiers() -> Dictionary:
-	return {
-		"damage_mult": damage_multiplier - 1.0,
-		"reload_mult": reload_speed_multiplier - 1.0,
-		"spread_mult": loadout.dual_spread if LoadoutRules.is_dual(loadout) else 0.0,
-	}
+	var mods: Dictionary = powerup_manager.get_modifiers() if powerup_manager else {}
+	mods["spread_mult"] = loadout.dual_spread if LoadoutRules.is_dual(loadout) else 0.0
+	return mods
 
 ## Replaces the loadout and refreshes everything derived from it.
 func _commit(next: Dictionary, sync: bool) -> void:
@@ -297,24 +312,6 @@ func has_weapon(def_id: StringName) -> bool:
 
 func is_dual_wield_active() -> bool:
 	return LoadoutRules.is_dual(loadout)
-
-## Only the owner changes its loadout; other peers receive the result via sync.
-func enable_dual_wield(spread_mult: float, _unused: Dictionary = {}) -> bool:
-	if not is_multiplayer_authority():
-		return true
-	var next := LoadoutRules.enable_dual(loadout, spread_mult)
-	if not LoadoutRules.is_dual(next):
-		return false
-	_commit(next, true)
-	return true
-
-func update_dual_wield_spread(spread_mult: float) -> void:
-	if is_multiplayer_authority() and LoadoutRules.is_dual(loadout):
-		_commit(LoadoutRules.enable_dual(loadout, spread_mult), true)
-
-func disable_dual_wield() -> void:
-	if is_multiplayer_authority() and LoadoutRules.is_dual(loadout):
-		_commit(LoadoutRules.disable_dual(loadout), true)
 
 ## Drops one random non-default weapon and resets to the default loadout.
 func reset_on_death() -> void:

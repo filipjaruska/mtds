@@ -4,7 +4,6 @@
 
 [node name="PowerupSpawner" type="Node2D"]
 script = ExtResource("1_spawner")
-spawn_type = 0
 spawn_frequency = 15.0
 max_powerups = 5
 use_spawn_area = true

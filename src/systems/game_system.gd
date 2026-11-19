@@ -31,7 +31,7 @@ var game_settings: Dictionary = {
 var match_time_remaining: float = 0.0
 var match_end_time_msec: int = 0
 var match_stats: Dictionary = {}
-var poker_featured_card_type: int = -1
+var poker_featured_id: StringName = &""
 
 var _match_timer: Timer
 var _match_stats_dirty: bool = false
@@ -73,13 +73,12 @@ func is_shuffle_mode() -> bool:
 func is_poker_mode() -> bool:
 	return get_game_mode() == GAME_MODE_POKER
 
-func get_poker_featured_card_type() -> int:
-	return poker_featured_card_type
+func get_poker_featured_id() -> StringName:
+	return poker_featured_id
 
 func get_poker_featured_card_display_name() -> String:
-	if poker_featured_card_type < 0:
-		return ""
-	return BasePowerupCard.PowerupType.keys()[poker_featured_card_type].replace("_", " ").capitalize()
+	var def := PowerupDefs.get_def(poker_featured_id) if poker_featured_id != &"" else null
+	return def.get_display_name() if def else ""
 
 ## Add a new player to the game
 ##
@@ -186,7 +185,7 @@ func start_match() -> void:
 	if not multiplayer.is_server():
 		return
 	
-	sync_match_mode_state.rpc(get_game_mode(), poker_featured_card_type)
+	sync_match_mode_state.rpc(get_game_mode(), poker_featured_id)
 	# Send the remaining duration, not an absolute tick value: Time.get_ticks_msec()
 	# is process uptime and differs on every machine.
 	sync_match_timer.rpc(duration)
@@ -206,7 +205,7 @@ func _stop_match(broadcast_stats: bool) -> void:
 	_stop_match_timer()
 	match_end_time_msec = 0
 	match_time_remaining = 0.0
-	poker_featured_card_type = -1
+	poker_featured_id = &""
 	if broadcast_stats:
 		reset_match_stats()
 	else:
@@ -370,15 +369,14 @@ func _stop_match_timer() -> void:
 		_match_timer.stop()
 
 func _prepare_match_mode_state() -> void:
-	poker_featured_card_type = -1
+	poker_featured_id = &""
 	if is_poker_mode():
-		var card_type_keys: Array = BasePowerupCard.PowerupType.keys()
-		poker_featured_card_type = randi_range(0, card_type_keys.size() - 1)
+		poker_featured_id = PowerupDefs.random_id()
 
 @rpc("authority", "call_local", "reliable")
-func sync_match_mode_state(game_mode: String, featured_card_type: int) -> void:
+func sync_match_mode_state(game_mode: String, featured_id: StringName) -> void:
 	set_game_mode(game_mode)
-	poker_featured_card_type = featured_card_type
+	poker_featured_id = featured_id
 
 @rpc("authority", "call_local", "reliable")
 func sync_match_timer(remaining_seconds: float) -> void:

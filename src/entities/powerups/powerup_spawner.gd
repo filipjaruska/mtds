@@ -1,18 +1,8 @@
 extends Node2D
 class_name PowerupSpawner
+## Host-driven powerup spawner. Leave `powerup_def` empty to spawn random cards.
 
-enum SpawnType {
-	RANDOM,
-	FASTER_DASH,
-	DAMAGE_BOOST,
-	HEALTH_BOOST,
-	RELOAD_SPEED,
-	BURST,
-	ARMOR,
-	DUAL_WIELD
-}
-
-@export var spawn_type: SpawnType = SpawnType.RANDOM
+@export var powerup_def: PowerupDef
 @export var spawn_frequency: float = 15.0
 @export var max_powerups: int = 5
 @export_group("Spawn Area")
@@ -23,7 +13,7 @@ var spawn_timer: Timer
 var current_powerups: int = 0
 var spawn_counter: int = 0
 
-func _ready():
+func _ready() -> void:
 	if multiplayer.is_server():
 		spawn_timer = Timer.new()
 		add_child(spawn_timer)
@@ -31,82 +21,41 @@ func _ready():
 		spawn_timer.start(spawn_frequency)
 	queue_redraw()
 
-func _spawn_powerup():
+func _spawn_powerup() -> void:
 	if current_powerups >= max_powerups:
 		return
-	
-	var powerup_type_index = _get_powerup_type_index()
-	var spawn_position = _get_spawn_position()
+	var def_id: StringName = powerup_def.id if powerup_def else PowerupDefs.random_id()
 	spawn_counter += 1
-	
-	_spawn_powerup_at.rpc(powerup_type_index, spawn_position, spawn_counter)
+	_spawn_powerup_at.rpc(def_id, _get_spawn_position(), spawn_counter)
 
 @rpc("authority", "call_local", "reliable")
-func _spawn_powerup_at(powerup_type_index: int, spawn_position: Vector2, unique_id: int):
-	var card = _create_card_by_index(powerup_type_index)
-	var powerup_pickup = PowerupPickup.create_pickup(card, spawn_position)
-	powerup_pickup.name = "PowerupPickup_" + str(unique_id)
-	
-	get_parent().add_child(powerup_pickup, true) # true = use deferred call
+func _spawn_powerup_at(def_id: StringName, spawn_position: Vector2, unique_id: int) -> void:
+	var def := PowerupDefs.get_def(def_id)
+	if def == null:
+		return
+	var pickup := PowerupPickup.create_pickup(def, spawn_position)
+	# Include the spawner's name: several spawners share the same parent, and
+	# the name must be identical on every peer for the pickup's RPCs.
+	pickup.name = "Powerup_%s_%d" % [name, unique_id]
+	get_parent().add_child(pickup)
 	current_powerups += 1
-	powerup_pickup.tree_exiting.connect(_on_powerup_picked_up)
+	pickup.tree_exiting.connect(_on_powerup_removed)
 
-func _get_powerup_type_index() -> int:
-	match spawn_type:
-		SpawnType.FASTER_DASH:
-			return 0
-		SpawnType.DAMAGE_BOOST:
-			return 1
-		SpawnType.HEALTH_BOOST:
-			return 2
-		SpawnType.RELOAD_SPEED:
-			return 3
-		SpawnType.BURST:
-			return 4
-		SpawnType.ARMOR:
-			return 5
-		SpawnType.DUAL_WIELD:
-			return 6
-		_:
-			return randi() % 7 # Random (SpawnType.size() - 1)
-
-func _on_powerup_picked_up():
-	current_powerups = max(0, current_powerups - 1)
-
-func _create_card_by_index(index: int) -> BasePowerupCard:
-	match index:
-		0:
-			return PowerupFactory.create_faster_dash()
-		1:
-			return PowerupFactory.create_damage_boost()
-		2:
-			return PowerupFactory.create_health_boost()
-		3:
-			return PowerupFactory.create_reload_speed()
-		4:
-			return PowerupFactory.create_burst()
-		5:
-			return PowerupFactory.create_armor()
-		6:
-			return PowerupFactory.create_dual_wield()
-		_:
-			return PowerupFactory.create_faster_dash()
+func _on_powerup_removed() -> void:
+	current_powerups = maxi(0, current_powerups - 1)
 
 func _get_spawn_position() -> Vector2:
 	if use_spawn_area and spawn_area_size != Vector2.ZERO:
-		var half_size = spawn_area_size / 2
-		var random_offset = Vector2(
+		var half_size := spawn_area_size / 2
+		return global_position + Vector2(
 			randf_range(-half_size.x, half_size.x),
 			randf_range(-half_size.y, half_size.y)
 		)
-		return global_position + random_offset
-	else:
-		return global_position
+	return global_position
 
-func _draw():
-	if not use_spawn_area:
+func _draw() -> void:
+	if not use_spawn_area or not Engine.is_editor_hint() and not OS.is_debug_build():
 		return
-	
-	var half_size = spawn_area_size / 2
+	var half_size := spawn_area_size / 2
 	draw_rect(Rect2(-half_size, spawn_area_size), Color(0, 1, 0, 0.2), true)
 	draw_rect(Rect2(-half_size, spawn_area_size), Color(0, 1, 0, 0.8), false, 3.0)

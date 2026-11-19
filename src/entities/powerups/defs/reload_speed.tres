@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PowerupDef" format=3]
+
+[ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"reload_speed"
+display_name = "Quick Reload"
+description = "Increases reload speed by 30%"
+rarity_color = Color(1, 1, 0, 1)
+duration = 20.0
+max_uses = 0
+uses_per_stack = 0
+consume_use_on_fire = false
+max_stack_count = 4
+stack_multiplier = 1.8
+stack_bonus_per_card = 0.1
+modifiers = {
+"reload_mult": 0.3
+}
+ability = &""
+ability_params = {}

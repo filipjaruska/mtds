@@ -77,8 +77,15 @@ func _run_host() -> void:
 	check(is_equal_approx(host_health.current_health, 90.0), "host took 10 damage, has %s" % host_health.current_health)
 	check(is_equal_approx(gm.match_stats.get(client_id, {}).get("damage_dealt", 0.0), 10.0), "damage stat recorded for client")
 
-	# Host kills the client; the host decides the respawn.
+	# The client activates Armor and Dual Wield; the host must mirror both.
+	var client_pm = _player(client_id).get_node("PowerupManager")
+	check(await wait_until(func(): return not PowerupRules.find(client_pm.active, &"armor").is_empty(), 6.0), "host mirrors client's armor")
+	check(await wait_until(func(): return LoadoutRules.is_dual(client_holder.loadout), 6.0), "host mirrors client's dual wield loadout")
 	var client_health = _player(client_id).get_health_component()
+	client_health.apply_damage(20.0, 0.0, 1)
+	check(is_equal_approx(client_health.current_health, 83.0), "armor reduced damage on the host, hp=%s" % client_health.current_health)
+	
+	# Host kills the client; the host decides the respawn.
 	client_health.apply_damage(500.0, 0.0, 1)
 	check(client_health.is_dead, "client dead on host")
 	check(gm.match_stats.get(1, {}).get("kills", 0) == 1, "kill recorded for host")
@@ -113,6 +120,11 @@ func _run_client() -> void:
 	var host_health = host.get_health_component()
 	check(await wait_until(func(): return host_health.current_health < 100.0, 6.0), "client sees host damaged")
 	check(is_equal_approx(host_health.current_health, 90.0), "client sees host at 90, got %s" % host_health.current_health)
+	
+	var my_pm = me.get_node("PowerupManager")
+	my_pm._sync_activate.rpc(&"armor", 1)
+	my_pm._sync_activate.rpc(&"dual_wield", 1)
+	check(LoadoutRules.is_dual(me.get_weapon_holder().loadout), "client dual wields")
 
 	var my_health = me.get_health_component()
 	check(await wait_until(func(): return my_health.is_dead, 6.0), "client sees own death")

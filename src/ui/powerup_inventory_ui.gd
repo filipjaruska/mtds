@@ -93,7 +93,7 @@ func _tween_expand_state() -> void:
 		_expand_tween.tween_property(slot, "custom_minimum_size", target_slot_size, DETAILS_TWEEN_DURATION)
 
 		var slot_data := current_inventory[i] if i < current_inventory.size() else {}
-		var card: BasePowerupCard = slot_data.get("card", null)
+		var card: PowerupDef = slot_data.get("card", null)
 		var overlay: Control = slot.get_node_or_null("DetailOverlay")
 		var label: Label = slot.get_node("Label")
 
@@ -122,7 +122,7 @@ func _on_expand_tween_finished() -> void:
 		var slot = inventory_slots[i]
 		var overlay: Control = slot.get_node_or_null("DetailOverlay")
 		var slot_data := current_inventory[i] if i < current_inventory.size() else {}
-		var card: BasePowerupCard = slot_data.get("card", null)
+		var card: PowerupDef = slot_data.get("card", null)
 		if overlay and not _expanded:
 			overlay.visible = false
 		var label: Label = slot.get_node("Label")
@@ -205,7 +205,7 @@ func _update_display(inventory: Array[Dictionary]):
 	for i in range(inventory_slots.size()):
 		var slot = inventory_slots[i]
 		var slot_data := inventory[i] if i < inventory.size() else {}
-		var card: BasePowerupCard = slot_data.get("card", null)
+		var card: PowerupDef = slot_data.get("card", null)
 		var stack_count: int = slot_data.get("count", 0)
 		var selected: bool = slot_data.get("selected", false)
 		_update_slot(slot, card, stack_count, i + 1, selected)
@@ -251,7 +251,7 @@ func _create_detail_overlay(slot: Control) -> void:
 	description_label.modulate = Color(0.85, 0.85, 0.85)
 	content.add_child(description_label)
 
-func _update_slot(slot: Control, card: BasePowerupCard, stack_count: int, slot_number: int, selected: bool):
+func _update_slot(slot: Control, card: PowerupDef, stack_count: int, slot_number: int, selected: bool):
 	var icon = slot.get_node("Icon")
 	var label = slot.get_node("Label")
 	var hotkey = slot.get_node("Hotkey")
@@ -318,7 +318,7 @@ func _get_hotkey_label(slot_number: int) -> String:
 		return GAMEPAD_HOTKEYS[slot_number - 1]
 	return str(slot_number)
 
-func _update_slot_overlay(slot: Control, card: BasePowerupCard) -> void:
+func _update_slot_overlay(slot: Control, card: PowerupDef) -> void:
 	var overlay: Control = slot.get_node_or_null("DetailOverlay")
 	if not overlay:
 		return

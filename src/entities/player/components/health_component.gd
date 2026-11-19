@@ -8,6 +8,7 @@ const RESPAWN_DELAY := 1.0
 
 @onready var heal_timer: Timer = $HealthRegenTimer
 @onready var health_bar = $"../PlayerHealthBar"
+@onready var powerup_manager: PowerupManager = get_node_or_null("../PowerupManager")
 
 ## Base maximum health (set from the player's inspector values).
 @export var MAX_HEALTH: float = 100.0
@@ -21,14 +22,14 @@ var max_health: float
 var current_health: float
 var is_dead: bool = false
 
-# Interim powerup effects (replaced by modifiers when powerups become data).
-var damage_resistance: float = 0.0
 var max_health_bonus: float = 0.0
 
 func _ready() -> void:
 	max_health = MAX_HEALTH
 	current_health = max_health
 	heal_timer.one_shot = true
+	if powerup_manager:
+		powerup_manager.active_changed.connect(_on_powerups_changed)
 	call_deferred("_broadcast_health_change")
 
 ## Called by the player root with its configured max health.
@@ -36,9 +37,19 @@ func set_base_max_health(value: float) -> void:
 	MAX_HEALTH = value
 	_recompute_max_health()
 
-func set_max_health_bonus(bonus: float) -> void:
-	max_health_bonus = bonus
-	_recompute_max_health()
+## The host derives max health from the player's active powerups.
+func _on_powerups_changed(_active: Array) -> void:
+	if not _is_host():
+		return
+	var bonus: float = MAX_HEALTH * float(powerup_manager.get_modifiers().get("max_health_mult", 0.0))
+	if not is_equal_approx(bonus, max_health_bonus):
+		max_health_bonus = bonus
+		_recompute_max_health()
+
+func _damage_resistance() -> float:
+	if powerup_manager == null:
+		return 0.0
+	return float(powerup_manager.get_modifiers().get("damage_resist", 0.0))
 
 ## Raising max health also grants the difference; lowering it clamps.
 func _recompute_max_health() -> void:
@@ -57,7 +68,7 @@ func _recompute_max_health() -> void:
 func apply_damage(amount: float, penetration: float, attacker_id: int) -> void:
 	if not _is_host() or is_dead:
 		return
-	var final_damage := DamageRules.final_damage(amount, penetration, physical_resist + damage_resistance)
+	var final_damage := DamageRules.final_damage(amount, penetration, physical_resist + _damage_resistance())
 	if final_damage <= 0.0:
 		return
 	var result := DamageRules.apply(current_health, final_damage)
@@ -130,10 +141,8 @@ func _on_died() -> void:
 	var player := get_parent()
 	player.visible = false
 	if player.is_multiplayer_authority():
-		var powerup_manager = player.get_node_or_null("PowerupManager")
 		if powerup_manager:
-			powerup_manager.clear_inventory_on_death()
-			powerup_manager.clear_active_powerups_on_death()
+			powerup_manager.clear_on_death()
 		var weapon_holder = player.get_node_or_null("PlayerController/WeaponHolder")
 		if weapon_holder:
 			weapon_holder.reset_on_death()

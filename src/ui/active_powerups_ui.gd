@@ -7,6 +7,7 @@ const ROW_ENTER_DURATION := 0.15
 @onready var effects_container = $ScrollContainer/VBoxContainer
 
 var active_effect_displays: Array[Control] = []
+var _entries: Dictionary = {} # def id -> latest active entry
 
 func _ready():
 	effects_container.add_theme_constant_override("separation", 4)
@@ -15,39 +16,36 @@ func _ready():
 func _process(_delta: float):
 	_update_effect_timers()
 
-func update_active_powerups(active_powerups: Array[ActivePowerup]):
-	var existing_by_powerup: Dictionary = {}
+## `active` is PowerupManager.active: entries from PowerupRules. Rows are keyed
+## by powerup id and reused, so calling this every frame is cheap.
+func update_active_powerups(active: Array):
+	_entries.clear()
+	for entry in active:
+		_entries[entry.def] = entry
+	
+	var existing: Dictionary = {}
 	for display in active_effect_displays:
-		if is_instance_valid(display) and display.has_meta("powerup"):
-			existing_by_powerup[display.get_meta("powerup")] = display
-
+		if is_instance_valid(display):
+			existing[display.get_meta("powerup")] = display
+	
 	var kept: Array[Control] = []
-	var seen: Dictionary = {}
-
-	for powerup in active_powerups:
-		if not is_instance_valid(powerup):
+	for def_id in _entries:
+		if PowerupDefs.get_def(def_id) == null:
 			continue
-		seen[powerup] = true
-		if existing_by_powerup.has(powerup):
-			var display: Control = existing_by_powerup[powerup]
-			_refresh_static_labels(display, powerup)
-			kept.append(display)
+		if existing.has(def_id):
+			_refresh_static_labels(existing[def_id], _entries[def_id])
+			kept.append(existing[def_id])
+			existing.erase(def_id)
 		else:
-			var display := _create_effect_display(powerup)
+			var display := _create_effect_display(_entries[def_id])
 			effects_container.add_child(display)
 			kept.append(display)
 			_animate_row_in(display)
-
-	for powerup in existing_by_powerup.keys():
-		if seen.has(powerup):
-			continue
-		var display: Control = existing_by_powerup[powerup]
-		if is_instance_valid(display):
-			display.queue_free()
-
+	for display in existing.values():
+		display.queue_free()
 	active_effect_displays = kept
 
-func _create_effect_display(powerup: ActivePowerup) -> Control:
+func _create_effect_display(entry: Dictionary) -> Control:
 	var row := Control.new()
 	row.custom_minimum_size = ROW_MIN_SIZE
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -102,29 +100,25 @@ func _create_effect_display(powerup: ActivePowerup) -> Control:
 	uses_badge.visible = false
 	row.add_child(uses_badge)
 
-	var card = powerup.powerup_card
+	var card := PowerupDefs.get_def(entry.def)
 	if card.icon_texture:
 		icon.texture = card.icon_texture
 	icon.modulate = Color(card.rarity_color.r, card.rarity_color.g, card.rarity_color.b, 0.9)
 
-	row.set_meta("powerup", powerup)
-	_refresh_static_labels(row, powerup)
-	_update_row_progress(row, powerup)
+	row.set_meta("powerup", entry.def)
+	_refresh_static_labels(row, entry)
+	_update_row_progress(row, entry)
 	return row
 
-func _refresh_static_labels(display: Control, powerup: ActivePowerup) -> void:
-	var card = powerup.powerup_card
+func _refresh_static_labels(display: Control, entry: Dictionary) -> void:
+	var card := PowerupDefs.get_def(entry.def)
 	var name_label: Label = display.get_node("NameLabel")
 	var uses_badge: Label = display.get_node("UsesBadge")
-	var stack_suffix := ""
-	if powerup.stack_count > 1:
-		stack_suffix = " x%d" % powerup.stack_count
+	var stack_suffix := " x%d" % entry.stacks if entry.stacks > 1 else ""
 	name_label.text = card.get_display_name() + stack_suffix
-	if powerup.has_use_limit():
-		uses_badge.visible = true
-		uses_badge.text = str(powerup.get_remaining_uses())
-	else:
-		uses_badge.visible = false
+	uses_badge.visible = entry.uses_left >= 0
+	if uses_badge.visible:
+		uses_badge.text = str(entry.uses_left)
 
 func _animate_row_in(display: Control) -> void:
 	display.modulate.a = 0.0
@@ -133,19 +127,13 @@ func _animate_row_in(display: Control) -> void:
 
 func _update_effect_timers():
 	for display in active_effect_displays:
-		if not is_instance_valid(display):
-			continue
-		var powerup = display.get_meta("powerup")
-		if not is_instance_valid(powerup):
-			continue
-		_update_row_progress(display, powerup)
-		if powerup.has_use_limit():
-			display.get_node("UsesBadge").text = str(powerup.get_remaining_uses())
+		if is_instance_valid(display) and _entries.has(display.get_meta("powerup")):
+			_update_row_progress(display, _entries[display.get_meta("powerup")])
 
-func _update_row_progress(display: Control, powerup: ActivePowerup) -> void:
+func _update_row_progress(display: Control, entry: Dictionary) -> void:
 	var bar_fill: ColorRect = display.get_node("BarFill")
-	var percentage: float = clampf(powerup.get_remaining_time_percentage(), 0.0, 1.0)
-	var card = powerup.powerup_card
+	var percentage: float = PowerupRules.remaining_fraction(entry, Time.get_ticks_msec())
+	var card := PowerupDefs.get_def(entry.def)
 	var row_width: float = maxf(display.size.x, ROW_MIN_SIZE.x)
 	var bar_left := 28.0
 	var fill_width: float = maxf((row_width - bar_left) * percentage, 0.0)
@@ -159,26 +147,10 @@ func _update_row_progress(display: Control, powerup: ActivePowerup) -> void:
 	bar_fill.offset_top = 0.0
 	bar_fill.offset_bottom = 0.0
 
-	var uses_low: bool = powerup.has_use_limit() and powerup.get_remaining_uses() <= 3
+	var uses_low: bool = entry.uses_left >= 0 and entry.uses_left <= 3
 	if uses_low or percentage < 0.25:
 		bar_fill.color = Color(0.85, 0.3, 0.28, 0.35)
 	elif percentage < 0.5:
 		bar_fill.color = Color(0.9, 0.6, 0.25, 0.3)
 	else:
 		bar_fill.color = Color(card.rarity_color.r, card.rarity_color.g, card.rarity_color.b, 0.28)
-
-func add_powerup_effect(powerup: ActivePowerup):
-	var display = _create_effect_display(powerup)
-	effects_container.add_child(display)
-	active_effect_displays.append(display)
-	_animate_row_in(display)
-
-func remove_powerup_effect(powerup: ActivePowerup):
-	for i in range(active_effect_displays.size() - 1, -1, -1):
-		var display = active_effect_displays[i]
-		if display.get_meta("powerup") == powerup:
-			active_effect_displays.remove_at(i)
-			var tween := create_tween()
-			tween.tween_property(display, "modulate:a", 0.0, 0.12)
-			tween.tween_callback(display.queue_free)
-			break

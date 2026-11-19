@@ -1,0 +1,92 @@
+extends "res://tests/test_case.gd"
+
+func _def(id: StringName, overrides: Dictionary = {}) -> PowerupDef:
+	var def := PowerupDef.new()
+	def.id = id
+	def.duration = 10.0
+	def.max_stack_count = 4
+	def.stack_multiplier = 2.0
+	def.stack_bonus_per_card = 0.1
+	for key in overrides:
+		def.set(key, overrides[key])
+	return def
+
+func test_stack_scale() -> void:
+	var def := _def(&"x")
+	check_eq(PowerupRules.stack_scale(def, 1), 1.0)
+	check_eq(PowerupRules.stack_scale(def, 2), 2.1)
+	check_eq(PowerupRules.stack_scale(def, 4), 2.3)
+
+func test_activation_stacks_per_mode() -> void:
+	var def := _def(&"x")
+	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.MODE_DEATHMATCH, &""), 1)
+	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.MODE_SHUFFLE, &""), 3)
+	check_eq(PowerupRules.activation_stacks(def, 9, PowerupRules.MODE_SHUFFLE, &""), 4, "capped")
+	check_eq(PowerupRules.activation_stacks(def, 1, PowerupRules.MODE_POKER, &"x"), 4, "featured maxed")
+	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.MODE_POKER, &"y"), 1, "not featured")
+
+func test_reactivation_adds_stacks_and_refreshes() -> void:
+	var def := _def(&"x")
+	var active := PowerupRules.activate([], def, 1, PowerupRules.MODE_DEATHMATCH, 0)
+	active = PowerupRules.activate(active, def, 1, PowerupRules.MODE_DEATHMATCH, 5000)
+	check_eq(active.size(), 1, "one entry per powerup")
+	check_eq(active[0].stacks, 2)
+	check_eq(active[0].expires_at, 15000, "duration refreshed")
+
+func test_poker_reactivation_replaces_stacks() -> void:
+	var def := _def(&"x")
+	var active := PowerupRules.activate([], def, 4, PowerupRules.MODE_POKER, 0)
+	active = PowerupRules.activate(active, def, 1, PowerupRules.MODE_POKER, 0)
+	check_eq(active[0].stacks, 1)
+
+func test_expiry_by_time_and_uses() -> void:
+	var timed := _def(&"timed")
+	var limited := _def(&"limited", {"max_uses": 1})
+	var active := PowerupRules.activate([], timed, 1, PowerupRules.MODE_DEATHMATCH, 0)
+	active = PowerupRules.activate(active, limited, 1, PowerupRules.MODE_DEATHMATCH, 0)
+	check(PowerupRules.expired_ids(active, 9999).is_empty())
+	check_eq(PowerupRules.expired_ids(active, 10000).size(), 2)
+	active = PowerupRules.consume_use(active, &"limited")
+	check_eq(PowerupRules.expired_ids(active, 0), [&"limited"] as Array[StringName], "used up")
+
+func test_modifiers_sum_and_disappear_without_drift() -> void:
+	# Regression: apply/remove with +=/-= used to leave values behind.
+	var armor := _def(&"armor", {"modifiers": {"damage_resist": 0.15}, "stack_multiplier": 1.5})
+	var dmg := _def(&"dmg", {"modifiers": {"damage_mult": 0.2}})
+	var active := PowerupRules.activate([], armor, 2, PowerupRules.MODE_SHUFFLE, 0)
+	active = PowerupRules.activate(active, dmg, 1, PowerupRules.MODE_DEATHMATCH, 0)
+	# Defs are looked up through the registry, so register these test defs.
+	PowerupDefs._by_id[&"armor"] = armor
+	PowerupDefs._by_id[&"dmg"] = dmg
+	var mods := PowerupRules.modifiers(active)
+	check_eq(mods.damage_resist, 0.15 * 1.6)
+	check_eq(mods.damage_mult, 0.2)
+	check(PowerupRules.modifiers(PowerupRules.without(active, &"armor")).get("damage_resist", 0.0) == 0.0)
+	PowerupDefs._by_id.erase(&"armor")
+	PowerupDefs._by_id.erase(&"dmg")
+
+func test_dual_and_burst_params_tighten_with_stacks() -> void:
+	var dual := _def(&"dual", {"ability_params": {"spread": 0.15, "spread_reduction_per_stack": 0.15}})
+	check_eq(PowerupRules.dual_spread(dual, 1), 0.15)
+	check_eq(PowerupRules.dual_spread(dual, 3), 0.15 * 0.7)
+	var burst := _def(&"burst", {"ability_params": {"spread_degrees": 12.0, "spread_multiplier": 4.0, "shots_per_second": 18.0, "spread_reduction_per_stack": 0.2, "min_spread_degrees": 8.0}})
+	check_eq(PowerupRules.burst_params(burst, 1).spread_degrees, 48.0)
+	check_eq(PowerupRules.burst_params(burst, 4).spread_degrees, 48.0 * 0.4)
+
+func test_inventory_merge() -> void:
+	var inv := PowerupRules.empty_inventory(4)
+	inv = PowerupRules.with_slot(inv, 0, &"x", 3)
+	inv = PowerupRules.with_slot(inv, 1, &"x", 2)
+	inv = PowerupRules.with_slot(inv, 2, &"y", 1)
+	var merged := PowerupRules.merge(inv, 0, 1, 4)
+	check_eq(merged[1].count, 4, "target filled to max")
+	check_eq(merged[0].count, 1, "remainder stays")
+	check_eq(PowerupRules.merge(inv, 0, 2, 4), inv, "different cards do not merge")
+	check_eq(PowerupRules.empty_slot(merged), 3)
+
+func test_real_defs_load() -> void:
+	check_eq(PowerupDefs.ids().size(), 7, "all seven powerups registered")
+	for id in PowerupDefs.ids():
+		check(not PowerupDefs.get_def(id).get_display_name().is_empty(), "%s has a name" % id)
+	check_eq(PowerupDefs.get_def(&"dual_wield").ability, &"dual_wield")
+	check(WeaponDefs.has(&"pistol") and WeaponDefs.has(&"shotgun"), "weapon defs registered")

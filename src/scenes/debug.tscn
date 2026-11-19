@@ -7,6 +7,8 @@
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/pistol.tres" id="4_nb3wn"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/shotgun.tres" id="5_trlik"]
 [ext_resource type="PackedScene" uid="uid://bm8k3y5n6qrst" path="res://src/entities/powerups/powerup_spawner.tscn" id="6_spawner"]
+[ext_resource type="Resource" path="res://src/entities/powerups/defs/dual_wield.tres" id="7_dual"]
+[ext_resource type="Resource" path="res://src/entities/powerups/defs/burst.tres" id="8_burst"]
 
 [node name="Main" type="Node2D" unique_id=595205107]
 script = ExtResource("1_11pgr")
@@ -64,14 +66,14 @@ spawn_frequency = 10.0
 
 [node name="PowerupSpawner2" parent="." unique_id=1101847449 instance=ExtResource("6_spawner")]
 position = Vector2(540, 92)
-spawn_type = 7
+powerup_def = ExtResource("7_dual")
 spawn_frequency = 2.0
 max_powerups = 1
 spawn_area_size = Vector2(60, 40)
 
 [node name="PowerupSpawner3" parent="." unique_id=1101096522 instance=ExtResource("6_spawner")]
 position = Vector2(820, 104)
-spawn_type = 5
+powerup_def = ExtResource("8_burst")
 spawn_frequency = 2.0
 max_powerups = 1
 spawn_area_size = Vector2(60, 40)

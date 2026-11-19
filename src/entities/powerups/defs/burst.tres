@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="PowerupDef" format=3]
+
+[ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"burst"
+display_name = "Burst Fire"
+description = "Once while active, empty your magazine in a spread burst. Stacking tightens the spread."
+rarity_color = Color(1, 0.64705884, 0, 1)
+duration = 10.0
+max_uses = 1
+uses_per_stack = 0
+consume_use_on_fire = false
+max_stack_count = 4
+stack_multiplier = 1.0
+stack_bonus_per_card = 0.0
+modifiers = {}
+ability = &"burst"
+ability_params = {
+"spread_degrees": 12.0,
+"spread_multiplier": 4.0,
+"shots_per_second": 18.0,
+"spread_reduction_per_stack": 0.2,
+"min_spread_degrees": 8.0
+}

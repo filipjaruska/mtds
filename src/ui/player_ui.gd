@@ -29,6 +29,8 @@ func _process(_delta: float):
 	var powerup_manager = _player_node.get_node_or_null("PowerupManager")
 	if powerup_manager and powerup_inventory_ui:
 		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
+	if powerup_manager and active_powerups_ui:
+		active_powerups_ui.update_active_powerups(powerup_manager.active)
 	_update_scoreboard_visibility()
 
 func _ready():
@@ -112,26 +114,26 @@ func _on_weapon_slots_updated(player_node: Node, slot_names: Array) -> void:
 	for i in range(slot_names.size()):
 		weapon_slots.update_slot(i, slot_names[i])
 
-func _on_powerup_collected(player_node: Node, _powerup_card: BasePowerupCard, _slot: int):
+func _on_powerup_collected(player_node: Node, _powerup_card: PowerupDef, _slot: int):
 	var powerup_manager = player_node.get_node("PowerupManager")
 	if powerup_manager and powerup_inventory_ui:
 		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 
-func _on_powerup_used(player_node: Node, _powerup_card: BasePowerupCard, slot: int):
+func _on_powerup_used(player_node: Node, _powerup_card: PowerupDef, slot: int):
 	var powerup_manager = player_node.get_node("PowerupManager")
 	if powerup_manager and powerup_inventory_ui:
 		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 		powerup_inventory_ui.highlight_slot(slot)
 
 	if active_powerups_ui:
-		active_powerups_ui.update_active_powerups(powerup_manager.active_powerups)
+		active_powerups_ui.update_active_powerups(powerup_manager.active)
 
-func _on_powerup_expired(player_node: Node, _powerup_card: BasePowerupCard) -> void:
+func _on_powerup_expired(player_node: Node, _powerup_card: PowerupDef) -> void:
 	if not player_node.is_multiplayer_authority():
 		return
 	var powerup_manager = player_node.get_node_or_null("PowerupManager")
 	if powerup_manager and active_powerups_ui:
-		active_powerups_ui.update_active_powerups(powerup_manager.active_powerups)
+		active_powerups_ui.update_active_powerups(powerup_manager.active)
 
 func _on_player_died(player_node: Node) -> void:
 	if not player_node.is_multiplayer_authority():
@@ -140,7 +142,7 @@ func _on_player_died(player_node: Node) -> void:
 	if powerup_manager and powerup_inventory_ui:
 		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 	if powerup_manager and active_powerups_ui:
-		active_powerups_ui.update_active_powerups(powerup_manager.active_powerups)
+		active_powerups_ui.update_active_powerups(powerup_manager.active)
 
 func update_powerup_displays(player_node: Node):
 	var powerup_manager = player_node.get_node("PowerupManager")
@@ -149,7 +151,7 @@ func update_powerup_displays(player_node: Node):
 	if powerup_inventory_ui:
 		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 	if active_powerups_ui:
-		active_powerups_ui.update_active_powerups(powerup_manager.active_powerups)
+		active_powerups_ui.update_active_powerups(powerup_manager.active)
 
 func _update_featured_card_label() -> void:
 	if not featured_card_label:
