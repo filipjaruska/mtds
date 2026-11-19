@@ -1,0 +1,5 @@
+#!/bin/sh
+# Full test run before pushing (~50 s): quick tests + smoke match + network test.
+root=$(git rev-parse --show-toplevel)
+echo "pre-push: running full tests"
+exec sh "$root/tests/run.sh" full

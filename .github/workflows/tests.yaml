@@ -26,33 +26,18 @@ jobs:
           use-dotnet: false
           include-templates: false
 
-      # Registers class_name scripts; the tests rely on the global class cache.
+      # Same script the git hooks use (tests/run.sh); one step per suite for readable logs.
       - name: Import project
-        shell: bash
-        run: godot --headless --import || true
+        run: sh tests/run.sh import
 
       - name: Unit tests (pure rules)
-        shell: bash
-        run: godot --headless --path . -s res://tests/run_tests.gd
-
-      - name: Smoke test (host match)
-        shell: bash
-        run: timeout 120 godot --headless --path . -s res://tests/smoke_match.gd
+        run: sh tests/run.sh unit
 
       - name: Lobby navigation test
-        shell: bash
-        run: timeout 60 godot --headless --path . -s res://tests/lobby_nav.gd
+        run: sh tests/run.sh nav
+
+      - name: Smoke test (host match)
+        run: sh tests/run.sh smoke
 
       - name: Network test (host + client)
-        shell: bash
-        run: |
-          timeout 90 godot --headless --path . -s res://tests/net_match.gd -- --role=host > host.log 2>&1 &
-          HOST_PID=$!
-          sleep 3
-          CLIENT_EXIT=0
-          timeout 90 godot --headless --path . -s res://tests/net_match.gd -- --role=client > client.log 2>&1 || CLIENT_EXIT=$?
-          HOST_EXIT=0
-          wait $HOST_PID || HOST_EXIT=$?
-          echo "::group::host log"; cat host.log; echo "::endgroup::"
-          echo "::group::client log"; cat client.log; echo "::endgroup::"
-          test $HOST_EXIT -eq 0 && test $CLIENT_EXIT -eq 0
+        run: sh tests/run.sh net

@@ -1,0 +1,10 @@
+#!/bin/sh
+# Fast checks before every commit (~6 s): import + unit + lobby navigation tests.
+# Skipped when the commit touches no Godot files. Note: the tests run on the
+# working tree, so unstaged edits are included.
+root=$(git rev-parse --show-toplevel)
+if ! git diff --cached --name-only | grep -qE '\.(gd|tscn|tres|godot|cfg)$'; then
+	exit 0
+fi
+echo "pre-commit: running quick tests"
+exec sh "$root/tests/run.sh" quick
