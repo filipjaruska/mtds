@@ -40,6 +40,7 @@ func _run() -> void:
 	var lobby_play := _nav_button(lobby, "Play")
 	check(lobby_play.text == "LOBBY", "play reads LOBBY in a session, got %s" % lobby_play.text)
 	check(lobby_play.disabled, "lobby tab is the active one")
+	check(_nav_button(lobby, "Tutorial").disabled, "tutorial greyed out in the lobby")
 
 	_nav_button(lobby, "Options").pressed.emit()
 	await frames(2)
@@ -49,6 +50,7 @@ func _run() -> void:
 	check(not lobby.visible, "lobby hidden behind options")
 	var overlay_play := _nav_button(options, "Play")
 	check(overlay_play.text == "LOBBY" and not overlay_play.disabled, "LOBBY tab available from options")
+	check(_nav_button(options, "Tutorial").disabled, "tutorial greyed out while in a session")
 
 	_nav_button(options, "Profile").pressed.emit()
 	await frames(2)

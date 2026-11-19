@@ -48,6 +48,8 @@ func _navigate(item: NavItem) -> void:
 	# RPCs), so other tabs open on top of it and PLAY ("LOBBY") returns to it.
 	var lobby := _active_lobby()
 	if lobby:
+		if item == NavItem.TUTORIAL:
+			return # the tutorial is its own game session
 		if item == NavItem.PLAY:
 			lobby.close_menu_overlay()
 		elif SCENES.has(item):
@@ -77,4 +79,7 @@ func _apply_active_item() -> void:
 	for item: NavItem in items:
 		var button: Button = items[item]
 		button.disabled = item == active_item
-	_play.text = "LOBBY" if _active_lobby() else "PLAY"
+	var in_lobby := _active_lobby() != null
+	_play.text = "LOBBY" if in_lobby else "PLAY"
+	if in_lobby:
+		_tutorial.disabled = true
