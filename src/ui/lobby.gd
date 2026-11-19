@@ -4,6 +4,8 @@ var available_maps: Array[String] = []
 var player_ready_states: Dictionary = {}
 var _active_map: Node = null
 var _match_results_overlay: CanvasLayer = null
+## Another menu tab (options, profile, ...) opened from the lobby's nav bar.
+var _menu_overlay: Node = null
 
 const MATCH_RESULTS_SCENE := preload("res://src/ui/menus/match_results.tscn")
 const MAIN_MENU_SCENE := "res://src/ui/menus/main.tscn"
@@ -26,8 +28,14 @@ const GAME_MODE_DESCRIPTIONS := {
 @onready var game_mode_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/GametypeDropdown
 @onready var game_mode_description: Label = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/Description
 
-func _ready() -> void:
+func _enter_tree() -> void:
+	# Before children are ready, so the nav bar already sees an active lobby.
 	add_to_group("Lobby")
+
+func _exit_tree() -> void:
+	close_menu_overlay()
+
+func _ready() -> void:
 	multiplayer.peer_connected.connect(_on_player_connected)
 	multiplayer.peer_disconnected.connect(_on_player_disconnected)
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
@@ -193,8 +201,24 @@ func _check_ready_state() -> void:
 	else:
 		start_button.disabled = ready_count < 1
 
+## Shows another menu tab on top of the lobby. The lobby node stays alive and
+## keeps handling RPCs; it is only hidden.
+func open_menu_overlay(scene_path: String) -> void:
+	close_menu_overlay()
+	_menu_overlay = load(scene_path).instantiate()
+	get_tree().root.add_child(_menu_overlay)
+	hide()
+
+func close_menu_overlay() -> void:
+	if is_instance_valid(_menu_overlay):
+		_menu_overlay.queue_free()
+	_menu_overlay = null
+	if not is_instance_valid(_active_map):
+		show()
+
 @rpc("authority", "call_local", "reliable")
 func start_game(map_path: String) -> void:
+	close_menu_overlay()
 	_free_active_map()
 	
 	_active_map = load(map_path).instantiate()

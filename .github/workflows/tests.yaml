@@ -39,6 +39,10 @@ jobs:
         shell: bash
         run: timeout 120 godot --headless --path . -s res://tests/smoke_match.gd
 
+      - name: Lobby navigation test
+        shell: bash
+        run: timeout 60 godot --headless --path . -s res://tests/lobby_nav.gd
+
       - name: Network test (host + client)
         shell: bash
         run: |

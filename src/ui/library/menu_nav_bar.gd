@@ -44,9 +44,22 @@ func set_navigation_enabled(enabled: bool) -> void:
 func _navigate(item: NavItem) -> void:
 	if item == active_item:
 		return
+	# While hosting/joined, the lobby must stay alive (it receives the host's
+	# RPCs), so other tabs open on top of it and PLAY ("LOBBY") returns to it.
+	var lobby := _active_lobby()
+	if lobby:
+		if item == NavItem.PLAY:
+			lobby.close_menu_overlay()
+		elif SCENES.has(item):
+			lobby.open_menu_overlay(SCENES[item])
+		return
 	if not SCENES.has(item):
 		return
 	get_tree().change_scene_to_file(SCENES[item])
+
+
+func _active_lobby() -> Node:
+	return get_tree().get_first_node_in_group("Lobby") if is_inside_tree() else null
 
 
 func _on_exit_pressed() -> void:
@@ -64,3 +77,4 @@ func _apply_active_item() -> void:
 	for item: NavItem in items:
 		var button: Button = items[item]
 		button.disabled = item == active_item
+	_play.text = "LOBBY" if _active_lobby() else "PLAY"
