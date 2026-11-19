@@ -1,0 +1,54 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_call:
+
+env:
+  GODOT_VERSION: 4.7.1
+
+jobs:
+  test:
+    name: Rules, smoke and network tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: false
+
+      # Registers class_name scripts; the tests rely on the global class cache.
+      - name: Import project
+        shell: bash
+        run: godot --headless --import || true
+
+      - name: Unit tests (pure rules)
+        shell: bash
+        run: godot --headless --path . -s res://tests/run_tests.gd
+
+      - name: Smoke test (host match)
+        shell: bash
+        run: timeout 120 godot --headless --path . -s res://tests/smoke_match.gd
+
+      - name: Network test (host + client)
+        shell: bash
+        run: |
+          timeout 90 godot --headless --path . -s res://tests/net_match.gd -- --role=host > host.log 2>&1 &
+          HOST_PID=$!
+          sleep 3
+          CLIENT_EXIT=0
+          timeout 90 godot --headless --path . -s res://tests/net_match.gd -- --role=client > client.log 2>&1 || CLIENT_EXIT=$?
+          HOST_EXIT=0
+          wait $HOST_PID || HOST_EXIT=$?
+          echo "::group::host log"; cat host.log; echo "::endgroup::"
+          echo "::group::client log"; cat client.log; echo "::endgroup::"
+          test $HOST_EXIT -eq 0 && test $CLIENT_EXIT -eq 0

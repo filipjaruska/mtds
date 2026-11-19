@@ -12,8 +12,12 @@ env:
   PRE_RELEASE: false
 
 jobs:
+  test:
+    uses: ./.github/workflows/tests.yaml
+
   build:
     name: Building for ${{ matrix.name }}
+    needs: test
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
