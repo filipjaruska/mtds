@@ -37,6 +37,16 @@ jobs:
             archive: linux_x86_64
             butler-channel: linux
 
+          - name: 🍎 macOS
+            os: ubuntu-22.04
+            platform: macos
+            export-preset: "macOS"
+            export-type: release
+            export-folder: build/macos
+            archive: macos_universal
+            butler-channel: mac
+            prepackaged: true
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,11 +72,18 @@ jobs:
           --export-${{ matrix.export-type }} "${{ matrix.export-preset }}"
 
       - name: Compress Project
-        if: github.event_name == 'push' && github.ref_type == 'tag'
+        if: github.event_name == 'push' && github.ref_type == 'tag' && !matrix.prepackaged
         shell: bash
         run: |
           cd "${{ matrix.export-folder }}"
           7z a -tzip "${{ matrix.archive }}.zip" *.* -x'!.gitignore'
+
+      - name: Rename Prepackaged Archive
+        if: matrix.prepackaged
+        shell: bash
+        run: |
+          cd "${{ matrix.export-folder }}"
+          mv -- *.zip "${{ matrix.archive }}.zip"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -101,6 +118,12 @@ jobs:
           name: linux_x86_64-Artifacts
           path: release/linux
 
+      - name: Download macOS Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos_universal-Artifacts
+          path: release/macos
+
       - name: Prepare Release Body
         shell: bash
         env:
@@ -130,9 +153,13 @@ jobs:
           2. Extract the archive to a folder of your choice.
           3. Run the game executable inside the extracted folder.
 
+          **macOS:** the app is not notarized, so Gatekeeper will block it on first launch.
+          Right-click the app and choose **Open**, or run \`xattr -cr "/path/to/Multiplayer Top-Down Shooter.app"\`.
+
           ### Downloads
           - **Windows:** \`windows_x86_64.zip\`
           - **Linux:** \`linux_x86_64.zip\`
+          - **macOS (Intel & Apple Silicon):** \`macos_universal.zip\`
 
           ### Full Changelog
           https://github.com/${REPOSITORY}/commits/v${VERSION}
@@ -159,6 +186,7 @@ jobs:
           files: |
             release/windows_x86_64/windows_x86_64.zip
             release/linux/linux_x86_64.zip
+            release/macos/macos_universal.zip
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
