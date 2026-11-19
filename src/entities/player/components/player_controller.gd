@@ -1,7 +1,7 @@
 extends Node2D
 class_name PlayerController
 
-@onready var weapon_manager = $WeaponManager
+@onready var weapon_holder: WeaponHolder = $WeaponHolder
 @onready var sprite = get_parent().get_node("PlayerSprite")
 @onready var player_root: CharacterBody2D = get_parent()
 @onready var camera_component: Node2D = get_parent().get_node("CameraComponent")
@@ -25,6 +25,8 @@ enum PlayerState {
 var current_state: PlayerState = PlayerState.NORMAL
 var current_speed: float
 var slowness_factor: float = 1.0
+var _fire_slow_mult: float = 1.0
+var _fire_slow_until: int = 0
 var last_dash_time: float = 0
 var dash_direction: Vector2 = Vector2.ZERO
 var dash_timer: SceneTreeTimer = null
@@ -49,9 +51,7 @@ func _recompute_current_speed():
 
 func _setup_multiplayer_authority():
 	var authority_id: int = str(player_root.name).to_int()
-	weapon_manager.multiplayer_sync.set_multiplayer_authority(authority_id)
 	player_root.get_node("MultiplayerSynchronizer").set_multiplayer_authority(authority_id)
-	weapon_manager.refresh_authority_state()
 	
 	var is_authority = player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() == multiplayer.get_unique_id()
 	if camera_component:
@@ -60,6 +60,7 @@ func _setup_multiplayer_authority():
 
 func _process(delta):
 	if player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() == multiplayer.get_unique_id():
+		_update_fire_slow()
 		_check_state_transitions()
 		_process_current_state(delta)
 	
@@ -142,13 +143,20 @@ func _update_dash_cooldown_indicator():
 func get_current_state() -> PlayerState:
 	return current_state
 
-func apply_weapon_slowness(weapon_slowness: float):
-	slowness_factor = weapon_slowness / normal_speed
-	_recompute_current_speed()
+## Briefly slows movement after a shot. `speed_mult` comes from the WeaponDef
+## (1.0 = no slow); a new shot refreshes the duration.
+func apply_fire_slow(speed_mult: float, duration_seconds: float) -> void:
+	if duration_seconds <= 0.0 or speed_mult >= 1.0:
+		return
+	_fire_slow_mult = speed_mult
+	_fire_slow_until = Time.get_ticks_msec() + int(duration_seconds * 1000.0)
+	_update_fire_slow()
 
-func remove_weapon_slowness(_weapon_slowness: float):
-	slowness_factor = 1.0
-	_recompute_current_speed()
+func _update_fire_slow() -> void:
+	var factor := _fire_slow_mult if Time.get_ticks_msec() < _fire_slow_until else 1.0
+	if not is_equal_approx(factor, slowness_factor):
+		slowness_factor = factor
+		_recompute_current_speed()
 
 func set_base_dash_cooldown(value: float) -> void:
 	base_dash_cooldown = value

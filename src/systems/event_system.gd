@@ -18,16 +18,16 @@ enum Events {
 	PLAYER_RESPAWNED, # [player_node]
 	
 	# Weapon events
-	WEAPON_FIRED, # [weapon_node, current_ammo, max_ammo]
-	WEAPON_RELOADED, # [weapon_node, is_reloading_start: bool, remaining_reload_time: float]
-	WEAPON_SWITCHED, # [player_node, weapon_index, weapon_node or null]
-	WEAPON_PICKED_UP, # [player_node, weapon_node]
-	WEAPON_DROPPED, # [player_node, weapon_node]
+	WEAPON_FIRED, # [player_node, current_ammo, max_ammo]
+	WEAPON_RELOADED, # [player_node, is_reloading_start: bool, reload_time: float]
+	WEAPON_SWITCHED, # [player_node, weapon_index, WeaponDef or null]
+	WEAPON_PICKED_UP, # [player_node, WeaponDef]
+	WEAPON_DROPPED, # [player_node, WeaponDef]
 	
 	# UI events
-	UI_HEALTH_UPDATED, # [current_health: int, max_health: int]
+	UI_HEALTH_UPDATED, # [player_node, current_health: int, max_health: int]
 	UI_AMMO_UPDATED, # [player_node, primary_ammo, primary_max, offhand_ammo, offhand_max]
-	UI_WEAPON_SLOTS_UPDATED, # [Array of slot information]
+	UI_WEAPON_SLOTS_UPDATED, # [player_node, Array of slot display names]
 	
 	# Multiplayer events
 	PLAYER_CONNECTED, # [player_id: int]
@@ -65,7 +65,7 @@ func _initialize_event_contracts() -> void:
 		Events.WEAPON_DROPPED: [TYPE_OBJECT, TYPE_OBJECT],
 		Events.UI_HEALTH_UPDATED: [TYPE_OBJECT, TYPE_INT, TYPE_INT],
 		Events.UI_AMMO_UPDATED: [TYPE_OBJECT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT],
-		Events.UI_WEAPON_SLOTS_UPDATED: [TYPE_ARRAY],
+		Events.UI_WEAPON_SLOTS_UPDATED: [TYPE_OBJECT, TYPE_ARRAY],
 		Events.PLAYER_CONNECTED: [TYPE_INT],
 		Events.PLAYER_DISCONNECTED: [TYPE_INT, TYPE_DICTIONARY],
 		Events.CONNECTION_SUCCEEDED: [],

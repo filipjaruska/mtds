@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponDef" format=3]
+
+[ext_resource type="Script" path="res://src/entities/weapons/weapon_def.gd" id="1_def"]
+[ext_resource type="PackedScene" uid="uid://b7r7dn2ffb7d8" path="res://src/entities/weapons/shotgun.tscn" id="2_view"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"shotgun"
+display_name = "Shotgun"
+fire_rate = 0.85
+spread_degrees = 12.9
+pellets = 5
+fire_pattern = &"random"
+damage = 12.0
+armor_penetration = 0.0
+max_range = 250.0
+mag_size = 5
+reload_time = 3.0
+move_speed_mult = 0.6
+slow_duration = 0.4
+view_scene = ExtResource("2_view")

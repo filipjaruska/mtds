@@ -136,9 +136,9 @@ func player_reset_to_defaults():
 	health_resist_penetration = 0.0
 	print("Player settings reset to defaults")
 
-func get_weapon_manager():
+func get_weapon_holder() -> WeaponHolder:
 	if player_controller:
-		return player_controller.weapon_manager
+		return player_controller.weapon_holder
 	return null
 
 func get_camera_component():

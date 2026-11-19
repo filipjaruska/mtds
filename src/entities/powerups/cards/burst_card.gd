@@ -31,6 +31,3 @@ func get_burst_spread_degrees(stack_count: int) -> float:
 	var extra_stacks := maxi(stack_count - 1, 0)
 	var reduction_factor := 1.0 - extra_stacks * spread_reduction_per_stack
 	return maxf(base_spread * reduction_factor, min_burst_spread_degrees)
-
-func execute_burst(weapon: RangedWeapon, stack_count: int = 1) -> void:
-	weapon.burst_fire(get_burst_spread_degrees(stack_count), burst_fire_rate)

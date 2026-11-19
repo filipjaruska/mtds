@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://d3ln8ymurgub" path="res://src/entities/player/components/player_controller.gd" id="2_new"]
 [ext_resource type="Script" uid="uid://d3d5g7q27qywk" path="res://src/entities/player/components/camera_component.gd" id="3_new"]
 [ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://src/assets/icon.svg" id="4_krkth"]
-[ext_resource type="Script" uid="uid://fegglyhn80nu" path="res://src/entities/weapons/weapon_manager.gd" id="5_8meis"]
+[ext_resource type="Script" uid="uid://fegglyhn80nu" path="res://src/entities/weapons/weapon_holder.gd" id="5_8meis"]
 [ext_resource type="Script" uid="uid://cyraqsogm3i4s" path="res://src/ui/player_ui.gd" id="6_vdean"]
 [ext_resource type="PackedScene" uid="uid://i2rvom7p2l2f" path="res://src/entities/player/components/health_component.tscn" id="7_uqubr"]
 [ext_resource type="Script" uid="uid://x5crv0aomnqv" path="res://src/ui/weapon_slots.gd" id="8_xljkp"]
@@ -92,15 +92,10 @@ texture = ExtResource("4_krkth")
 [node name="PlayerController" type="Node2D" parent="."]
 script = ExtResource("2_new")
 
-[node name="WeaponManager" type="Node2D" parent="PlayerController"]
+[node name="WeaponHolder" type="Node2D" parent="PlayerController"]
 unique_name_in_owner = true
 position = Vector2(38, 0)
 script = ExtResource("5_8meis")
-
-[node name="WeaponSwitchTimer" type="Timer" parent="PlayerController/WeaponManager"]
-wait_time = 0.3
-
-[node name="MovementSlowTimer" type="Timer" parent="PlayerController/WeaponManager"]
 
 [node name="PlayerCollision" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_b7jsc")
@@ -677,6 +672,4 @@ shape = SubResource("CircleShape2D_b7jsc")
 wait_time = 5.0
 one_shot = true
 
-[connection signal="timeout" from="PlayerController/WeaponManager/WeaponSwitchTimer" to="PlayerController/WeaponManager" method="_on_switch_cooldown_timer_timeout"]
-[connection signal="timeout" from="PlayerController/WeaponManager/MovementSlowTimer" to="PlayerController/WeaponManager" method="_on_slow_timer_timeout"]
 [connection signal="timeout" from="HealthComponent/HealthRegenTimer" to="HealthComponent" method="_on_heal_timer_timeout"]

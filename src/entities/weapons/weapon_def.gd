@@ -1,0 +1,40 @@
+extends Resource
+class_name WeaponDef
+## Everything that makes a weapon *that* weapon, as plain data.
+##
+## To add a weapon: duplicate a file in res://src/entities/weapons/defs/, give it
+## a new `id`, tweak the numbers and point `view_scene` at its art. It is picked
+## up automatically (see WeaponDefs). No code needed unless you want a new
+## `fire_pattern` (see WeaponRules.shot_offsets).
+
+@export var id: StringName
+@export var display_name: String = ""
+
+@export_group("Firing")
+@export_range(0.1, 30.0, 0.05, "suffix:shots/s") var fire_rate: float = 1.0
+## Maximum deviation of a shot from the aim direction, to either side.
+@export_range(0.0, 45.0, 0.1, "suffix:°") var spread_degrees: float = 0.0
+@export_range(1, 20) var pellets: int = 1
+## How pellets are distributed inside the spread: &"random" or &"even".
+@export var fire_pattern: StringName = &"random"
+
+@export_group("Damage")
+@export var damage: float = 10.0
+@export_range(0.0, 1.0, 0.05) var armor_penetration: float = 0.0
+@export_range(50.0, 2000.0, 10.0, "suffix:px") var max_range: float = 500.0
+
+@export_group("Ammo")
+@export_range(1, 200) var mag_size: int = 10
+@export_range(0.1, 10.0, 0.1, "suffix:s") var reload_time: float = 2.0
+
+@export_group("Movement")
+## Movement speed multiplier applied briefly after each shot (1.0 = no slow).
+@export_range(0.1, 1.0, 0.05) var move_speed_mult: float = 1.0
+@export_range(0.0, 2.0, 0.05, "suffix:s") var slow_duration: float = 0.0
+
+@export_group("Visuals")
+## Scene with a WeaponView root (sprite, animations, muzzle marker).
+@export var view_scene: PackedScene
+
+func get_display_name() -> String:
+	return display_name if not display_name.is_empty() else String(id).capitalize()

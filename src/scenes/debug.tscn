@@ -4,8 +4,8 @@
 [ext_resource type="PackedScene" uid="uid://qgub06sgnvml" path="res://src/entities/player/player.tscn" id="2_c1wiw"]
 [ext_resource type="PackedScene" uid="uid://cgbejbtvglgk5" path="res://src/entities/weapons/weapon_pickup.tscn" id="3_h2xyf"]
 [ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://src/assets/icon.svg" id="3_ympha"]
-[ext_resource type="PackedScene" uid="uid://cslbakgrwn56g" path="res://src/entities/weapons/pistol.tscn" id="4_nb3wn"]
-[ext_resource type="PackedScene" uid="uid://b7r7dn2ffb7d8" path="res://src/entities/weapons/shotgun.tscn" id="5_trlik"]
+[ext_resource type="Resource" path="res://src/entities/weapons/defs/pistol.tres" id="4_nb3wn"]
+[ext_resource type="Resource" path="res://src/entities/weapons/defs/shotgun.tres" id="5_trlik"]
 [ext_resource type="PackedScene" uid="uid://bm8k3y5n6qrst" path="res://src/entities/powerups/powerup_spawner.tscn" id="6_spawner"]
 
 [node name="Main" type="Node2D" unique_id=595205107]
@@ -14,11 +14,11 @@ playerScene = ExtResource("2_c1wiw")
 
 [node name="WeaponPickup" parent="." unique_id=2051191425 instance=ExtResource("3_h2xyf")]
 position = Vector2(281, 386)
-weapon_scene = ExtResource("4_nb3wn")
+weapon_def = ExtResource("4_nb3wn")
 
 [node name="WeaponPickup2" parent="." unique_id=1149527037 instance=ExtResource("3_h2xyf")]
 position = Vector2(995, 382)
-weapon_scene = ExtResource("5_trlik")
+weapon_def = ExtResource("5_trlik")
 
 [node name="SpawnLocations" type="Node2D" parent="." unique_id=1492062192]
 

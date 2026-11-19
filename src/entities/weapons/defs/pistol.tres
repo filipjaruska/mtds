@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponDef" format=3]
+
+[ext_resource type="Script" path="res://src/entities/weapons/weapon_def.gd" id="1_def"]
+[ext_resource type="PackedScene" uid="uid://cslbakgrwn56g" path="res://src/entities/weapons/pistol.tscn" id="2_view"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"pistol"
+display_name = "Pistol"
+fire_rate = 2.0
+spread_degrees = 1.4
+pellets = 1
+fire_pattern = &"random"
+damage = 10.0
+armor_penetration = 0.0
+max_range = 500.0
+mag_size = 16
+reload_time = 2.0
+move_speed_mult = 0.85
+slow_duration = 0.3
+view_scene = ExtResource("2_view")

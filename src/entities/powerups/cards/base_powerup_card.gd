@@ -76,7 +76,7 @@ func _get_player_controller(player: Node) -> Node:
 
 func _get_weapon_manager(player: Node) -> Node:
 	var controller = _get_player_controller(player)
-	return controller.weapon_manager if controller else null
+	return controller.weapon_holder if controller else null
 
 func _get_health_component(player: Node) -> Node:
 	return player.get_node("HealthComponent") if player else null

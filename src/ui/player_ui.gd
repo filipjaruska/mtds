@@ -9,6 +9,7 @@ const VALUE_PULSE_DURATION := 0.16
 @onready var time_label: Label = $Time
 @onready var ammo_display: Label = $AmmoDisplay
 @onready var health_display: Label = $HealthDisplay
+@onready var weapon_slots = $WeaponSlots
 
 var _player_node: Node = null
 var _scoreboard: CanvasLayer = null
@@ -34,6 +35,7 @@ func _ready():
 	_player_node = get_parent().get_parent().get_parent()
 	EventManager.register(EventManager.Events.UI_HEALTH_UPDATED, _on_health_updated)
 	EventManager.register(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)
+	EventManager.register(EventManager.Events.UI_WEAPON_SLOTS_UPDATED, _on_weapon_slots_updated)
 	EventManager.register(EventManager.Events.POWERUP_COLLECTED, _on_powerup_collected)
 	EventManager.register(EventManager.Events.POWERUP_USED, _on_powerup_used)
 	EventManager.register(EventManager.Events.POWERUP_EXPIRED, _on_powerup_expired)
@@ -103,6 +105,12 @@ func _on_ammo_updated(player_node: Node, ammo: int, max_ammo: int, offhand_ammo:
 		update_ammo_dual(ammo, max_ammo, offhand_ammo, offhand_max)
 	else:
 		update_ammo(ammo, max_ammo)
+
+func _on_weapon_slots_updated(player_node: Node, slot_names: Array) -> void:
+	if player_node != _player_node or not player_node.is_multiplayer_authority():
+		return
+	for i in range(slot_names.size()):
+		weapon_slots.update_slot(i, slot_names[i])
 
 func _on_powerup_collected(player_node: Node, _powerup_card: BasePowerupCard, _slot: int):
 	var powerup_manager = player_node.get_node("PowerupManager")
@@ -177,6 +185,7 @@ func _exit_tree():
 		_scoreboard = null
 	EventManager.unregister(EventManager.Events.UI_HEALTH_UPDATED, _on_health_updated)
 	EventManager.unregister(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)
+	EventManager.unregister(EventManager.Events.UI_WEAPON_SLOTS_UPDATED, _on_weapon_slots_updated)
 	EventManager.unregister(EventManager.Events.POWERUP_COLLECTED, _on_powerup_collected)
 	EventManager.unregister(EventManager.Events.POWERUP_USED, _on_powerup_used)
 	EventManager.unregister(EventManager.Events.POWERUP_EXPIRED, _on_powerup_expired)

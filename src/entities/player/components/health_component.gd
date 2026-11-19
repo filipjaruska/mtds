@@ -94,9 +94,9 @@ func death():
 			powerup_manager.clear_inventory_on_death()
 			powerup_manager.clear_active_powerups_on_death()
 
-		var weapon_manager = player.get_node_or_null("PlayerController/WeaponManager")
-		if weapon_manager:
-			weapon_manager.reset_weapons_on_death()
+		var weapon_holder = player.get_node_or_null("PlayerController/WeaponHolder")
+		if weapon_holder:
+			weapon_holder.reset_on_death()
 
 		EventManager.emit_event(EventManager.Events.PLAYER_DIED, [player])
 

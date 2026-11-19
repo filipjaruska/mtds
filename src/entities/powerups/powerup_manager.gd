@@ -89,7 +89,6 @@ func _sync_use_powerup(card_type: int, slot_index: int, inventory_stack_count: i
 		inventory_updated.emit(get_inventory_display_data())
 		powerup_activated.emit(powerup_card, slot_index)
 		EventManager.emit_event(EventManager.Events.POWERUP_USED, [player_node, powerup_card, slot_index])
-		_sync_weapon_state_after_powerup_change()
 	active_powerups_updated.emit(active_powerups)
 
 func use_multiple_powerups(slot_indices: Array[int]):
@@ -150,8 +149,6 @@ func _remove_active_powerup_local(card_type: BasePowerupCard.PowerupType) -> voi
 @rpc("any_peer", "call_local", "reliable")
 func _sync_powerup_expired(card_type: int) -> void:
 	_remove_active_powerup_local(card_type)
-	if player_node and player_node.is_multiplayer_authority():
-		_sync_weapon_state_after_powerup_change()
 
 func expire_active_powerup_of_type(type: BasePowerupCard.PowerupType) -> void:
 	if not player_node or not player_node.is_multiplayer_authority():
@@ -159,43 +156,25 @@ func expire_active_powerup_of_type(type: BasePowerupCard.PowerupType) -> void:
 	if _get_active_powerup_of_type(type):
 		_sync_powerup_expired.rpc(type)
 
-func _sync_weapon_state_after_powerup_change() -> void:
-	var weapon_manager = player_node.get_node_or_null("PlayerController/WeaponManager")
-	if weapon_manager and weapon_manager.has_method("_sync_weapons_to_peers"):
-		weapon_manager._sync_weapons_to_peers()
-
-func trigger_burst_if_ready(weapon: RangedWeapon, offhand_weapon: RangedWeapon = null) -> bool:
+## Consumes one use of an active Burst powerup. Returns the burst parameters,
+## or {} when no burst is available.
+func try_consume_burst() -> Dictionary:
 	var burst_powerup := _get_active_powerup_of_type(BasePowerupCard.PowerupType.BURST)
 	if burst_powerup == null or burst_powerup.get_remaining_uses() <= 0:
-		return false
-	
-	var primary_ready := weapon != null and weapon.ammo > 0 and not weapon.is_reloading
-	var offhand_ready := offhand_weapon != null and offhand_weapon.ammo > 0 and not offhand_weapon.is_reloading
-	if not primary_ready and not offhand_ready:
-		return false
-	
+		return {}
 	var card = burst_powerup.powerup_card
-	if not card.has_method("execute_burst"):
-		return false
-	
-	var stack_count: int = burst_powerup.stack_count
-	# Dual wield: one burst card dumps both magazines, then dual ends after bursts finish.
-	if primary_ready:
-		card.execute_burst(weapon, stack_count)
-	if offhand_ready:
-		card.execute_burst(offhand_weapon, stack_count)
+	var params := {
+		"spread_degrees": card.get_burst_spread_degrees(burst_powerup.stack_count),
+		"shots_per_second": card.burst_fire_rate,
+	}
 	burst_powerup.consume_use()
 	active_powerups_updated.emit(active_powerups)
-	return true
+	return params
 
-func _on_weapon_fired(weapon_node: Node, _current_ammo: int, _max_ammo: int) -> void:
-	if not player_node or not player_node.is_multiplayer_authority():
+func _on_weapon_fired(shooter: Node, _current_ammo: int, _max_ammo: int) -> void:
+	if not player_node or not player_node.is_multiplayer_authority() or shooter != player_node:
 		return
-	
-	var weapon_manager = weapon_node.get_parent()
-	if weapon_manager == null or weapon_manager.get("player") != player_node:
-		return
-	
+
 	for active_powerup in active_powerups.duplicate():
 		if not active_powerup.has_use_limit():
 			continue
