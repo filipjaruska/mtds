@@ -18,7 +18,13 @@ func _ready():
 				currentPlayer.global_position = spawn.global_position
 		index += 1
 	
+	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	call_deferred("_equip_default_weapons")
+
+func _on_peer_disconnected(id: int) -> void:
+	var player_node := get_node_or_null(str(id))
+	if player_node:
+		player_node.queue_free()
 
 func _player_color_from_data(player_data: Dictionary) -> Color:
 	var color_value: Variant = player_data.get("color", Color.WHITE)

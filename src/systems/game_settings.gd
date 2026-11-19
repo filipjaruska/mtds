@@ -128,10 +128,19 @@ func _load_keybinds(config: ConfigFile) -> void:
 			if typeof(item) != TYPE_DICTIONARY:
 				continue
 			var event := deserialize_event(item)
-			if event:
+			if event and not _is_joypad_event(event):
 				InputMap.action_add_event(action, event)
+		# Gamepad bindings are not rebindable: always take them from project
+		# defaults so older settings files pick up new gamepad bindings.
+		for event: InputEvent in _default_keybinds.get(action, []):
+			if _is_joypad_event(event):
+				InputMap.action_add_event(action, event.duplicate())
 
 	_ensure_dash_does_not_use_shift()
+
+
+func _is_joypad_event(event: InputEvent) -> bool:
+	return event is InputEventJoypadButton or event is InputEventJoypadMotion
 
 
 ## Shift is reserved for shuffle merge; strip it from dash even if saved keybinds still have it.

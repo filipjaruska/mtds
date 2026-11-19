@@ -20,11 +20,24 @@ var _waiting_for_regen: bool = false
 func _ready():
 	max_health = MAX_HEALTH
 	current_health = max_health
+	if health_bar:
+		health_bar.max_value = max_health
+		health_bar.value = current_health
 
 	await get_tree().process_frame
 	if health_bar:
 		health_bar.max_value = max_health
 		health_bar.value = current_health
+	_broadcast_health_change()
+
+## Called by the player root with its configured max health. Runs after this
+## component's _ready, so it must update both the base value and current HP.
+func set_base_max_health(value: float) -> void:
+	var was_full := current_health >= max_health
+	MAX_HEALTH = value
+	max_health = value
+	if was_full or current_health > max_health:
+		current_health = max_health
 	_broadcast_health_change()
 
 func _process(_delta):

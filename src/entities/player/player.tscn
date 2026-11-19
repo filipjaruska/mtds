@@ -84,9 +84,6 @@ camera_zoom_transition_speed = 2.0
 health_max_health = 100.0
 health_physical_resist = 0.0
 health_resist_penetration = 0.0
-enable_camera_customization = true
-enable_health_customization = true
-show_debug_info = false
 
 [node name="PlayerSprite" type="Sprite2D" parent="."]
 scale = Vector2(0.40176, 0.374369)

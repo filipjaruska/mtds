@@ -6,6 +6,7 @@ var _active_map: Node = null
 var _match_results_overlay: CanvasLayer = null
 
 const MATCH_RESULTS_SCENE := preload("res://src/ui/menus/match_results.tscn")
+const MAIN_MENU_SCENE := "res://src/ui/menus/main.tscn"
 const GAME_MODE_OPTIONS := [
 	"deathmatch",
 	"deathmatch+shuffle",
@@ -29,6 +30,7 @@ func _ready() -> void:
 	add_to_group("Lobby")
 	multiplayer.peer_connected.connect(_on_player_connected)
 	multiplayer.peer_disconnected.connect(_on_player_disconnected)
+	multiplayer.server_disconnected.connect(_on_server_disconnected)
 	
 	var player_name = GameManager.local_player_name
 	if player_name.is_empty():
@@ -43,7 +45,7 @@ func _ready() -> void:
 	var player_color: Color = GameSettings.player_color
 	player_color.a = 1.0
 	if multiplayer.get_unique_id() != 1:
-		send_player.rpc_id(1, multiplayer.get_unique_id(), player_name, player_color)
+		request_register.rpc_id(1, player_name, player_color)
 	else:
 		GameManager.add_player(1, {"id": 1, "name": player_name, "color": player_color})
 		player_ready_states[1] = true
@@ -98,46 +100,70 @@ func sync_lobby_game_mode(game_mode: String) -> void:
 	GameManager.set_game_mode(game_mode)
 	_sync_game_mode_dropdown(game_mode)
 
-func _on_player_connected(_id: int) -> void:
+func _on_player_connected(id: int) -> void:
+	EventManager.emit_event(EventManager.Events.PLAYER_CONNECTED, [id])
 	_update_player_list()
 	_check_ready_state()
 
 func _on_player_disconnected(id: int) -> void:
-	GameManager.remove_player(id)
+	# GameManager removes the player in its PLAYER_DISCONNECTED handler.
+	EventManager.emit_event(EventManager.Events.PLAYER_DISCONNECTED, [id, GameManager.get_player(id)])
 	player_ready_states.erase(id)
 	_update_player_list()
 	_check_ready_state()
 
-@rpc("any_peer")
-func send_player(id: int, player_name: String, color: Color = Color.WHITE) -> void:
-	var tint := color
-	tint.a = 1.0
-	if not GameManager.players.has(id):
-		GameManager.add_player(id, {"id": id, "name": player_name, "color": tint})
+func _on_server_disconnected() -> void:
+	_clear_match_results_overlay()
+	_free_active_map()
+	multiplayer.multiplayer_peer = null
+	GameManager.return_to_menu()
+	get_tree().change_scene_to_file(MAIN_MENU_SCENE)
+
+## Client -> host: register the sender in the lobby. The id always comes from the
+## transport, so a client cannot register (or rename) someone else.
+@rpc("any_peer", "reliable")
+func request_register(player_name: String, color: Color = Color.WHITE) -> void:
+	if not multiplayer.is_server():
+		return
+	var id := multiplayer.get_remote_sender_id()
+	_store_player(id, player_name, color)
+	if not player_ready_states.has(id):
 		player_ready_states[id] = false
-	else:
-		GameManager.players[id]["name"] = player_name
-		GameManager.players[id]["color"] = tint
 	
-	if multiplayer.is_server():
-		for player_id in GameManager.players:
-			var player_data = GameManager.get_player(player_id)
-			var synced_color: Color = player_data.get("color", Color.WHITE)
-			send_player.rpc(player_id, player_data.name, synced_color)
-		sync_lobby_game_mode.rpc_id(id, GameManager.get_game_mode())
-		sync_ready_states.rpc(player_ready_states)
-	
+	for player_id in GameManager.players:
+		var player_data: Dictionary = GameManager.get_player(player_id)
+		sync_player.rpc(player_id, player_data.name, player_data.get("color", Color.WHITE))
+	sync_lobby_game_mode.rpc_id(id, GameManager.get_game_mode())
+	sync_ready_states.rpc(player_ready_states)
 	_update_player_list()
 
-@rpc("any_peer")
+@rpc("authority", "reliable")
+func sync_player(id: int, player_name: String, color: Color) -> void:
+	_store_player(id, player_name, color)
+	_update_player_list()
+
+func _store_player(id: int, player_name: String, color: Color) -> void:
+	var tint := color
+	tint.a = 1.0
+	if GameManager.players.has(id):
+		GameManager.players[id]["name"] = player_name
+		GameManager.players[id]["color"] = tint
+	else:
+		GameManager.add_player(id, {"id": id, "name": player_name, "color": tint})
+
+@rpc("authority", "reliable")
 func sync_ready_states(states: Dictionary) -> void:
 	player_ready_states = states
 	_update_player_list()
 	_check_ready_state()
 
-@rpc("any_peer")
-func set_player_ready(player_id: int, is_ready: bool) -> void:
-	player_ready_states[player_id] = is_ready
+## Client -> host: toggle the sender's own ready state.
+@rpc("any_peer", "reliable")
+func request_set_ready(is_ready: bool) -> void:
+	if not multiplayer.is_server():
+		return
+	player_ready_states[multiplayer.get_remote_sender_id()] = is_ready
+	sync_ready_states.rpc(player_ready_states)
 	_update_player_list()
 	_check_ready_state()
 
@@ -167,7 +193,7 @@ func _check_ready_state() -> void:
 	else:
 		start_button.disabled = ready_count < 1
 
-@rpc("any_peer", "call_local")
+@rpc("authority", "call_local", "reliable")
 func start_game(map_path: String) -> void:
 	_free_active_map()
 	
@@ -176,7 +202,7 @@ func start_game(map_path: String) -> void:
 	hide()
 	GameManager.start_match()
 
-@rpc("any_peer", "call_local")
+@rpc("authority", "call_local", "reliable")
 func show_match_results(results: Array) -> void:
 	_clear_match_results_overlay()
 	_halt_map_replication(_active_map)
@@ -186,7 +212,7 @@ func show_match_results(results: Array) -> void:
 	_match_results_overlay.setup(results)
 	_match_results_overlay.continue_pressed.connect(_on_match_results_continue)
 
-@rpc("any_peer", "call_local")
+@rpc("authority", "call_local", "reliable")
 func return_to_lobby() -> void:
 	_clear_match_results_overlay()
 	_free_active_map()
@@ -224,7 +250,9 @@ func _clear_match_results_overlay() -> void:
 		_match_results_overlay = null
 
 func _on_match_results_continue() -> void:
-	return_to_lobby.rpc()
+	# Only the host moves everyone back; clients wait for its (identical) auto-continue.
+	if multiplayer.is_server():
+		return_to_lobby.rpc()
 
 func _reset_lobby_for_new_match() -> void:
 	for player_id in GameManager.players:
@@ -253,7 +281,7 @@ func _on_ready_pressed() -> void:
 	
 	ready_button.text = "Unready" if new_ready_state else "Ready"
 	
-	set_player_ready.rpc(player_id, new_ready_state)
+	request_set_ready.rpc_id(1, new_ready_state)
 
 func _on_gametype_dropdown_item_selected(index: int) -> void:
 	if not multiplayer.is_server():

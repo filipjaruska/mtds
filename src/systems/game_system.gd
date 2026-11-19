@@ -186,10 +186,10 @@ func start_match() -> void:
 	if not multiplayer.is_server():
 		return
 	
-	var duration_msec: int = int(duration * 1000.0)
-	match_end_time_msec = Time.get_ticks_msec() + duration_msec
 	sync_match_mode_state.rpc(get_game_mode(), poker_featured_card_type)
-	sync_match_timer.rpc(match_end_time_msec)
+	# Send the remaining duration, not an absolute tick value: Time.get_ticks_msec()
+	# is process uptime and differs on every machine.
+	sync_match_timer.rpc(duration)
 	_match_timer.start(duration)
 
 ## End the game (transition to GAME_OVER state)
@@ -199,13 +199,19 @@ func end_game() -> void:
 
 ## Return to lobby after a match without disconnecting players.
 func return_to_lobby() -> void:
+	_stop_match(true)
+	set_game_state(GameState.LOBBY)
+
+func _stop_match(broadcast_stats: bool) -> void:
 	_stop_match_timer()
 	match_end_time_msec = 0
 	match_time_remaining = 0.0
 	poker_featured_card_type = -1
-	reset_match_stats()
+	if broadcast_stats:
+		reset_match_stats()
+	else:
+		match_stats.clear()
 	set_process(false)
-	set_game_state(GameState.LOBBY)
 
 func reset_match_stats() -> void:
 	match_stats.clear()
@@ -299,12 +305,14 @@ func sync_match_stats(stats: Dictionary) -> void:
 
 ## Disconnect from current game (transition to DISCONNECTED state)
 func disconnect_from_game() -> void:
+	_stop_match(false)
 	set_game_state(GameState.DISCONNECTED)
 	# Clear all players when disconnecting
 	players.clear()
 
 ## Return to menu (transition to MENU state)
 func return_to_menu() -> void:
+	_stop_match(false)
 	set_game_state(GameState.MENU)
 	# Clear game data when returning to menu
 	players.clear()
@@ -378,6 +386,7 @@ func sync_match_mode_state(game_mode: String, featured_card_type: int) -> void:
 	poker_featured_card_type = featured_card_type
 
 @rpc("authority", "call_local", "reliable")
-func sync_match_timer(end_time_msec: int) -> void:
-	match_end_time_msec = end_time_msec
-	match_time_remaining = maxf(0.0, (match_end_time_msec - Time.get_ticks_msec()) / 1000.0)
+func sync_match_timer(remaining_seconds: float) -> void:
+	# Convert to this machine's own clock.
+	match_end_time_msec = Time.get_ticks_msec() + int(remaining_seconds * 1000.0)
+	match_time_remaining = maxf(0.0, remaining_seconds)

@@ -1,7 +1,10 @@
 extends Node
 ## The manager automatically detects the current input device and provides
-## device-agnostic methods for all game actions. It maintains state for
-## smooth transitions between input devices.
+## device-agnostic methods for all game actions.
+##
+## Buttons and triggers are read through the InputMap (see project.godot), so
+## both keyboard/mouse and gamepad bindings live in one place and "just pressed"
+## semantics are the same for every device. Only analog sticks are read directly.
 
 signal input_device_changed(device: String)
 
@@ -15,127 +18,87 @@ var last_movement_input := Vector2.ZERO
 var last_aim_direction := Vector2.RIGHT
 
 const INPUT_THRESHOLD: float = 0.5
-const TRIGGER_THRESHOLD: float = 0.5
 const AIM_DEADZONE: float = 0.2 # for gamepad
 const MOVEMENT_DEADZONE: float = 0.1
 
-func _process(_delta: float) -> void:
-	_detect_input_device_changes()
+## The gamepad that most recently produced input; sticks are read from it.
+var _joy_device: int = 0
 
-## Detect and handle input device changes
-##
-## Monitors for gamepad or keyboard/mouse input and switches the active device accordingly.
-func _detect_input_device_changes() -> void:
-	if _is_gamepad_input_detected():
-		if current_device != InputDevice.GAMEPAD:
-			current_device = InputDevice.GAMEPAD
-			input_device_changed.emit("gamepad")
-	
-	elif _is_keyboard_mouse_input_detected():
-		if current_device != InputDevice.KEYBOARD_MOUSE:
-			current_device = InputDevice.KEYBOARD_MOUSE
-			input_device_changed.emit("keyboard_mouse")
+## Switch the active device based on whichever device actually produced input.
+func _input(event: InputEvent) -> void:
+	if event is InputEventJoypadButton:
+		_joy_device = event.device
+		_set_device(InputDevice.GAMEPAD)
+	elif event is InputEventJoypadMotion:
+		if absf(event.axis_value) > INPUT_THRESHOLD:
+			_joy_device = event.device
+			_set_device(InputDevice.GAMEPAD)
+	elif event is InputEventKey or event is InputEventMouseButton:
+		_set_device(InputDevice.KEYBOARD_MOUSE)
+	elif event is InputEventMouseMotion and event.relative.length_squared() > 4.0:
+		_set_device(InputDevice.KEYBOARD_MOUSE)
 
-## Check if gamepad input is detected
-##
-## @return True if gamepad input is active, false otherwise
-func _is_gamepad_input_detected() -> bool:
-	return Input.is_joy_button_pressed(0, JOY_BUTTON_A) or \
-		   Input.is_joy_button_pressed(0, JOY_BUTTON_B) or \
-		   abs(Input.get_joy_axis(0, JOY_AXIS_LEFT_X)) > INPUT_THRESHOLD or \
-		   abs(Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)) > INPUT_THRESHOLD
-
-## Check if keyboard/mouse input is detected
-##
-## @return True if keyboard/mouse input is active, false otherwise
-func _is_keyboard_mouse_input_detected() -> bool:
-	return Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or \
-		   Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) or \
-		   Input.get_action_strength("ui_left") > 0.0 or \
-		   Input.get_action_strength("ui_right") > 0.0 or \
-		   Input.get_action_strength("ui_up") > 0.0 or \
-		   Input.get_action_strength("ui_down") > 0.0
+func _set_device(device: InputDevice) -> void:
+	if current_device == device:
+		return
+	current_device = device
+	input_device_changed.emit("gamepad" if device == InputDevice.GAMEPAD else "keyboard_mouse")
 
 ## Get the movement vector from input with proper analog magnitude and deadzone handling
 ##
 ## @return Vector2 representing the movement direction and magnitude
 func get_movement_vector() -> Vector2:
 	var input_vector := Vector2.ZERO
-	
+
 	if current_device == InputDevice.GAMEPAD:
 		input_vector = Vector2(
-			Input.get_joy_axis(0, JOY_AXIS_LEFT_X),
-			Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+			Input.get_joy_axis(_joy_device, JOY_AXIS_LEFT_X),
+			Input.get_joy_axis(_joy_device, JOY_AXIS_LEFT_Y)
 		)
 	else:
 		input_vector = Vector2(
 			Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"),
 			Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
 		)
-	
+
 	if input_vector.length() < MOVEMENT_DEADZONE:
 		input_vector = Vector2.ZERO
 	else:
 		if input_vector.length() > 1.0:
 			input_vector = input_vector.normalized()
 		last_movement_input = input_vector
-	
+
 	return input_vector
 
 func is_moving() -> bool:
 	return get_movement_vector() != Vector2.ZERO
 
 func is_dash_pressed() -> bool:
-	if current_device == InputDevice.KEYBOARD_MOUSE:
-		return Input.is_action_just_pressed("dash")
-	else:
-		return Input.is_joy_button_pressed(0, JOY_BUTTON_A)
+	return Input.is_action_just_pressed("dash")
 
 func is_shoot_pressed() -> bool:
-	if current_device == InputDevice.KEYBOARD_MOUSE:
-		return Input.is_action_pressed("shoot")
-	else:
-		return Input.get_joy_axis(0, JOY_AXIS_TRIGGER_RIGHT) > TRIGGER_THRESHOLD
+	return Input.is_action_pressed("shoot")
 
 func is_reload_pressed() -> bool:
-	if current_device == InputDevice.KEYBOARD_MOUSE:
-		return Input.is_action_just_pressed("reload")
-	else:
-		return Input.is_joy_button_pressed(0, JOY_BUTTON_X)
+	return Input.is_action_just_pressed("reload")
 
 func is_crouch_pressed() -> bool:
-	if current_device == InputDevice.KEYBOARD_MOUSE:
-		return Input.is_action_pressed("ui_crouch")
-	else:
-		return Input.get_joy_axis(0, JOY_AXIS_TRIGGER_LEFT) > TRIGGER_THRESHOLD
+	return Input.is_action_pressed("ui_crouch")
 
 func is_interact_pressed() -> bool:
-	if current_device == InputDevice.KEYBOARD_MOUSE:
-		return Input.is_action_just_pressed("interact")
-	else:
-		return Input.is_joy_button_pressed(0, JOY_BUTTON_B)
+	return Input.is_action_just_pressed("interact")
 
 func is_weapon_switch_pressed() -> bool:
-	if current_device == InputDevice.KEYBOARD_MOUSE:
-		return Input.is_action_just_pressed("switch_weapon")
-	else:
-		return Input.is_joy_button_pressed(0, JOY_BUTTON_Y)
+	return Input.is_action_just_pressed("switch_weapon")
 
 func is_weapon_1_pressed() -> bool:
-	if current_device == InputDevice.GAMEPAD:
-		return false
 	return Input.is_action_just_pressed("switch_weapon_1")
 
 func is_weapon_2_pressed() -> bool:
-	if current_device == InputDevice.GAMEPAD:
-		return false
 	return Input.is_action_just_pressed("switch_weapon_2")
 
 func is_drop_weapon_pressed() -> bool:
-	if current_device == InputDevice.KEYBOARD_MOUSE:
-		return Input.is_action_just_pressed("ui_drop_weapon")
-	else:
-		return Input.is_joy_button_pressed(0, JOY_BUTTON_RIGHT_STICK)
+	return Input.is_action_just_pressed("ui_drop_weapon")
 
 func is_powerup_details_held() -> bool:
 	return Input.is_action_pressed("powerup_details")
@@ -183,16 +146,16 @@ func get_aim_direction(player_position: Vector2) -> Vector2:
 		return last_aim_direction
 	else:
 		var aim_vector = Vector2(
-			Input.get_joy_axis(0, JOY_AXIS_RIGHT_X),
-			Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+			Input.get_joy_axis(_joy_device, JOY_AXIS_RIGHT_X),
+			Input.get_joy_axis(_joy_device, JOY_AXIS_RIGHT_Y)
 		)
-		
+
 		if aim_vector.length_squared() > AIM_DEADZONE:
 			last_aim_direction = aim_vector.normalized()
 			return last_aim_direction
-		
+
 		var movement = get_movement_vector()
 		if movement.length_squared() > MOVEMENT_DEADZONE:
 			last_aim_direction = movement
-			
+
 		return last_aim_direction

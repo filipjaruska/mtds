@@ -26,18 +26,10 @@ func set_camera_authority(is_authority: bool):
 	if camera2d:
 		camera2d.enabled = is_authority
 	
-	# ui based on authority
+	# Every player scene carries a HUD; only the local player's may be shown,
+	# otherwise the CanvasLayers of all players stack on screen.
 	if ui_canvas:
-		var ammo_label = ui_canvas.get_node_or_null("Ammo")
-		var health_label = ui_canvas.get_node_or_null("Health")
-		var weapon_slots = ui_canvas.get_node_or_null("WeaponSlots")
-		
-		if ammo_label:
-			ammo_label.visible = is_authority
-		if health_label:
-			health_label.visible = is_authority
-		if weapon_slots:
-			weapon_slots.visible = is_authority
+		ui_canvas.visible = is_authority
 
 func update_zoom_for_state(is_crouching: bool, delta: float):
 	if not camera2d:
