@@ -19,14 +19,15 @@ then:
 
 ```sh
 git config core.hooksPath .githooks
-git config hooks.godot "/path/to/godot"   # e.g. the *_console.exe on Windows
+git config hooks.godot "/path/to/godot"
+git config alias.test '!sh tests/run.sh'
 ```
 
 To test:
 
 ```sh
-sh tests/run.sh quick   # import + unit + lobby navigation, ~5 s
-sh tests/run.sh full    # + smoke match and host/client network test, ~35 s
+git test quick   # import + unit + lobby navigation, ~5 s
+git test full    # + smoke match and host/client network test, ~35 s
 ```
 
 Hooks:
