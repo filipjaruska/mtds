@@ -29,11 +29,19 @@ fi
 LOG_DIR=$(mktemp -d)
 trap 'rm -rf "$LOG_DIR"' EXIT
 
-# `timeout` is missing on stock macOS; run without a limit there.
+# GNU `timeout` is missing on stock macOS and in GitHub Desktop's bundled Git,
+# where `timeout` may even resolve to the unrelated Windows timeout.exe.
+# Only use it when it is the GNU tool; otherwise run without a limit.
+if timeout --version >/dev/null 2>&1; then
+	HAS_TIMEOUT=1
+else
+	HAS_TIMEOUT=0
+fi
+
 limit() {
 	seconds=$1
 	shift
-	if command -v timeout >/dev/null 2>&1; then
+	if [ "$HAS_TIMEOUT" -eq 1 ]; then
 		timeout "$seconds" "$@"
 	else
 		"$@"
@@ -71,7 +79,10 @@ run_import() {
 run_net() {
 	script 90 res://tests/net_match.gd -- --role=host >"$LOG_DIR/net-host.log" 2>&1 &
 	host_pid=$!
-	sleep 3
+	# Head start for the host; the client also retries until the host is up.
+	if command -v sleep >/dev/null 2>&1; then
+		sleep 2
+	fi
 	client_exit=0
 	script 90 res://tests/net_match.gd -- --role=client >"$LOG_DIR/net-client.log" 2>&1 || client_exit=$?
 	host_exit=0

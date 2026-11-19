@@ -97,10 +97,17 @@ func _run_host() -> void:
 	finish()
 
 func _run_client() -> void:
-	var peer := ENetMultiplayerPeer.new()
-	peer.create_client("127.0.0.1", PORT)
-	root.multiplayer.multiplayer_peer = peer
-	check(await wait_until(func(): return root.multiplayer.get_unique_id() > 1 and peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED, 10.0), "connected")
+	# Retry until the host is listening, so the client may start first.
+	var connected := false
+	var deadline := Time.get_ticks_msec() + 20000
+	while not connected and Time.get_ticks_msec() < deadline:
+		var peer := ENetMultiplayerPeer.new()
+		peer.create_client("127.0.0.1", PORT)
+		root.multiplayer.multiplayer_peer = peer
+		connected = await wait_until(func(): return peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED, 3.0)
+		if not connected:
+			peer.close()
+	check(connected, "connected")
 	root.get_node("GameManager").local_player_name = "Client"
 	change_scene_to_file("res://src/ui/menus/lobby.tscn")
 
