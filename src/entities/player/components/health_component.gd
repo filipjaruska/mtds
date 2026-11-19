@@ -54,6 +54,8 @@ func _damage_resistance() -> float:
 ## Raising max health also grants the difference; lowering it clamps.
 func _recompute_max_health() -> void:
 	var new_max := MAX_HEALTH + max_health_bonus
+	if is_equal_approx(new_max, max_health):
+		return
 	if new_max > max_health:
 		current_health += new_max - max_health
 	max_health = new_max

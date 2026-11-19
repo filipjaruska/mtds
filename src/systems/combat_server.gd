@@ -11,11 +11,14 @@ class_name CombatServer
 const HITBOX_MASK := 2
 ## How far a shot may start from where the host sees the shooter.
 const MAX_ORIGIN_DISTANCE := 150.0
-## Hard cap on fire requests per player (~33/s, above the fastest burst).
-const MIN_REQUEST_INTERVAL_MSEC := 30
+## Anti-spam budget per player: trigger pulls accepted within one second.
+## Dual-wielded bursts fire both hands at 18/s each, so stay well above 36.
+const MAX_SHOTS_PER_SECOND := 50
+## A slow frame can fire several burst shots in one request.
+const MAX_SHOTS_PER_REQUEST := 4
 
 var _pending: Array[Dictionary] = []
-var _last_request_at: Dictionary = {}
+var _recent_shots: Dictionary = {} # peer id -> Array of msec timestamps
 
 ## Called on the shooting player's machine for every trigger pull.
 func fire(shooter: Node2D, origin: Vector2, rotations: PackedFloat32Array, def_id: StringName, max_range: float) -> void:
@@ -61,12 +64,11 @@ func _resolve(item: Dictionary) -> void:
 	var def := WeaponDefs.get_def(item.def)
 	if holder == null or health == null or health.is_dead or def == null:
 		return
-	if not holder.has_weapon(def.id) or item.rotations.size() > def.pellets:
+	var shot_count := ceili(item.rotations.size() / float(def.pellets))
+	if not holder.has_weapon(def.id) or item.rotations.is_empty() or shot_count > MAX_SHOTS_PER_REQUEST:
 		return
-	var now := Time.get_ticks_msec()
-	if now - int(_last_request_at.get(shooter_id, -100000)) < MIN_REQUEST_INTERVAL_MSEC:
+	if not _within_budget(shooter_id, shot_count, Time.get_ticks_msec()):
 		return
-	_last_request_at[shooter_id] = now
 
 	var origin: Vector2 = item.origin
 	if origin.distance_to(shooter.global_position) > MAX_ORIGIN_DISTANCE:
@@ -87,6 +89,11 @@ func _resolve(item: Dictionary) -> void:
 			_show_tracers.rpc_id(peer, origin, ends)
 	if shooter_id != multiplayer.get_unique_id():
 		_spawn_tracers(origin, ends)
+
+func _within_budget(shooter_id: int, shot_count: int, now: int) -> bool:
+	var result := DamageRules.fire_budget(_recent_shots.get(shooter_id, []), shot_count, now, MAX_SHOTS_PER_SECOND)
+	_recent_shots[shooter_id] = result.recent
+	return result.allowed
 
 @rpc("authority", "call_remote", "unreliable")
 func _show_tracers(origin: Vector2, ends: PackedVector2Array) -> void:
