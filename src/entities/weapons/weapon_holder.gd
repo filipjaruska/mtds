@@ -7,7 +7,6 @@ class_name WeaponHolder
 ## Other peers only mirror the loadout they receive and play effects.
 ## No gameplay decisions are made here; they live in the rules.
 
-const BULLET_SCENE := preload("res://src/entities/weapons/bullet.tscn")
 const SWITCH_COOLDOWN_MSEC := 300
 const DROP_COOLDOWN_MSEC := 1000
 const DUAL_WIELD_VERTICAL_SPACING := 18.0
@@ -15,6 +14,7 @@ const DUAL_WIELD_VERTICAL_SPACING := 18.0
 @onready var player: Node2D = $"../.."
 @onready var player_controller: Node2D = get_parent()
 @onready var powerup_manager: Node = player.get_node_or_null("PowerupManager")
+@onready var health: HealthComponent = player.get_node_or_null("HealthComponent")
 
 ## The single source of truth for this player's weapons (see LoadoutRules).
 var loadout: Dictionary = LoadoutRules.empty()
@@ -46,7 +46,7 @@ func _initialize() -> void:
 # --- Owner loop -------------------------------------------------------------
 
 func _process(_delta: float) -> void:
-	if not is_multiplayer_authority():
+	if not is_multiplayer_authority() or (health and health.is_dead):
 		return
 	var now := Time.get_ticks_msec()
 	_handle_inventory_input(now)
@@ -155,10 +155,14 @@ func _fire_shots(hand: StringName, offsets: Array[float], stats: Dictionary) -> 
 	if view:
 		view.play_fire()
 	_play_fire_fx.rpc(hand)
+	var rotations := PackedFloat32Array()
 	for offset in offsets:
-		spawn_bullet.rpc(origin, global_rotation + offset, stats.max_range, stats.damage, stats.armor_penetration, multiplayer.get_unique_id())
-	player_controller.apply_fire_slow(stats.move_speed_mult, stats.slow_duration)
+		rotations.append(global_rotation + offset)
 	var state := LoadoutRules.hand_state(loadout, hand)
+	var combat: CombatServer = player.get_parent().get_node_or_null("Combat")
+	if combat:
+		combat.fire(player, origin, rotations, state.def, stats.max_range)
+	player_controller.apply_fire_slow(stats.move_speed_mult, stats.slow_duration)
 	EventManager.emit_event(EventManager.Events.WEAPON_FIRED, [player, int(state.ammo), int(stats.mag_size)])
 
 func _end_dual_wield() -> void:
@@ -176,7 +180,12 @@ func _hands() -> Array[StringName]:
 	return [&"primary"]
 
 func _stats_for(state: Dictionary) -> Dictionary:
-	return WeaponRules.effective_stats(WeaponDefs.get_def(state.def), _modifiers())
+	return stats_for(state.def)
+
+## Current stats of a weapon for this player, modifiers included. The host uses
+## its mirror of other players to compute their damage.
+func stats_for(def_id: StringName) -> Dictionary:
+	return WeaponRules.effective_stats(WeaponDefs.get_def(def_id), _modifiers())
 
 func _modifiers() -> Dictionary:
 	return {
@@ -358,14 +367,3 @@ func _play_fire_fx(hand: StringName) -> void:
 	var view := _view_for(hand)
 	if view:
 		view.play_fire()
-
-@rpc("any_peer", "call_local", "reliable")
-func spawn_bullet(pos: Vector2, rot: float, weapon_range: float, dmg: float, pen: float, shooter_id: int) -> void:
-	var bullet = BULLET_SCENE.instantiate()
-	get_tree().root.add_child(bullet)
-	bullet.global_position = pos
-	bullet.global_rotation = rot
-	bullet.target_position = Vector2(weapon_range, 0)
-	bullet.set_visual_range(weapon_range)
-	bullet.set_bullet_damage(dmg, pen)
-	bullet.set_shooter_authority(shooter_id)

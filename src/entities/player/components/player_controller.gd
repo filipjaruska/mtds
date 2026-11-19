@@ -6,6 +6,7 @@ class_name PlayerController
 @onready var player_root: CharacterBody2D = get_parent()
 @onready var camera_component: Node2D = get_parent().get_node("CameraComponent")
 @onready var dash_cooldown_indicator = get_parent().get_node("CameraComponent/PlayerCamera/PlayerUI/DashCooldownBar")
+@onready var health: HealthComponent = get_parent().get_node("HealthComponent")
 
 # default settings
 var normal_speed: float = 200.0
@@ -59,7 +60,7 @@ func _setup_multiplayer_authority():
 	dash_cooldown_indicator.visible = is_authority
 
 func _process(delta):
-	if player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() == multiplayer.get_unique_id():
+	if player_root.get_node("MultiplayerSynchronizer").get_multiplayer_authority() == multiplayer.get_unique_id() and not health.is_dead:
 		_update_fire_slow()
 		_check_state_transitions()
 		_process_current_state(delta)

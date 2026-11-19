@@ -1,117 +1,94 @@
 extends Node2D
 class_name HealthComponent
+## Health is owned by the host. Only the host applies damage, heals, runs
+## regeneration and decides deaths/respawns; every peer (including the host)
+## receives the result through the _sync/_on_* RPCs below.
 
-@onready var heal_timer = $HealthRegenTimer
+const RESPAWN_DELAY := 1.0
+
+@onready var heal_timer: Timer = $HealthRegenTimer
 @onready var health_bar = $"../PlayerHealthBar"
 
+## Base maximum health (set from the player's inspector values).
 @export var MAX_HEALTH: float = 100.0
-var max_health: float
-var current_health: float
-var is_dying: bool = false
-
-@export var physical_resist: float = 0.0 # Percentage
+@export var physical_resist: float = 0.0 # fraction, 0.15 = 15% less damage
 @export var resist_penetration: float = 0.0 # 0.0 to 1.0
 @export var regen_delay_after_damage: float = 5.0
 @export_range(0.0, 1.0, 0.01) var regen_percent_per_tick: float = 0.10
 @export var regen_tick_interval: float = 1.0
-var damage_resistance: float = 0.0
-var _waiting_for_regen: bool = false
 
-func _ready():
+var max_health: float
+var current_health: float
+var is_dead: bool = false
+
+# Interim powerup effects (replaced by modifiers when powerups become data).
+var damage_resistance: float = 0.0
+var max_health_bonus: float = 0.0
+
+func _ready() -> void:
 	max_health = MAX_HEALTH
 	current_health = max_health
-	if health_bar:
-		health_bar.max_value = max_health
-		health_bar.value = current_health
+	heal_timer.one_shot = true
+	call_deferred("_broadcast_health_change")
 
-	await get_tree().process_frame
-	if health_bar:
-		health_bar.max_value = max_health
-		health_bar.value = current_health
-	_broadcast_health_change()
-
-## Called by the player root with its configured max health. Runs after this
-## component's _ready, so it must update both the base value and current HP.
+## Called by the player root with its configured max health.
 func set_base_max_health(value: float) -> void:
-	var was_full := current_health >= max_health
 	MAX_HEALTH = value
-	max_health = value
-	if was_full or current_health > max_health:
-		current_health = max_health
-	_broadcast_health_change()
+	_recompute_max_health()
 
-func _process(_delta):
-	death()
+func set_max_health_bonus(bonus: float) -> void:
+	max_health_bonus = bonus
+	_recompute_max_health()
 
-@rpc("any_peer", "reliable")
-func update_health(new_health: float, new_max_health: float = -1.0):
-	if new_max_health > 0.0:
-		max_health = new_max_health
-	current_health = new_health
-	_broadcast_health_change()
+## Raising max health also grants the difference; lowering it clamps.
+func _recompute_max_health() -> void:
+	var new_max := MAX_HEALTH + max_health_bonus
+	if new_max > max_health:
+		current_health += new_max - max_health
+	max_health = new_max
+	current_health = minf(current_health, max_health)
+	if _is_host():
+		_sync_health.rpc(current_health, max_health, 0.0)
+	else:
+		_broadcast_health_change()
 
-func sync_health_state() -> void:
-	if get_parent() and get_parent().is_multiplayer_authority():
-		rpc("update_health", current_health, max_health)
-	_broadcast_health_change()
+# --- Host only ----------------------------------------------------------------
 
-func damage(dmg: float, penetration: float, attacker_id: int = -1):
-	if dmg < 0.0:
+func apply_damage(amount: float, penetration: float, attacker_id: int) -> void:
+	if not _is_host() or is_dead:
 		return
+	var final_damage := DamageRules.final_damage(amount, penetration, physical_resist + damage_resistance)
+	if final_damage <= 0.0:
+		return
+	var result := DamageRules.apply(current_health, final_damage)
+	current_health = result.health
+	if attacker_id > 0:
+		GameManager.record_damage(attacker_id, final_damage)
+	_sync_health.rpc(current_health, max_health, -final_damage)
+	if result.died:
+		_die(attacker_id)
+	else:
+		_start_regen_delay()
 
-	var total_resist: float = max(physical_resist + damage_resistance - penetration, 0.0)
-	var final_dmg: float = dmg * (1.0 - total_resist)
-	var was_alive: bool = current_health > 0.0
-	current_health -= final_dmg
-	rpc("update_health", current_health, max_health)
-	_broadcast_health_change()
-	_start_regen_delay()
+func heal(amount: float) -> void:
+	if not _is_host() or is_dead:
+		return
+	var healed := minf(amount, max_health - current_health)
+	if healed <= 0.0:
+		return
+	current_health += healed
+	_sync_health.rpc(current_health, max_health, healed)
 
-	EventManager.emit_event(EventManager.Events.PLAYER_DAMAGED, [get_parent(), final_dmg, current_health])
-	
-	if attacker_id > 0 and final_dmg > 0.0:
-		GameManager.report_damage_dealt.rpc_id(1, attacker_id, final_dmg)
-		if was_alive and current_health <= 0.0:
-			var victim_id: int = int(get_parent().name)
-			GameManager.report_player_death.rpc_id(1, victim_id, attacker_id)
-
-func heal(amount: float):
-	current_health = min(current_health + amount, max_health)
-	rpc("update_health", current_health, max_health)
-	_broadcast_health_change()
-
-	EventManager.emit_event(EventManager.Events.PLAYER_HEALED, [get_parent(), amount, current_health])
-
-func death():
-	if current_health <= 0 and not is_dying:
-		_stop_regen()
-		is_dying = true
-		var player = get_parent()
-		player.visible = false
-
-		var powerup_manager = player.get_node_or_null("PowerupManager")
-		if powerup_manager:
-			powerup_manager.clear_inventory_on_death()
-			powerup_manager.clear_active_powerups_on_death()
-
-		var weapon_holder = player.get_node_or_null("PlayerController/WeaponHolder")
-		if weapon_holder:
-			weapon_holder.reset_on_death()
-
-		EventManager.emit_event(EventManager.Events.PLAYER_DIED, [player])
-
-		await get_tree().create_timer(1.0).timeout
-		respawn_player(player)
-
-func respawn_player(player):
-	player.visible = true
-	player.global_position = get_random_spawn_location()
+func _die(attacker_id: int) -> void:
+	is_dead = true
+	heal_timer.stop()
+	GameManager.record_death(get_multiplayer_authority(), attacker_id)
+	_on_died.rpc()
+	await get_tree().create_timer(RESPAWN_DELAY).timeout
+	if not is_inside_tree():
+		return
 	current_health = max_health
-	rpc("update_health", current_health, max_health)
-	_broadcast_health_change()
-
-	EventManager.emit_event(EventManager.Events.PLAYER_RESPAWNED, [player])
-	is_dying = false
+	_on_respawned.rpc(get_random_spawn_location(), current_health, max_health)
 
 func get_random_spawn_location() -> Vector2:
 	var spawns := get_tree().get_nodes_in_group("PlayerSpawnLocation")
@@ -122,51 +99,68 @@ func get_random_spawn_location() -> Vector2:
 func _start_regen_delay() -> void:
 	if regen_percent_per_tick <= 0.0 or current_health >= max_health:
 		return
-
-	_waiting_for_regen = true
-	heal_timer.stop()
-	heal_timer.one_shot = true
-	heal_timer.wait_time = regen_delay_after_damage
-	heal_timer.start()
-
-func _schedule_regen_tick() -> void:
-	if current_health >= max_health:
-		_stop_regen()
-		return
-
-	heal_timer.one_shot = true
-	heal_timer.wait_time = regen_tick_interval
-	heal_timer.start()
-
-func _apply_regen_tick() -> void:
-	if not get_parent().is_in_group("Player"):
-		return
-
-	if current_health >= max_health:
-		_stop_regen()
-		return
-
-	var heal_amount := max_health * regen_percent_per_tick
-	heal(heal_amount)
-
-	if current_health < max_health:
-		_schedule_regen_tick()
-	else:
-		_stop_regen()
-
-func _stop_regen() -> void:
-	_waiting_for_regen = false
-	heal_timer.stop()
+	heal_timer.start(regen_delay_after_damage)
 
 func _on_heal_timer_timeout() -> void:
-	if _waiting_for_regen:
-		_waiting_for_regen = false
-		_apply_regen_tick()
+	if not _is_host() or is_dead:
 		return
+	heal(DamageRules.regen_amount(max_health, regen_percent_per_tick, current_health))
+	if current_health < max_health:
+		heal_timer.start(regen_tick_interval)
 
-	_apply_regen_tick()
+# --- Host -> everyone ---------------------------------------------------------
 
-func _broadcast_health_change():
+@rpc("any_peer", "call_local", "reliable")
+func _sync_health(hp: float, max_hp: float, change: float) -> void:
+	if not _from_host():
+		return
+	current_health = hp
+	max_health = max_hp
+	_broadcast_health_change()
+	if change < 0.0:
+		EventManager.emit_event(EventManager.Events.PLAYER_DAMAGED, [get_parent(), -change, hp])
+	elif change > 0.0:
+		EventManager.emit_event(EventManager.Events.PLAYER_HEALED, [get_parent(), change, hp])
+
+@rpc("any_peer", "call_local", "reliable")
+func _on_died() -> void:
+	if not _from_host():
+		return
+	is_dead = true
+	var player := get_parent()
+	player.visible = false
+	if player.is_multiplayer_authority():
+		var powerup_manager = player.get_node_or_null("PowerupManager")
+		if powerup_manager:
+			powerup_manager.clear_inventory_on_death()
+			powerup_manager.clear_active_powerups_on_death()
+		var weapon_holder = player.get_node_or_null("PlayerController/WeaponHolder")
+		if weapon_holder:
+			weapon_holder.reset_on_death()
+	EventManager.emit_event(EventManager.Events.PLAYER_DIED, [player])
+
+@rpc("any_peer", "call_local", "reliable")
+func _on_respawned(spawn_position: Vector2, hp: float, max_hp: float) -> void:
+	if not _from_host():
+		return
+	is_dead = false
+	current_health = hp
+	max_health = max_hp
+	var player := get_parent()
+	player.global_position = spawn_position
+	player.visible = true
+	_broadcast_health_change()
+	EventManager.emit_event(EventManager.Events.PLAYER_RESPAWNED, [player])
+
+# --- Helpers ------------------------------------------------------------------
+
+func _is_host() -> bool:
+	return multiplayer.has_multiplayer_peer() and multiplayer.is_server()
+
+func _from_host() -> bool:
+	return multiplayer.get_remote_sender_id() == 1
+
+func _broadcast_health_change() -> void:
 	if health_bar and is_instance_valid(health_bar):
 		health_bar.max_value = max_health
 		health_bar.value = current_health

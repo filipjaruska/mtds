@@ -231,25 +231,20 @@ func _ensure_player_stats(player_id: int) -> void:
 			"damage_dealt": 0.0,
 		}
 
-@rpc("any_peer", "call_local", "reliable")
-func report_damage_dealt(attacker_id: int, amount: float) -> void:
-	if not multiplayer.is_server():
+## Host only: called by HealthComponent when damage is applied.
+func record_damage(attacker_id: int, amount: float) -> void:
+	if not multiplayer.is_server() or amount <= 0.0:
 		return
-	if amount <= 0.0:
-		return
-	
 	_ensure_player_stats(attacker_id)
 	match_stats[attacker_id]["damage_dealt"] += amount
 	_match_stats_dirty = true
 
-@rpc("any_peer", "call_local", "reliable")
-func report_player_death(victim_id: int, killer_id: int) -> void:
+## Host only: called by HealthComponent when a player dies.
+func record_death(victim_id: int, killer_id: int) -> void:
 	if not multiplayer.is_server():
 		return
-	
 	_ensure_player_stats(victim_id)
 	match_stats[victim_id]["deaths"] += 1
-	
 	if killer_id > 0 and killer_id != victim_id:
 		_ensure_player_stats(killer_id)
 		match_stats[killer_id]["kills"] += 1

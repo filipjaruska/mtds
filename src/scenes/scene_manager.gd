@@ -11,6 +11,10 @@ const MAX_DROP_DISTANCE := 200.0
 var _dropped_pickup_count: int = 0
 
 func _ready():
+	var combat := CombatServer.new()
+	combat.name = "Combat"
+	add_child(combat)
+
 	var index: int = 0
 	for i in GameManager.players:
 		var player_id: int = GameManager.players[i].id
