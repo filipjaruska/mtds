@@ -5,7 +5,8 @@ extends SceneTree
 ## Each process exits 0 when all of its checks passed.
 
 const PORT := 18734
-const MAP_NAME := "Main"
+const MAP_PATH := "res://tests/maps/test_arena.tscn"
+const MAP_NAME := "TestArena"
 
 var _failures: Array[String] = []
 var _started := false
@@ -64,7 +65,7 @@ func _run_host() -> void:
 	for id in gm.players:
 		if id != 1:
 			client_id = id
-	current_scene._on_start_pressed()
+	current_scene.start_game.rpc(MAP_PATH)
 	check(await wait_until(func(): return _player(1) != null and _player(client_id) != null, 5.0), "players spawned")
 	await seconds(1.0)
 

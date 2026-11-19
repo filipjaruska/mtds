@@ -1,6 +1,7 @@
 extends SceneTree
-## Headless smoke test: hosts a match on the debug map and drives the local
-## player through real input actions.
+## Headless smoke test: hosts a match on the test arena (tests/maps/) and
+## drives the local player through real input actions. The arena belongs to
+## the tests, so editing game maps cannot break this.
 ##   godot --headless --path . -s res://tests/smoke_match.gd
 
 var _failures: Array[String] = []
@@ -35,7 +36,7 @@ func _run() -> void:
 
 	var game_manager = root.get_node("GameManager")
 	game_manager.add_player(1, {"id": 1, "name": "Host", "color": Color.WHITE})
-	var map: Node = load("res://src/scenes/debug.tscn").instantiate()
+	var map: Node = load("res://tests/maps/test_arena.tscn").instantiate()
 	root.add_child(map)
 	await frames(5)
 
@@ -55,7 +56,7 @@ func _run() -> void:
 	check(WeaponRules.is_reloading(LoadoutRules.active(holder.loadout), Time.get_ticks_msec()), "reload started")
 
 	# Walk onto the shotgun pickup and take it.
-	var pickup: Node2D = map.get_node("WeaponPickup2")
+	var pickup: Node2D = map.get_node("ShotgunPickup")
 	player.global_position = pickup.global_position
 	await frames(4)
 	await tap("interact")
@@ -112,8 +113,8 @@ func _pickup_of(map: Node, spawner_name: String) -> Node2D:
 func _powerups(map: Node, player: Node2D, holder) -> void:
 	var pm = player.get_node("PowerupManager")
 	
-	# Dual Wield (PowerupSpawner2): collect, use, empty both magazines.
-	check(await _collect(map, player, "PowerupSpawner2"), "dual wield pickup spawned")
+	# Dual Wield: collect, use, empty both magazines.
+	check(await _collect(map, player, "DualSpawner"), "dual wield pickup spawned")
 	check(pm.inventory[0].def == &"dual_wield", "dual wield in slot 1, inventory=%s" % [pm.inventory])
 	await wait_until(func(): return not WeaponRules.is_reloading(LoadoutRules.active(holder.loadout), Time.get_ticks_msec()), 3.0)
 	await tap("powerup_slot_1")
@@ -125,10 +126,10 @@ func _powerups(map: Node, player: Node2D, holder) -> void:
 	check(not LoadoutRules.is_dual(holder.loadout), "dual ends when both magazines are empty")
 	check(PowerupRules.entry_with_ability(pm.active, &"dual_wield").is_empty(), "dual powerup expired with it")
 	
-	# Burst (PowerupSpawner3): one trigger pull empties the magazine.
+	# Burst: one trigger pull empties the magazine.
 	await tap("reload")
 	await wait_until(func(): return LoadoutRules.active(holder.loadout).ammo == 16, 3.0)
-	check(await _collect(map, player, "PowerupSpawner3"), "burst pickup spawned")
+	check(await _collect(map, player, "BurstSpawner"), "burst pickup spawned")
 	await tap("powerup_slot_1")
 	check(not PowerupRules.entry_with_ability(pm.active, &"burst").is_empty(), "burst active")
 	await tap("shoot")
