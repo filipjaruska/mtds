@@ -132,7 +132,6 @@ func poker_deal_hole() -> int:
 ## @param player_data 	Dictionary containing player information (name, etc.)
 func add_player(player_id: int, player_data: Dictionary) -> void:
 	players[player_id] = player_data
-	print("Player added: ", player_data.get("name", "Unknown"), " (ID: ", player_id, ")") # TODO: rm later
 
 ## Remove a player from the game
 ##
@@ -142,7 +141,6 @@ func remove_player(player_id: int) -> Dictionary:
 	if players.has(player_id):
 		var player_data = players[player_id]
 		players.erase(player_id)
-		print("Player removed: ", player_data.get("name", "Unknown"), " (ID: ", player_id, ")") # TODO: rm later
 		return player_data
 	return {}
 
@@ -178,7 +176,6 @@ func set_game_state(new_state: GameState) -> void:
 	if current_state != new_state:
 		var old_state = current_state
 		current_state = new_state
-		print("Game state changed from ", GameState.keys()[old_state], " to ", GameState.keys()[new_state]) # TODO: rm later
 
 		# Emit state change event
 		EventManager.emit_event(EventManager.Events.GAME_STATE_CHANGED, [old_state, new_state])
@@ -360,14 +357,12 @@ func return_to_menu() -> void:
 
 ## Event handlers
 func _on_player_connected(player_id: int) -> void:
-	print("GameManager: Player connected event received for ID: ", player_id) # TODO: rm later
 	
 	# If we're in menu and this is the first connection, go to lobby
 	if current_state == GameState.MENU and get_player_count() == 0:
 		set_game_state(GameState.LOBBY)
 
 func _on_player_disconnected(player_id: int, _player_data: Dictionary) -> void:
-	print("GameManager: Player disconnected event received for ID: ", player_id) # TODO: rm later
 	remove_player(player_id)
 	
 	# If we're in lobby and no players left, return to menu

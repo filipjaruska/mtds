@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://cslbakgrwn56g"]
 
 [ext_resource type="Script" uid="uid://mdurqy28abs5" path="res://src/entities/weapons/weapon_view.gd" id="1_bttd4"]
-[ext_resource type="Texture2D" uid="uid://brfoniiux05cq" path="res://assets/guns/pistol/Pistol.base.png" id="3_cc8qp"]
+[ext_resource type="Texture2D" uid="uid://brfoniiux05cq" path="res://src/assets/weapons/pistol/Pistol.base.png" id="3_cc8qp"]
 
 [sub_resource type="Animation" id="Animation_6d1wn"]
 resource_name = "Idle"
