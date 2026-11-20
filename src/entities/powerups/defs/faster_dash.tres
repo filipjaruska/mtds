@@ -1,11 +1,13 @@
 [gd_resource type="Resource" script_class="PowerupDef" format=3]
 
 [ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
+[ext_resource type="Texture2D" uid="uid://cc5wlexef0d8c" path="res://src/assets/cards/faster_dash.png" id="2_card"]
 
 [resource]
 script = ExtResource("1_def")
 id = &"faster_dash"
 display_name = "Quick Dash"
+card_texture = ExtResource("2_card")
 description = "Reduces dash cooldown by 25%"
 rarity_color = Color(0, 1, 0, 1)
 duration = 30.0

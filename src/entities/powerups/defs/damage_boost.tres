@@ -1,11 +1,13 @@
 [gd_resource type="Resource" script_class="PowerupDef" format=3]
 
 [ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
+[ext_resource type="Texture2D" uid="uid://b37xe4gtl7f8n" path="res://src/assets/cards/damage_boost.png" id="2_card"]
 
 [resource]
 script = ExtResource("1_def")
 id = &"damage_boost"
 display_name = "Power Strike"
+card_texture = ExtResource("2_card")
 description = "Increases weapon damage by 20%"
 rarity_color = Color(1, 0, 0, 1)
 duration = 25.0

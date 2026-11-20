@@ -101,8 +101,8 @@ func _create_effect_display(entry: Dictionary) -> Control:
 	row.add_child(uses_badge)
 
 	var card := PowerupDefs.get_def(entry.def)
-	if card.icon_texture:
-		icon.texture = card.icon_texture
+	if card.card_texture:
+		icon.texture = card.card_texture
 	icon.modulate = Color(card.rarity_color.r, card.rarity_color.g, card.rarity_color.b, 0.9)
 
 	row.set_meta("powerup", entry.def)

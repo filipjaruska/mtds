@@ -14,30 +14,39 @@ var glow_effect: Sprite2D
 var _local_player_inside: Node = null
 var _taken := false
 
+const CARD_SCALE := 0.35
+
 func _ready() -> void:
 	_apply_visuals()
+	# The card floats and tilts a little; the glow behind it breathes.
+	if sprite:
+		var bob := create_tween().set_loops().set_trans(Tween.TRANS_SINE)
+		bob.tween_property(sprite, "position:y", -6.0, 0.9)
+		bob.parallel().tween_property(sprite, "rotation", 0.06, 0.9)
+		bob.tween_property(sprite, "position:y", 2.0, 0.9)
+		bob.parallel().tween_property(sprite, "rotation", -0.06, 0.9)
 	if glow_effect:
 		var tween := create_tween().set_loops()
-		tween.tween_property(glow_effect, "modulate:a", 0.3, 1.0)
-		tween.tween_property(glow_effect, "modulate:a", 0.8, 1.0)
+		tween.tween_property(glow_effect, "modulate:a", 0.25, 1.0)
+		tween.tween_property(glow_effect, "modulate:a", 0.7, 1.0)
 
 func _apply_visuals() -> void:
 	if powerup_def == null:
 		return
-	var texture: Texture2D = powerup_def.icon_texture
-	var tint := Color.WHITE
+	var texture: Texture2D = powerup_def.card_texture
 	if texture == null:
 		var placeholder := PlaceholderTexture2D.new()
-		placeholder.size = Vector2(64, 64)
+		placeholder.size = Vector2(160, 224)
 		texture = placeholder
-		tint = powerup_def.rarity_color
 	if sprite:
 		sprite.texture = texture
-		sprite.self_modulate = tint
+		sprite.scale = Vector2.ONE * CARD_SCALE
 	if glow_effect:
+		# A slightly larger, rarity-tinted copy behind the card.
 		glow_effect.texture = texture
-		glow_effect.self_modulate = tint
+		glow_effect.scale = Vector2.ONE * CARD_SCALE * 1.18
 		glow_effect.modulate = Color(powerup_def.rarity_color, 0.5)
+		glow_effect.self_modulate = Color(2.0, 2.0, 2.0)
 	if label:
 		label.text = "Press E to collect " + powerup_def.get_display_name()
 
@@ -139,7 +148,7 @@ static func create_pickup(def: PowerupDef, spawn_position: Vector2) -> PowerupPi
 	pickup.label.name = "Label"
 	pickup.label.visible = false
 	pickup.label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	pickup.label.position = Vector2(-50, -40)
+	pickup.label.position = Vector2(-50, -78) # above the card
 	pickup.add_child(pickup.label)
 
 	pickup.sprite = Sprite2D.new()
@@ -148,7 +157,6 @@ static func create_pickup(def: PowerupDef, spawn_position: Vector2) -> PowerupPi
 
 	pickup.glow_effect = Sprite2D.new()
 	pickup.glow_effect.name = "GlowEffect"
-	pickup.glow_effect.scale = Vector2(1.2, 1.2)
 	pickup.glow_effect.z_index = -1
 	pickup.add_child(pickup.glow_effect)
 	return pickup
