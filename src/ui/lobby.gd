@@ -9,6 +9,7 @@ var _menu_overlay: Node = null
 
 const MATCH_RESULTS_SCENE := preload("res://src/ui/menus/match_results.tscn")
 const MAIN_MENU_SCENE := "res://src/ui/menus/main.tscn"
+const DEBUG_MAP := "res://src/scenes/debug.tscn"
 const GAME_MODE_OPTIONS := [
 	"deathmatch",
 	"deathmatch+shuffle",
@@ -78,9 +79,12 @@ func _load_available_maps() -> void:
 	map_dropdown.clear()
 	available_maps.clear()
 	
-	available_maps.append("res://src/scenes/debug.tscn")
-	map_dropdown.add_item("debug")
-	
+	# Dev-only map: listed first (the default) when running from the editor or a
+	# debug export, hidden in release builds.
+	if OS.is_debug_build():
+		available_maps.append(DEBUG_MAP)
+		map_dropdown.add_item("debug")
+
 	var maps_dir = "res://src/scenes/maps/"
 	# ResourceLoader also sees maps in exported builds (DirAccess does not).
 	for file_name in ResourceLoader.list_directory(maps_dir):
