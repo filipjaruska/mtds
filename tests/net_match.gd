@@ -100,6 +100,14 @@ func _run_host() -> void:
 	check(await wait_until(func(): return not client_health.is_dead, 4.0), "client respawned")
 	check(is_equal_approx(client_health.current_health, 100.0), "client respawned with full health")
 
+	# Riot Shield across the network: the client must see it appear and shatter.
+	_player(1).get_node("PowerupManager")._sync_activate.rpc(&"armor", 1)
+	await seconds(1.5)
+	var shield = _player(1).get_node_or_null("PlayerController/RiotShield")
+	check(shield != null, "host raised its riot shield")
+	if shield:
+		shield.take_hit(9999.0)
+
 	await seconds(2.0) # let the client finish its checks
 	finish()
 
@@ -154,4 +162,7 @@ func _run_client() -> void:
 	check(await wait_until(func(): return not my_health.is_dead, 4.0), "client sees own respawn")
 	check(is_equal_approx(my_health.current_health, 100.0), "client full health after respawn")
 	check(me.visible, "respawned player visible")
+
+	check(await wait_until(func(): return host.has_node("PlayerController/RiotShield"), 8.0), "client sees the host's riot shield")
+	check(await wait_until(func(): return not host.has_node("PlayerController/RiotShield"), 8.0), "client sees the shield shatter")
 	finish()

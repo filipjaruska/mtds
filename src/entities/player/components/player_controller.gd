@@ -31,6 +31,10 @@ var _fire_slow_until: int = 0
 var last_dash_time: float = 0
 var dash_direction: Vector2 = Vector2.ZERO
 var dash_timer: SceneTreeTimer = null
+## Owner: velocity pushed onto the player (Shoulder Charge), fades out quickly.
+var _knockback := Vector2.ZERO
+const KNOCKBACK_DECAY := 2600.0 # px/s per second
+var _charged_this_dash := {} # target ids already hit during the current dash
 
 func _ready():
 	last_dash_time = Time.get_ticks_msec() - dash_cooldown
@@ -105,7 +109,13 @@ func _process_current_state(delta):
 			
 		PlayerState.CROUCHING:
 			_process_crouching_state()
-	
+
+	player_root.velocity += _knockback
+	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
+	player_root.move_and_slide()
+	if current_state == PlayerState.DASHING:
+		_check_charge_hits()
+
 	if camera_component:
 		camera_component.update_zoom_for_state(current_state == PlayerState.CROUCHING, delta)
 
@@ -120,6 +130,7 @@ func _change_state(new_state: PlayerState):
 	
 	match new_state:
 		PlayerState.DASHING:
+			_charged_this_dash.clear()
 			dash_direction = InputManager.get_movement_vector()
 			dash_timer = get_tree().create_timer(dash_duration)
 			dash_timer.timeout.connect(_on_dash_timer_timeout)
@@ -127,18 +138,35 @@ func _change_state(new_state: PlayerState):
 	_recompute_current_speed()
 
 func _process_normal_state():
-	var input_vector: Vector2 = InputManager.get_movement_vector() * current_speed
-	player_root.velocity = input_vector
-	player_root.move_and_slide()
+	player_root.velocity = InputManager.get_movement_vector() * current_speed
 
 func _process_dashing_state():
 	player_root.velocity = dash_direction * dash_speed
-	player_root.move_and_slide()
 
 func _process_crouching_state():
-	var input_vector: Vector2 = InputManager.get_movement_vector() * current_speed
-	player_root.velocity = input_vector
-	player_root.move_and_slide()
+	player_root.velocity = InputManager.get_movement_vector() * current_speed
+
+## Shoulder Charge: report every player this dash ran into; the host decides.
+func _check_charge_hits() -> void:
+	var effects := player_root.get_node_or_null("CardEffects") as CardEffects
+	if effects == null or not effects.can_charge():
+		return
+	for i in range(player_root.get_slide_collision_count()):
+		var other := player_root.get_slide_collision(i).get_collider() as Node
+		if other == null or not other.is_in_group("Player") or other == player_root:
+			continue
+		var target_id := other.get_multiplayer_authority()
+		if _charged_this_dash.has(target_id):
+			continue
+		_charged_this_dash[target_id] = true
+		effects.request_charge_hit.rpc_id(1, target_id)
+
+## Host -> owner: pushed by a Shoulder Charge.
+@rpc("any_peer", "call_local", "reliable")
+func apply_knockback(impulse: Vector2) -> void:
+	if multiplayer.get_remote_sender_id() != 1:
+		return
+	_knockback = impulse
 
 func _on_dash_timer_timeout():
 	_change_state(PlayerState.NORMAL)

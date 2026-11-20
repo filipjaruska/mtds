@@ -8,11 +8,11 @@ script = ExtResource("1_def")
 id = &"health_boost"
 display_name = "Warmog"
 card_texture = ExtResource("2_card")
-description = "Increases maximum health by 25%"
+description = "+25% max health. Once, a lethal hit leaves you at 1 HP instead (+1 per extra stack); Warmog then fades."
 rarity_color = Color(0, 0, 1, 1)
 duration = 45.0
-max_uses = 0
-uses_per_stack = 0
+max_uses = 1
+uses_per_stack = 1
 consume_use_on_fire = false
 max_stack_count = 4
 stack_multiplier = 1.5
@@ -20,5 +20,7 @@ stack_bonus_per_card = 0.15
 modifiers = {
 "max_health_mult": 0.25
 }
-ability = &""
-ability_params = {}
+ability = &"last_stand"
+ability_params = {
+"invulnerable_seconds": 1.0
+}

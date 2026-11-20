@@ -15,7 +15,13 @@ func _init() -> void:
 	var total := 0
 	var failed := 0
 	for path in SUITES:
-		var suite = load(path).new()
+		# A suite that does not compile must fail the run, not hang it.
+		var script: GDScript = load(path)
+		if script == null or not script.can_instantiate():
+			printerr("FAIL ", path.get_file(), " does not compile")
+			failed += 1
+			continue
+		var suite = script.new()
 		var count: int = suite.run_all()
 		total += count
 		for failure in suite.failures:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://qgub06sgnvml"]
+[gd_scene load_steps=19 format=3 uid="uid://qgub06sgnvml"]
 
 [ext_resource type="Script" uid="uid://drtw2we68sgym" path="res://src/entities/player/player_tool.gd" id="1_new"]
 [ext_resource type="Script" uid="uid://d3ln8ymurgub" path="res://src/entities/player/components/player_controller.gd" id="2_new"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" uid="uid://doar148j221lu" path="res://src/entities/powerups/powerup_manager.gd" id="9_powerup"]
 [ext_resource type="Script" uid="uid://dcpgxm8yg8a6e" path="res://src/ui/powerup_inventory_ui.gd" id="10_inventory"]
 [ext_resource type="Script" uid="uid://dmlrypu5xkgqa" path="res://src/ui/active_powerups_ui.gd" id="11_active"]
+[ext_resource type="Script" path="res://src/entities/powerups/card_effects.gd" id="12_effects"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b7jsc"]
 radius = 26.0192
@@ -655,6 +656,9 @@ replication_config = SubResource("SceneReplicationConfig_i0rdp")
 
 [node name="PowerupManager" type="Node" parent="."]
 script = ExtResource("9_powerup")
+
+[node name="CardEffects" type="Node" parent="."]
+script = ExtResource("12_effects")
 
 [node name="HealthComponent" parent="." instance=ExtResource("7_uqubr")]
 visible = false

@@ -126,6 +126,40 @@ static func burst_params(def: PowerupDef, stacks: int) -> Dictionary:
 		"shots_per_second": float(p.get("shots_per_second", 18.0)),
 	}
 
+# --- Card abilities -------------------------------------------------------------
+
+## Riot Shield: {hp, width, distance}. More stacks: more HP (stack scale) and wider.
+static func shield_params(def: PowerupDef, stacks: int) -> Dictionary:
+	var p := def.ability_params
+	return {
+		"hp": float(p.get("hp", 150.0)) * stack_scale(def, stacks),
+		"width": float(p.get("width", 72.0)) + float(p.get("width_per_stack", 0.0)) * maxi(stacks - 1, 0),
+		"distance": float(p.get("distance", 52.0)),
+	}
+
+## Shoulder Charge: {damage, knockback}. Damage scales with stacks.
+static func charge_params(def: PowerupDef, stacks: int) -> Dictionary:
+	var p := def.ability_params
+	return {
+		"damage": float(p.get("damage", 25.0)) * stack_scale(def, stacks),
+		"knockback": float(p.get("knockback", 650.0)),
+	}
+
+## Piercing Rounds: extra players a shot passes through (0 = stops at the first).
+static func pierce(active: Array) -> int:
+	var entry := entry_with_ability(active, &"piercing")
+	if entry.is_empty():
+		return 0
+	var p := PowerupDefs.get_def(entry.def).ability_params
+	return int(p.get("pierce", 1)) + int(p.get("pierce_per_stack", 1)) * maxi(entry.stacks - 1, 0)
+
+## The Last Stand entry that can still save its owner, or {}.
+static func last_stand_entry(active: Array) -> Dictionary:
+	var entry := entry_with_ability(active, &"last_stand")
+	if entry.is_empty() or entry.uses_left == 0:
+		return {}
+	return entry
+
 # --- Inventory ----------------------------------------------------------------
 
 static func empty_inventory(slots: int) -> Array:

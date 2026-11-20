@@ -10,6 +10,7 @@ class_name CombatServer
 
 const HITBOX_LAYER := 2 # physics layer 2 "hitboxes"
 const WALL_LAYER := 4 # physics layer 3 "walls" (map TileSets use this)
+const SHIELD_LAYER := RiotShield.SHIELD_LAYER # physics layer 4 "shields"
 ## How far a shot may start from where the host sees the shooter.
 const MAX_ORIGIN_DISTANCE := 150.0
 ## Anti-spam budget per player: trigger pulls accepted within one second.
@@ -23,7 +24,7 @@ var _recent_shots: Dictionary = {} # peer id -> Array of msec timestamps
 
 ## Called on the shooting player's machine for every trigger pull.
 func fire(shooter: Node2D, origin: Vector2, rotations: PackedFloat32Array, def_id: StringName, max_range: float) -> void:
-	_pending.append({"kind": &"predict", "shooter": shooter, "origin": origin, "rotations": rotations, "range": max_range})
+	_pending.append({"kind": &"predict", "shooter": shooter, "origin": origin, "rotations": rotations, "range": max_range, "def": def_id})
 	if multiplayer.is_server():
 		_queue_resolve(multiplayer.get_unique_id(), origin, rotations, def_id)
 	else:
@@ -52,8 +53,10 @@ func _predict(item: Dictionary) -> void:
 		return
 	var space := shooter.get_world_2d().direct_space_state
 	var exclude := _exclude_for(shooter)
+	var holder: WeaponHolder = shooter.get_weapon_holder()
+	var pierce: int = holder.stats_for(item.def).pierce if holder and WeaponDefs.has(item.def) else 0
 	for rot in item.rotations:
-		Tracer.spawn(get_parent(), item.origin, cast_shot(space, item.origin, rot, item.range, exclude).end)
+		Tracer.spawn(get_parent(), item.origin, cast_piercing(space, item.origin, rot, item.range, exclude, pierce).end)
 
 func _resolve(item: Dictionary) -> void:
 	var shooter_id: int = item.shooter_id
@@ -80,10 +83,12 @@ func _resolve(item: Dictionary) -> void:
 	var exclude := _exclude_for(shooter)
 	var ends := PackedVector2Array()
 	for rot in item.rotations:
-		var hit := cast_shot(space, origin, rot, stats.max_range, exclude)
+		var hit := cast_piercing(space, origin, rot, stats.max_range, exclude, stats.pierce)
 		ends.append(hit.end)
-		if hit.health:
-			hit.health.apply_damage(stats.damage, stats.armor_penetration, shooter_id)
+		for victim in hit.healths:
+			victim.apply_damage(stats.damage, stats.armor_penetration, shooter_id)
+		if hit.shield:
+			hit.shield.take_hit(stats.damage)
 
 	for peer in multiplayer.get_peers():
 		if peer != shooter_id:
@@ -104,23 +109,40 @@ func _spawn_tracers(origin: Vector2, ends: PackedVector2Array) -> void:
 	for end in ends:
 		Tracer.spawn(get_parent(), origin, end)
 
-## Returns {end: Vector2, health: HealthComponent or null}.
+## Returns {end: Vector2, health: HealthComponent or null, shield: RiotShield or null}.
 static func cast_shot(space: PhysicsDirectSpaceState2D, origin: Vector2, rotation: float, max_range: float, exclude: Array[RID]) -> Dictionary:
-	var to := origin + Vector2.RIGHT.rotated(rotation) * max_range
-	var query := PhysicsRayQueryParameters2D.create(origin, to, HITBOX_LAYER | WALL_LAYER, exclude)
-	query.collide_with_areas = true
-	# Walls are bodies; player bodies sit on layer 1, which is not in the mask.
-	query.collide_with_bodies = true
-	var hit := space.intersect_ray(query)
-	if hit.is_empty():
-		return {"end": to, "health": null}
-	var collider: Object = hit.collider
-	var health: HealthComponent = null
-	if collider is Area2D and collider.is_in_group("hitbox"):
-		health = collider.get_parent() as HealthComponent
-	return {"end": hit.position, "health": health}
+	var hit := cast_piercing(space, origin, rotation, max_range, exclude, 0)
+	return {"end": hit.end, "health": hit.healths[0] if not hit.healths.is_empty() else null, "shield": hit.shield}
 
-## Shots pass through the shooter and, in team matches, through teammates.
+## One shot that passes through up to `pierce` players and stops at the next
+## player, a wall or a riot shield.
+## Returns {end: Vector2, healths: Array (players hit, nearest first), shield: RiotShield or null}.
+static func cast_piercing(space: PhysicsDirectSpaceState2D, origin: Vector2, rotation: float, max_range: float, exclude: Array[RID], pierce: int) -> Dictionary:
+	var to := origin + Vector2.RIGHT.rotated(rotation) * max_range
+	var skip: Array[RID] = exclude.duplicate()
+	var healths: Array = []
+	while true:
+		var query := PhysicsRayQueryParameters2D.create(origin, to, HITBOX_LAYER | WALL_LAYER | SHIELD_LAYER, skip)
+		query.collide_with_areas = true
+		# Walls and shields are bodies; player bodies sit on layer 1, which is not in the mask.
+		query.collide_with_bodies = true
+		var hit := space.intersect_ray(query)
+		if hit.is_empty():
+			return {"end": to, "healths": healths, "shield": null}
+		var collider: Object = hit.collider
+		if collider is Area2D:
+			var health := collider.get_parent() as HealthComponent if collider.is_in_group("hitbox") else null
+			if health and not healths.has(health):
+				healths.append(health)
+				if healths.size() > pierce:
+					return {"end": hit.position, "healths": healths, "shield": null}
+			skip.append(hit.rid)
+			continue
+		return {"end": hit.position, "healths": healths, "shield": collider as RiotShield}
+	return {} # unreachable
+
+## Shots pass through the shooter and their own riot shield and, in team
+## matches, through teammates and their shields.
 func _exclude_for(shooter: Node) -> Array[RID]:
 	var exclude: Array[RID] = []
 	var shooter_id := shooter.get_multiplayer_authority()
@@ -131,6 +153,9 @@ func _exclude_for(shooter: Node) -> Array[RID]:
 		var hitbox := player.get_node_or_null("HealthComponent/PlayerHitbox") as Area2D
 		if hitbox:
 			exclude.append(hitbox.get_rid())
+		var shield := player.get_node_or_null("PlayerController/RiotShield") as RiotShield
+		if shield:
+			exclude.append(shield.get_rid())
 	return exclude
 
 func _find_player(peer_id: int) -> Node2D:

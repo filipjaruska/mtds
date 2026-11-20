@@ -207,6 +207,7 @@ func stats_for(def_id: StringName) -> Dictionary:
 func _modifiers() -> Dictionary:
 	var mods: Dictionary = powerup_manager.get_modifiers() if powerup_manager else {}
 	mods["spread_mult"] = loadout.dual_spread if LoadoutRules.is_dual(loadout) else 0.0
+	mods["pierce"] = PowerupRules.pierce(powerup_manager.active) if powerup_manager else 0
 	return mods
 
 ## Replaces the loadout and refreshes everything derived from it.
@@ -348,6 +349,18 @@ func grant_weapon(def_id: StringName) -> void:
 	_drop_on_ground(result.dropped)
 	_commit(result.loadout, true)
 	EventManager.emit_event(EventManager.Events.WEAPON_PICKED_UP, [player, def])
+
+## Host -> owner: Kill Reload. Every hand in use gets a full magazine.
+@rpc("any_peer", "call_local", "reliable")
+func refill_magazines() -> void:
+	if multiplayer.get_remote_sender_id() != 1 or not is_multiplayer_authority():
+		return
+	var refilled := loadout
+	for hand in _hands():
+		var state := LoadoutRules.hand_state(refilled, hand)
+		refilled = LoadoutRules.with_hand_state(refilled, hand, WeaponRules.refill(state, _stats_for(state)))
+	_commit(refilled, true)
+	EventManager.emit_event(EventManager.Events.WEAPON_RELOADED, [player, false, 0.0])
 
 @rpc("authority", "call_remote", "reliable")
 func _receive_loadout(data: Dictionary) -> void:

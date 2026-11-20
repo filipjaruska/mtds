@@ -104,3 +104,16 @@ func test_burst_empties_magazine_over_ticks() -> void:
 	check_eq(t2.state.ammo, 0)
 	check(t2.events.has(&"burst_finished"))
 	check(not WeaponRules.is_bursting(t2.state))
+
+func test_refill_fills_magazine_and_cancels_reload() -> void:
+	var def := _def()
+	var stats := WeaponRules.effective_stats(def)
+	var reloading: Dictionary = WeaponRules.start_reload(WeaponRules.new_state(def, 0), stats, 1000).state
+	var full := WeaponRules.refill(reloading, stats)
+	check_eq(full.ammo, 3)
+	check(not WeaponRules.is_reloading(full, 1500), "reload cancelled")
+	check_eq(reloading.ammo, 0, "input state untouched")
+
+func test_pierce_passes_through_stats() -> void:
+	check_eq(WeaponRules.effective_stats(_def()).pierce, 0)
+	check_eq(WeaponRules.effective_stats(_def(), {"pierce": 2}).pierce, 2)

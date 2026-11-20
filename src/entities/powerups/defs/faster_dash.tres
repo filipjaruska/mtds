@@ -8,7 +8,7 @@ script = ExtResource("1_def")
 id = &"faster_dash"
 display_name = "Quick Dash"
 card_texture = ExtResource("2_card")
-description = "Reduces dash cooldown by 25%"
+description = "25% shorter dash cooldown. Dashing into an enemy hits them and knocks them back."
 rarity_color = Color(0, 1, 0, 1)
 duration = 30.0
 max_uses = 0
@@ -20,5 +20,8 @@ stack_bonus_per_card = 0.05
 modifiers = {
 "dash_cooldown_reduction": 0.25
 }
-ability = &""
-ability_params = {}
+ability = &"shoulder_charge"
+ability_params = {
+"damage": 25.0,
+"knockback": 650.0
+}

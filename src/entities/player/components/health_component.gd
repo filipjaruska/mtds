@@ -23,6 +23,8 @@ var current_health: float
 var is_dead: bool = false
 
 var max_health_bonus: float = 0.0
+## Host: no damage is taken before this time (msec), set by Last Stand.
+var invulnerable_until: int = 0
 
 func _ready() -> void:
 	max_health = MAX_HEALTH
@@ -68,12 +70,15 @@ func _recompute_max_health() -> void:
 # --- Host only ----------------------------------------------------------------
 
 func apply_damage(amount: float, penetration: float, attacker_id: int) -> void:
-	if not _is_host() or is_dead:
+	if not _is_host() or is_dead or Time.get_ticks_msec() < invulnerable_until:
 		return
 	var final_damage := DamageRules.final_damage(amount, penetration, physical_resist + _damage_resistance())
 	if final_damage <= 0.0:
 		return
 	var result := DamageRules.apply(current_health, final_damage)
+	if result.died and _try_last_stand():
+		final_damage = current_health - 1.0
+		result = {"health": 1.0, "died": false}
 	current_health = result.health
 	if attacker_id > 0:
 		GameManager.record_damage(attacker_id, final_damage)
@@ -82,6 +87,21 @@ func apply_damage(amount: float, penetration: float, attacker_id: int) -> void:
 		_die(attacker_id)
 	else:
 		_start_regen_delay()
+
+## Warmog's Last Stand: a lethal hit leaves 1 HP and a moment of invulnerability.
+func _try_last_stand() -> bool:
+	if powerup_manager == null:
+		return false
+	var entry := PowerupRules.last_stand_entry(powerup_manager.active)
+	if entry.is_empty():
+		return false
+	var def := PowerupDefs.get_def(entry.def)
+	invulnerable_until = Time.get_ticks_msec() + int(float(def.ability_params.get("invulnerable_seconds", 1.0)) * 1000.0)
+	powerup_manager.host_consume_use(entry.def)
+	var effects := get_parent().get_node_or_null("CardEffects")
+	if effects:
+		effects.play_last_stand.rpc()
+	return true
 
 func heal(amount: float) -> void:
 	if not _is_host() or is_dead:
@@ -96,6 +116,9 @@ func _die(attacker_id: int) -> void:
 	is_dead = true
 	heal_timer.stop()
 	GameManager.record_death(get_multiplayer_authority(), attacker_id)
+	var killer := get_parent().get_parent().get_node_or_null(str(attacker_id)) if attacker_id > 0 else null
+	if killer and killer != get_parent() and killer.has_node("CardEffects"):
+		killer.get_node("CardEffects").notify_kill()
 	_on_died.rpc()
 	await get_tree().create_timer(RESPAWN_DELAY).timeout
 	if not is_inside_tree():

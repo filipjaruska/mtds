@@ -120,6 +120,23 @@ func try_consume_burst() -> Dictionary:
 	active_changed.emit(active)
 	return PowerupRules.burst_params(PowerupDefs.get_def(entry.def), entry.stacks)
 
+## Host: spend a use of an active powerup (Last Stand) and tell the owner, who
+## keeps the authoritative list and ends the powerup when no uses are left.
+func host_consume_use(def_id: StringName) -> void:
+	if not multiplayer.is_server():
+		return
+	active = PowerupRules.consume_use(active, def_id)
+	active_changed.emit(active)
+	if not is_multiplayer_authority():
+		_consume_use_from_host.rpc_id(get_multiplayer_authority(), def_id)
+
+@rpc("any_peer", "reliable")
+func _consume_use_from_host(def_id: StringName) -> void:
+	if multiplayer.get_remote_sender_id() != 1 or not is_multiplayer_authority():
+		return
+	active = PowerupRules.consume_use(active, def_id)
+	active_changed.emit(active)
+
 func clear_on_death() -> void:
 	if not is_multiplayer_authority():
 		return

@@ -35,6 +35,7 @@ static func new_state(def: WeaponDef, ammo: int = -1) -> Dictionary:
 ##   mods.damage_mult  +0.2 => 20% more damage
 ##   mods.reload_mult  +0.3 => reloads 30% faster
 ##   mods.spread_mult  +0.15 => 15% wider spread
+##   mods.pierce       2     => a shot passes through 2 players
 static func effective_stats(def: WeaponDef, mods: Dictionary = {}) -> Dictionary:
 	return {
 		"fire_rate": def.fire_rate,
@@ -48,7 +49,15 @@ static func effective_stats(def: WeaponDef, mods: Dictionary = {}) -> Dictionary
 		"reload_time": def.reload_time / maxf(1.0 + mods.get("reload_mult", 0.0), 0.1),
 		"move_speed_mult": def.move_speed_mult,
 		"slow_duration": def.slow_duration,
+		"pierce": int(mods.get("pierce", 0)),
 	}
+
+## A full magazine right now (Kill Reload). Cancels a reload in progress.
+static func refill(state: Dictionary, stats: Dictionary) -> Dictionary:
+	var next := state.duplicate()
+	next.ammo = stats.mag_size
+	next.reload_done_at = 0
+	return next
 
 static func is_reloading(state: Dictionary, now: int) -> bool:
 	return state.reload_done_at > 0 and now < state.reload_done_at
