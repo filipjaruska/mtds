@@ -30,6 +30,9 @@ jobs:
       - name: Import project
         run: sh tests/run.sh import
 
+      - name: Every script compiles
+        run: sh tests/run.sh compile
+
       - name: Unit tests (pure rules)
         run: sh tests/run.sh unit
 
