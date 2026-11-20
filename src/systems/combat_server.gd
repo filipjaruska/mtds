@@ -56,7 +56,8 @@ func _predict(item: Dictionary) -> void:
 	var holder: WeaponHolder = shooter.get_weapon_holder()
 	var pierce: int = holder.stats_for(item.def).pierce if holder and WeaponDefs.has(item.def) else 0
 	for rot in item.rotations:
-		Tracer.spawn(get_parent(), item.origin, cast_piercing(space, item.origin, rot, item.range, exclude, pierce).end)
+		var hit := cast_piercing(space, item.origin, rot, item.range, exclude, pierce)
+		BulletFx.spawn(get_parent(), item.origin, hit.end, hit.impact)
 
 func _resolve(item: Dictionary) -> void:
 	var shooter_id: int = item.shooter_id
@@ -82,9 +83,11 @@ func _resolve(item: Dictionary) -> void:
 	var space := shooter.get_world_2d().direct_space_state
 	var exclude := _exclude_for(shooter)
 	var ends := PackedVector2Array()
+	var impacts := PackedByteArray()
 	for rot in item.rotations:
 		var hit := cast_piercing(space, origin, rot, stats.max_range, exclude, stats.pierce)
 		ends.append(hit.end)
+		impacts.append(hit.impact)
 		for victim in hit.healths:
 			victim.apply_damage(stats.damage, stats.armor_penetration, shooter_id)
 		if hit.shield:
@@ -92,9 +95,9 @@ func _resolve(item: Dictionary) -> void:
 
 	for peer in multiplayer.get_peers():
 		if peer != shooter_id:
-			_show_tracers.rpc_id(peer, origin, ends)
+			_show_tracers.rpc_id(peer, origin, ends, impacts)
 	if shooter_id != multiplayer.get_unique_id():
-		_spawn_tracers(origin, ends)
+		_spawn_tracers(origin, ends, impacts)
 
 func _within_budget(shooter_id: int, shot_count: int, now: int) -> bool:
 	var result := DamageRules.fire_budget(_recent_shots.get(shooter_id, []), shot_count, now, MAX_SHOTS_PER_SECOND)
@@ -102,12 +105,12 @@ func _within_budget(shooter_id: int, shot_count: int, now: int) -> bool:
 	return result.allowed
 
 @rpc("authority", "call_remote", "unreliable")
-func _show_tracers(origin: Vector2, ends: PackedVector2Array) -> void:
-	_spawn_tracers(origin, ends)
+func _show_tracers(origin: Vector2, ends: PackedVector2Array, impacts: PackedByteArray) -> void:
+	_spawn_tracers(origin, ends, impacts)
 
-func _spawn_tracers(origin: Vector2, ends: PackedVector2Array) -> void:
-	for end in ends:
-		Tracer.spawn(get_parent(), origin, end)
+func _spawn_tracers(origin: Vector2, ends: PackedVector2Array, impacts: PackedByteArray) -> void:
+	for i in range(ends.size()):
+		BulletFx.spawn(get_parent(), origin, ends[i], impacts[i] if i < impacts.size() else BulletFx.Impact.NONE)
 
 ## Returns {end: Vector2, health: HealthComponent or null, shield: RiotShield or null}.
 static func cast_shot(space: PhysicsDirectSpaceState2D, origin: Vector2, rotation: float, max_range: float, exclude: Array[RID]) -> Dictionary:
@@ -116,7 +119,8 @@ static func cast_shot(space: PhysicsDirectSpaceState2D, origin: Vector2, rotatio
 
 ## One shot that passes through up to `pierce` players and stops at the next
 ## player, a wall or a riot shield.
-## Returns {end: Vector2, healths: Array (players hit, nearest first), shield: RiotShield or null}.
+## Returns {end: Vector2, healths: Array (players hit, nearest first),
+## shield: RiotShield or null, impact: BulletFx.Impact (what stopped the shot)}.
 static func cast_piercing(space: PhysicsDirectSpaceState2D, origin: Vector2, rotation: float, max_range: float, exclude: Array[RID], pierce: int) -> Dictionary:
 	var to := origin + Vector2.RIGHT.rotated(rotation) * max_range
 	var skip: Array[RID] = exclude.duplicate()
@@ -128,17 +132,19 @@ static func cast_piercing(space: PhysicsDirectSpaceState2D, origin: Vector2, rot
 		query.collide_with_bodies = true
 		var hit := space.intersect_ray(query)
 		if hit.is_empty():
-			return {"end": to, "healths": healths, "shield": null}
+			return {"end": to, "healths": healths, "shield": null, "impact": BulletFx.Impact.NONE}
 		var collider: Object = hit.collider
 		if collider is Area2D:
 			var health := collider.get_parent() as HealthComponent if collider.is_in_group("hitbox") else null
 			if health and not healths.has(health):
 				healths.append(health)
 				if healths.size() > pierce:
-					return {"end": hit.position, "healths": healths, "shield": null}
+					return {"end": hit.position, "healths": healths, "shield": null, "impact": BulletFx.Impact.PLAYER}
 			skip.append(hit.rid)
 			continue
-		return {"end": hit.position, "healths": healths, "shield": collider as RiotShield}
+		var shield := collider as RiotShield
+		return {"end": hit.position, "healths": healths, "shield": shield,
+			"impact": BulletFx.Impact.SHIELD if shield else BulletFx.Impact.WALL}
 	return {} # unreachable
 
 ## Shots pass through the shooter and their own riot shield and, in team
