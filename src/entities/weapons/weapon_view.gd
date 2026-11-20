@@ -20,10 +20,13 @@ func play_fire() -> void:
 		animation_player.stop()
 		animation_player.play(shooting_animation)
 	if muzzle:
-		var flash := MUZZLE_FLASH_SCENE.instantiate()
+		# Place the flash before adding it: the particles start emitting as soon
+		# as it enters the tree, from wherever it is at that moment. It is
+		# top_level, so its position/rotation are global once added.
+		var flash: Node2D = MUZZLE_FLASH_SCENE.instantiate()
+		flash.position = muzzle.global_position
+		flash.rotation = global_rotation
 		add_child(flash)
-		flash.global_position = muzzle.global_position
-		flash.global_rotation = global_rotation
 
 func muzzle_position() -> Vector2:
 	return muzzle.global_position if muzzle else global_position

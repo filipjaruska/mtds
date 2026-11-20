@@ -58,7 +58,7 @@ hframes = 18
 frame = 15
 
 [node name="Muzzle" type="Marker2D" parent="Sprite2D"]
-position = Vector2(25.3333, 0)
+position = Vector2(39, 0)
 scale = Vector2(0.666667, 0.666667)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
