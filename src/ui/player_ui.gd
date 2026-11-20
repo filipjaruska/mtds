@@ -3,7 +3,7 @@ extends CanvasLayer
 const SCOREBOARD_SCENE := preload("res://src/ui/menus/scoreboard.tscn")
 const VALUE_PULSE_DURATION := 0.16
 
-@onready var powerup_inventory_ui = $PowerupInventoryUI
+@onready var powerup_inventory_ui: PowerupHandUI = $PowerupHandUI
 @onready var active_powerups_ui = $ActivePowerupsUI
 @onready var featured_card_label: Label = $FeaturedCard
 @onready var time_label: Label = $Time
@@ -30,6 +30,9 @@ func _process(_delta: float):
 	if powerup_manager and powerup_inventory_ui:
 		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 	if powerup_manager and active_powerups_ui:
+		var effects = _player_node.get_node_or_null("CardEffects")
+		var shield = effects.get_shield() if effects else null
+		active_powerups_ui.shield_fraction = shield.hp_fraction() if shield else -1.0
 		active_powerups_ui.update_active_powerups(powerup_manager.active)
 	_update_scoreboard_visibility()
 
@@ -120,10 +123,13 @@ func _on_powerup_collected(player_node: Node, _powerup_card: PowerupDef, _slot: 
 		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 
 func _on_powerup_used(player_node: Node, _powerup_card: PowerupDef, slot: int):
+	if player_node != _player_node:
+		return
 	var powerup_manager = player_node.get_node("PowerupManager")
 	if powerup_manager and powerup_inventory_ui:
+		# Play first: the card must still be in the hand when its copy takes off.
+		powerup_inventory_ui.play_card(slot)
 		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
-		powerup_inventory_ui.highlight_slot(slot)
 
 	if active_powerups_ui:
 		active_powerups_ui.update_active_powerups(powerup_manager.active)

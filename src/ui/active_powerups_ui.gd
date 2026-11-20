@@ -1,8 +1,14 @@
 extends Control
 class_name ActivePowerupsUI
 
-const ROW_MIN_SIZE := Vector2(180, 26)
+const ROW_MIN_SIZE := Vector2(190, 38)
 const ROW_ENTER_DURATION := 0.15
+## Card thumbnail size; stacked cards show as a small pile behind it.
+const THUMB_SIZE := Vector2(24, 34)
+const BAR_LEFT := 40.0
+
+## Riot Shield HP (0..1) while the shield is up, -1 otherwise. Set by PlayerUI.
+var shield_fraction := -1.0
 
 @onready var effects_container = $ScrollContainer/VBoxContainer
 
@@ -53,7 +59,7 @@ func _create_effect_display(entry: Dictionary) -> Control:
 	var bar_bg := ColorRect.new()
 	bar_bg.name = "BarBg"
 	bar_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bar_bg.offset_left = 28.0
+	bar_bg.offset_left = BAR_LEFT
 	bar_bg.color = Color(1, 1, 1, 0.06)
 	bar_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(bar_bg)
@@ -63,19 +69,23 @@ func _create_effect_display(entry: Dictionary) -> Control:
 	bar_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(bar_fill)
 
-	var icon := TextureRect.new()
-	icon.name = "Icon"
-	icon.position = Vector2(2, 3)
-	icon.size = Vector2(20, 20)
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(icon)
+	var thumb := Control.new()
+	thumb.name = "Thumb"
+	thumb.position = Vector2(10, 2)
+	thumb.size = THUMB_SIZE
+	thumb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(thumb)
+
+	var shield_bar := ColorRect.new()
+	shield_bar.name = "ShieldBar"
+	shield_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shield_bar.visible = false
+	row.add_child(shield_bar)
 
 	var name_label := Label.new()
 	name_label.name = "NameLabel"
 	name_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	name_label.offset_left = 32.0
+	name_label.offset_left = BAR_LEFT + 4.0
 	name_label.offset_right = -22.0
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 12)
@@ -100,11 +110,6 @@ func _create_effect_display(entry: Dictionary) -> Control:
 	uses_badge.visible = false
 	row.add_child(uses_badge)
 
-	var card := PowerupDefs.get_def(entry.def)
-	if card.card_texture:
-		icon.texture = card.card_texture
-	icon.modulate = Color(card.rarity_color.r, card.rarity_color.g, card.rarity_color.b, 0.9)
-
 	row.set_meta("powerup", entry.def)
 	_refresh_static_labels(row, entry)
 	_update_row_progress(row, entry)
@@ -119,6 +124,31 @@ func _refresh_static_labels(display: Control, entry: Dictionary) -> void:
 	uses_badge.visible = entry.uses_left >= 0
 	if uses_badge.visible:
 		uses_badge.text = str(entry.uses_left)
+	_build_thumb(display.get_node("Thumb"), card, entry.stacks)
+
+## The card image with one copy behind it per extra stack (like the hand's piles).
+func _build_thumb(thumb: Control, card: PowerupDef, stacks: int) -> void:
+	if thumb.get_meta("stacks", -1) == stacks:
+		return
+	thumb.set_meta("stacks", stacks)
+	for child in thumb.get_children():
+		child.queue_free()
+	var layers := HandLayout.pile_offsets(stacks)
+	layers.reverse()
+	for layer in layers:
+		thumb.add_child(_thumb_rect(card, layer.offset * 0.45, layer.shade))
+	thumb.add_child(_thumb_rect(card, Vector2.ZERO, 1.0))
+
+func _thumb_rect(card: PowerupDef, offset: Vector2, shade: float) -> TextureRect:
+	var rect := TextureRect.new()
+	rect.texture = card.card_texture
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE # before size, or it is clamped to the texture
+	rect.stretch_mode = TextureRect.STRETCH_SCALE
+	rect.size = THUMB_SIZE
+	rect.position = offset
+	rect.modulate = Color(shade, shade, shade)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return rect
 
 func _animate_row_in(display: Control) -> void:
 	display.modulate.a = 0.0
@@ -135,8 +165,9 @@ func _update_row_progress(display: Control, entry: Dictionary) -> void:
 	var percentage: float = PowerupRules.remaining_fraction(entry, Time.get_ticks_msec())
 	var card := PowerupDefs.get_def(entry.def)
 	var row_width: float = maxf(display.size.x, ROW_MIN_SIZE.x)
-	var bar_left := 28.0
+	var bar_left := BAR_LEFT
 	var fill_width: float = maxf((row_width - bar_left) * percentage, 0.0)
+	_update_shield_bar(display, card, row_width)
 
 	bar_fill.anchor_left = 0.0
 	bar_fill.anchor_right = 0.0
@@ -154,3 +185,13 @@ func _update_row_progress(display: Control, entry: Dictionary) -> void:
 		bar_fill.color = Color(0.9, 0.6, 0.25, 0.3)
 	else:
 		bar_fill.color = Color(card.rarity_color.r, card.rarity_color.g, card.rarity_color.b, 0.28)
+
+## A thin bar under the Steel Skin row showing what is left of the shield.
+func _update_shield_bar(display: Control, card: PowerupDef, row_width: float) -> void:
+	var bar: ColorRect = display.get_node("ShieldBar")
+	bar.visible = card.ability == &"riot_shield" and shield_fraction >= 0.0
+	if not bar.visible:
+		return
+	bar.position = Vector2(BAR_LEFT, ROW_MIN_SIZE.y - 4.0)
+	bar.size = Vector2((row_width - BAR_LEFT) * shield_fraction, 3.0)
+	bar.color = Color(0.75, 0.85, 1.0, 0.85) if shield_fraction > 0.3 else Color(1.0, 0.45, 0.35, 0.9)

@@ -64,15 +64,18 @@ func get_inventory_stack_count(slot_index: int) -> int:
 func get_used_inventory_slots() -> int:
 	return inventory.filter(func(slot): return slot.def != &"").size()
 
-## For the inventory UI: one {card: PowerupDef or null, count, selected} per slot.
+## For the hand UI: one {card: PowerupDef or null, count, selected, featured} per
+## slot; `featured` marks poker's x4 card.
 func get_inventory_display_data() -> Array[Dictionary]:
 	var display_data: Array[Dictionary] = []
+	var featured_id := GameManager.get_poker_featured_id() if GameManager.is_poker_mode() else &""
 	for i in range(inventory.size()):
 		var slot: Dictionary = inventory[i]
 		display_data.append({
 			"card": PowerupDefs.get_def(slot.def) if slot.def != &"" else null,
 			"count": slot.count,
 			"selected": i == _shuffle_selected_slot,
+			"featured": slot.def != &"" and slot.def == featured_id,
 		})
 	return display_data
 
