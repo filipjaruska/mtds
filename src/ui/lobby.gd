@@ -82,17 +82,11 @@ func _load_available_maps() -> void:
 	map_dropdown.add_item("debug")
 	
 	var maps_dir = "res://src/scenes/maps/"
-	var dir = DirAccess.open(maps_dir)
-	
-	if dir:
-		dir.list_dir_begin()
-		var file_name = dir.get_next()
-		while file_name != "":
-			if file_name.ends_with(".tscn"):
-				available_maps.append(maps_dir + file_name)
-				map_dropdown.add_item(file_name.trim_suffix(".tscn"))
-			file_name = dir.get_next()
-		dir.list_dir_end()
+	# ResourceLoader also sees maps in exported builds (DirAccess does not).
+	for file_name in ResourceLoader.list_directory(maps_dir):
+		if file_name.ends_with(".tscn"):
+			available_maps.append(maps_dir + file_name)
+			map_dropdown.add_item(file_name.trim_suffix(".tscn"))
 	
 	map_dropdown.select(0)
 
