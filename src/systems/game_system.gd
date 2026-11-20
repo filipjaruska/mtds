@@ -20,9 +20,12 @@ const GAME_MODE_DEATHMATCH := "deathmatch"
 const GAME_MODE_SHUFFLE := "deathmatch+shuffle"
 const GAME_MODE_POKER := "deathmatch+poker"
 
+## Players per match, host included. Maps need this many spawn points.
+const MAX_PLAYERS := 8
+
 var current_state: GameState = GameState.MENU
 var game_settings: Dictionary = {
-	"max_players": 4,
+	"max_players": MAX_PLAYERS,
 	"game_mode": GAME_MODE_DEATHMATCH,
 	"map": "default",
 	"match_duration_seconds": 300.0
@@ -123,7 +126,7 @@ func get_player_count() -> int:
 ##
 ## @return True if at max capacity, false otherwise
 func is_game_full() -> bool:
-	return players.size() >= int(game_settings.get("max_players", 4))
+	return players.size() >= int(game_settings.get("max_players", MAX_PLAYERS))
 
 ## Set the current game state
 ##

@@ -122,7 +122,8 @@ func _host_game() -> void:
 		port = port_text.to_int()
 	
 	peer = ENetMultiplayerPeer.new()
-	var error = peer.create_server(port, 4)
+	# ENet counts clients only; the host is the remaining player.
+	var error = peer.create_server(port, GameManager.MAX_PLAYERS - 1)
 	
 	if error != OK:
 		print("Failed to create server with error: ", error)
@@ -163,7 +164,7 @@ func _populate_game_list() -> void:
 	]
 	
 	for game in example_games:
-		game_list.add_item("%s - %s" % [game.name, game.players + "/4"])
+		game_list.add_item("%s - %s" % [game.name, "%s/%d" % [game.players, GameManager.MAX_PLAYERS]])
 
 func _get_game_info(index: int) -> Dictionary:
 	var example_games = [ # TODO: replace with real data, at some point
