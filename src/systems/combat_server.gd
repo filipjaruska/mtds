@@ -8,7 +8,8 @@ class_name CombatServer
 ##          raycasts, applies damage and shows the real tracers to everyone else.
 ## Raycasts run in _physics_process, where the physics space may be queried.
 
-const HITBOX_MASK := 2
+const HITBOX_LAYER := 2 # physics layer 2 "hitboxes"
+const WALL_LAYER := 4 # physics layer 3 "walls" (map TileSets use this)
 ## How far a shot may start from where the host sees the shooter.
 const MAX_ORIGIN_DISTANCE := 150.0
 ## Anti-spam budget per player: trigger pulls accepted within one second.
@@ -106,9 +107,10 @@ func _spawn_tracers(origin: Vector2, ends: PackedVector2Array) -> void:
 ## Returns {end: Vector2, health: HealthComponent or null}.
 static func cast_shot(space: PhysicsDirectSpaceState2D, origin: Vector2, rotation: float, max_range: float, exclude: Array[RID]) -> Dictionary:
 	var to := origin + Vector2.RIGHT.rotated(rotation) * max_range
-	var query := PhysicsRayQueryParameters2D.create(origin, to, HITBOX_MASK, exclude)
+	var query := PhysicsRayQueryParameters2D.create(origin, to, HITBOX_LAYER | WALL_LAYER, exclude)
 	query.collide_with_areas = true
-	query.collide_with_bodies = false
+	# Walls are bodies; player bodies sit on layer 1, which is not in the mask.
+	query.collide_with_bodies = true
 	var hit := space.intersect_ray(query)
 	if hit.is_empty():
 		return {"end": to, "health": null}
