@@ -11,6 +11,7 @@ const MAP_NAME := "TestArena"
 var _failures: Array[String] = []
 var _started := false
 var _role := "host"
+var _chat_log: Array = [] # [peer id, text] as received
 
 func _process(_delta: float) -> bool:
 	if not _started:
@@ -52,7 +53,15 @@ func _player(id: int) -> Node:
 	var map := _map()
 	return map.get_node_or_null(str(id)) if map else null
 
+func _listen_to_chat() -> void:
+	root.get_node("ChatManager").message_received.connect(func(id: int, text: String) -> void:
+		_chat_log.append([id, text]))
+
+func _chat_from(peer_id: int) -> Array:
+	return _chat_log.filter(func(entry): return entry[0] == peer_id)
+
 func _run_host() -> void:
+	_listen_to_chat()
 	var peer := ENetMultiplayerPeer.new()
 	peer.create_server(PORT, 4)
 	root.multiplayer.multiplayer_peer = peer
@@ -108,6 +117,12 @@ func _run_host() -> void:
 	if shield:
 		shield.take_hit(9999.0)
 
+	# Chat: the client said hello and then spammed (see _run_client).
+	check(await wait_until(func(): return _chat_from(client_id).size() > 0, 6.0), "host received the client's chat")
+	var from_client := _chat_from(client_id)
+	check(not from_client.is_empty() and from_client[0][1] == "hello host", "chat text intact: %s" % [from_client])
+	check(from_client.size() == 3, "spam cut to the rate limit (got %d)" % from_client.size())
+
 	await seconds(2.0) # let the client finish its checks
 	finish()
 
@@ -128,6 +143,13 @@ func _run_client() -> void:
 
 	var my_id := root.multiplayer.get_unique_id()
 	check(await wait_until(func(): return _player(1) != null and _player(my_id) != null, 20.0), "match started on client")
+	_listen_to_chat()
+	var chat = root.get_node("ChatManager")
+	chat.send("  hello   host ")
+	for i in range(4):
+		chat.send("spam %d" % i)
+	check(await wait_until(func(): return _chat_from(my_id).size() > 0, 6.0), "client sees its own message come back")
+	check(_chat_from(my_id)[0][1] == "hello host" if not _chat_from(my_id).is_empty() else false, "message was cleaned by the host")
 	var gm = root.get_node("GameManager")
 	check(gm.get_game_type() == "teams", "client sees host's game type, got %s" % gm.get_game_type())
 	check(gm.get_card_rules() == "poker", "client sees host's card rules, got %s" % gm.get_card_rules())
