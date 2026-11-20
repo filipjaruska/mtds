@@ -15,19 +15,21 @@ func _ready():
 	combat.name = "Combat"
 	add_child(combat)
 
-	var index: int = 0
-	for i in GameManager.players:
-		var player_id: int = GameManager.players[i].id
+	var team_mode := GameManager.is_team_mode()
+	for player_id in GameManager.players:
+		var data: Dictionary = GameManager.players[player_id]
 		var currentPlayer = playerScene.instantiate()
 		currentPlayer.name = str(player_id)
 		currentPlayer.set_multiplayer_authority(player_id)
-		currentPlayer.set_player_name(str(GameManager.players[i].name))
-		currentPlayer.set_player_color(_player_color_from_data(GameManager.players[i]))
+		currentPlayer.set_player_name(str(data.name))
+		# Team matches show team colours instead of each player's own colour.
+		var color: Color = TeamRules.COLORS[GameManager.get_team(player_id)] if team_mode else _player_color_from_data(data)
+		currentPlayer.set_player_color(color)
 		add_child(currentPlayer)
+		var index := TeamRules.spawn_index(GameManager.players, player_id, team_mode)
 		for spawn in get_tree().get_nodes_in_group("PlayerSpawnLocation"):
 			if spawn.name == str(index):
 				currentPlayer.global_position = spawn.global_position
-		index += 1
 
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 

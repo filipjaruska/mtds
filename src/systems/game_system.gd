@@ -16,9 +16,11 @@ enum GameState {
 	DISCONNECTED
 }
 
-const GAME_MODE_DEATHMATCH := "deathmatch"
-const GAME_MODE_SHUFFLE := "deathmatch+shuffle"
-const GAME_MODE_POKER := "deathmatch+poker"
+const GAME_TYPE_DEATHMATCH := "deathmatch"
+const GAME_TYPE_TEAMS := "teams"
+const CARD_RULES_STANDARD := PowerupRules.RULES_STANDARD
+const CARD_RULES_SHUFFLE := PowerupRules.RULES_SHUFFLE
+const CARD_RULES_POKER := PowerupRules.RULES_POKER
 
 ## Players per match, host included. Maps need this many spawn points.
 const MAX_PLAYERS := 8
@@ -26,7 +28,8 @@ const MAX_PLAYERS := 8
 var current_state: GameState = GameState.MENU
 var game_settings: Dictionary = {
 	"max_players": MAX_PLAYERS,
-	"game_mode": GAME_MODE_DEATHMATCH,
+	"game_type": GAME_TYPE_DEATHMATCH,
+	"card_rules": CARD_RULES_STANDARD,
 	"map": "default",
 	"match_duration_seconds": 300.0
 }
@@ -64,17 +67,37 @@ func _ready() -> void:
 func get_match_time_remaining() -> float:
 	return match_time_remaining
 
-func set_game_mode(game_mode: String) -> void:
-	game_settings["game_mode"] = game_mode
+func set_game_type(game_type: String) -> void:
+	game_settings["game_type"] = game_type
 
-func get_game_mode() -> String:
-	return game_settings.get("game_mode", GAME_MODE_DEATHMATCH)
+func get_game_type() -> String:
+	return game_settings.get("game_type", GAME_TYPE_DEATHMATCH)
+
+func is_team_mode() -> bool:
+	return get_game_type() == GAME_TYPE_TEAMS
+
+func set_card_rules(card_rules: String) -> void:
+	game_settings["card_rules"] = card_rules
+
+func get_card_rules() -> String:
+	return game_settings.get("card_rules", CARD_RULES_STANDARD)
 
 func is_shuffle_mode() -> bool:
-	return get_game_mode() == GAME_MODE_SHUFFLE
+	return get_card_rules() == CARD_RULES_SHUFFLE
 
 func is_poker_mode() -> bool:
-	return get_game_mode() == GAME_MODE_POKER
+	return get_card_rules() == CARD_RULES_POKER
+
+## Team index of a player (0 Red, 1 Blue); see TeamRules.
+func get_team(player_id: int) -> int:
+	return TeamRules.team_of(players, player_id)
+
+func set_team(player_id: int, team: int) -> void:
+	if players.has(player_id):
+		players[player_id]["team"] = team
+
+func are_teammates(a: int, b: int) -> bool:
+	return TeamRules.is_friendly(players, a, b, is_team_mode())
 
 func get_poker_featured_id() -> StringName:
 	return poker_featured_id
@@ -188,7 +211,7 @@ func start_match() -> void:
 	if not multiplayer.is_server():
 		return
 	
-	sync_match_mode_state.rpc(get_game_mode(), poker_featured_id)
+	sync_match_mode_state.rpc(get_game_type(), get_card_rules(), poker_featured_id)
 	# Send the remaining duration, not an absolute tick value: Time.get_ticks_msec()
 	# is process uptime and differs on every machine.
 	sync_match_timer.rpc(duration)
@@ -264,6 +287,7 @@ func get_sorted_match_results() -> Array:
 		results.append({
 			"id": player_id,
 			"name": players[player_id].get("name", "Player %d" % player_id),
+			"team": get_team(player_id),
 			"kills": stats.get("kills", 0),
 			"deaths": stats.get("deaths", 0),
 			"damage_dealt": stats.get("damage_dealt", 0.0),
@@ -377,8 +401,9 @@ func _prepare_match_mode_state() -> void:
 		poker_featured_id = PowerupDefs.random_id()
 
 @rpc("authority", "call_local", "reliable")
-func sync_match_mode_state(game_mode: String, featured_id: StringName) -> void:
-	set_game_mode(game_mode)
+func sync_match_mode_state(game_type: String, card_rules: String, featured_id: StringName) -> void:
+	set_game_type(game_type)
+	set_card_rules(card_rules)
 	poker_featured_id = featured_id
 
 @rpc("authority", "call_local", "reliable")

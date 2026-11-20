@@ -95,7 +95,7 @@ func use_powerup_at_slot(slot_index: int) -> void:
 	var def := PowerupDefs.get_def(slot.def)
 	if def == null:
 		return
-	var stacks := PowerupRules.activation_stacks(def, slot.count, GameManager.get_game_mode(), GameManager.get_poker_featured_id())
+	var stacks := PowerupRules.activation_stacks(def, slot.count, GameManager.get_card_rules(), GameManager.get_poker_featured_id())
 	inventory = PowerupRules.with_slot(inventory, slot_index, &"", 0)
 	_shuffle_selected_slot = -1
 	inventory_updated.emit(get_inventory_display_data())
@@ -177,7 +177,7 @@ func _sync_activate(def_id: StringName, stacks: int) -> void:
 	var def := PowerupDefs.get_def(def_id)
 	if def == null:
 		return
-	active = PowerupRules.activate(active, def, stacks, GameManager.get_game_mode(), Time.get_ticks_msec())
+	active = PowerupRules.activate(active, def, stacks, GameManager.get_card_rules(), Time.get_ticks_msec())
 	active_changed.emit(active)
 
 @rpc("authority", "call_local", "reliable")

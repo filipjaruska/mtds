@@ -17,33 +17,33 @@ func test_stack_scale() -> void:
 	check_eq(PowerupRules.stack_scale(def, 2), 2.1)
 	check_eq(PowerupRules.stack_scale(def, 4), 2.3)
 
-func test_activation_stacks_per_mode() -> void:
+func test_activation_stacks_per_card_rules() -> void:
 	var def := _def(&"x")
-	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.MODE_DEATHMATCH, &""), 1)
-	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.MODE_SHUFFLE, &""), 3)
-	check_eq(PowerupRules.activation_stacks(def, 9, PowerupRules.MODE_SHUFFLE, &""), 4, "capped")
-	check_eq(PowerupRules.activation_stacks(def, 1, PowerupRules.MODE_POKER, &"x"), 4, "featured maxed")
-	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.MODE_POKER, &"y"), 1, "not featured")
+	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_STANDARD, &""), 1)
+	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_SHUFFLE, &""), 3)
+	check_eq(PowerupRules.activation_stacks(def, 9, PowerupRules.RULES_SHUFFLE, &""), 4, "capped")
+	check_eq(PowerupRules.activation_stacks(def, 1, PowerupRules.RULES_POKER, &"x"), 4, "featured maxed")
+	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_POKER, &"y"), 1, "not featured")
 
 func test_reactivation_adds_stacks_and_refreshes() -> void:
 	var def := _def(&"x")
-	var active := PowerupRules.activate([], def, 1, PowerupRules.MODE_DEATHMATCH, 0)
-	active = PowerupRules.activate(active, def, 1, PowerupRules.MODE_DEATHMATCH, 5000)
+	var active := PowerupRules.activate([], def, 1, PowerupRules.RULES_STANDARD, 0)
+	active = PowerupRules.activate(active, def, 1, PowerupRules.RULES_STANDARD, 5000)
 	check_eq(active.size(), 1, "one entry per powerup")
 	check_eq(active[0].stacks, 2)
 	check_eq(active[0].expires_at, 15000, "duration refreshed")
 
 func test_poker_reactivation_replaces_stacks() -> void:
 	var def := _def(&"x")
-	var active := PowerupRules.activate([], def, 4, PowerupRules.MODE_POKER, 0)
-	active = PowerupRules.activate(active, def, 1, PowerupRules.MODE_POKER, 0)
+	var active := PowerupRules.activate([], def, 4, PowerupRules.RULES_POKER, 0)
+	active = PowerupRules.activate(active, def, 1, PowerupRules.RULES_POKER, 0)
 	check_eq(active[0].stacks, 1)
 
 func test_expiry_by_time_and_uses() -> void:
 	var timed := _def(&"timed")
 	var limited := _def(&"limited", {"max_uses": 1})
-	var active := PowerupRules.activate([], timed, 1, PowerupRules.MODE_DEATHMATCH, 0)
-	active = PowerupRules.activate(active, limited, 1, PowerupRules.MODE_DEATHMATCH, 0)
+	var active := PowerupRules.activate([], timed, 1, PowerupRules.RULES_STANDARD, 0)
+	active = PowerupRules.activate(active, limited, 1, PowerupRules.RULES_STANDARD, 0)
 	check(PowerupRules.expired_ids(active, 9999).is_empty())
 	check_eq(PowerupRules.expired_ids(active, 10000).size(), 2)
 	active = PowerupRules.consume_use(active, &"limited")
@@ -53,8 +53,8 @@ func test_modifiers_sum_and_disappear_without_drift() -> void:
 	# Regression: apply/remove with +=/-= used to leave values behind.
 	var armor := _def(&"armor", {"modifiers": {"damage_resist": 0.15}, "stack_multiplier": 1.5})
 	var dmg := _def(&"dmg", {"modifiers": {"damage_mult": 0.2}})
-	var active := PowerupRules.activate([], armor, 2, PowerupRules.MODE_SHUFFLE, 0)
-	active = PowerupRules.activate(active, dmg, 1, PowerupRules.MODE_DEATHMATCH, 0)
+	var active := PowerupRules.activate([], armor, 2, PowerupRules.RULES_SHUFFLE, 0)
+	active = PowerupRules.activate(active, dmg, 1, PowerupRules.RULES_STANDARD, 0)
 	# Defs are looked up through the registry, so register these test defs.
 	PowerupDefs._by_id[&"armor"] = armor
 	PowerupDefs._by_id[&"dmg"] = dmg

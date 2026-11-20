@@ -7,9 +7,10 @@ class_name PowerupRules
 ##   uses_left is -1 when the powerup has no use limit.
 ## Inventory: Array of slots {def: StringName, count: int}; an empty slot has def &"".
 
-const MODE_DEATHMATCH := "deathmatch"
-const MODE_SHUFFLE := "deathmatch+shuffle"
-const MODE_POKER := "deathmatch+poker"
+## Card rules (independent of the game type).
+const RULES_STANDARD := "standard"
+const RULES_SHUFFLE := "shuffle"
+const RULES_POKER := "poker"
 
 # --- Stacking -----------------------------------------------------------------
 
@@ -25,11 +26,11 @@ static func max_uses(def: PowerupDef, stacks: int) -> int:
 	return def.max_uses + maxi(stacks - 1, 0) * def.uses_per_stack
 
 ## Stacks granted when using a card: poker's featured card is always maxed,
-## shuffle uses the merged inventory count, plain deathmatch is one stack.
-static func activation_stacks(def: PowerupDef, inventory_count: int, mode: String, featured_id: StringName) -> int:
-	if mode == MODE_POKER and def.id == featured_id:
+## shuffle uses the merged inventory count, standard rules give one stack.
+static func activation_stacks(def: PowerupDef, inventory_count: int, rules: String, featured_id: StringName) -> int:
+	if rules == RULES_POKER and def.id == featured_id:
 		return def.max_stack_count
-	if mode == MODE_SHUFFLE:
+	if rules == RULES_SHUFFLE:
 		return clampi(inventory_count, 1, def.max_stack_count)
 	return 1
 
@@ -51,12 +52,12 @@ static func find(active: Array, def_id: StringName) -> Dictionary:
 	return {}
 
 ## Activates a card. Re-activating an active powerup refreshes it; outside
-## poker mode the stacks add up (capped), in poker mode they are replaced.
-static func activate(active: Array, def: PowerupDef, stacks: int, mode: String, now: int) -> Array:
+## poker rules the stacks add up (capped), under poker rules they are replaced.
+static func activate(active: Array, def: PowerupDef, stacks: int, rules: String, now: int) -> Array:
 	var next := without(active, def.id)
 	var existing := find(active, def.id)
 	var total := stacks
-	if not existing.is_empty() and mode != MODE_POKER:
+	if not existing.is_empty() and rules != RULES_POKER:
 		total = existing.stacks + stacks
 	next.append(new_entry(def, total, now))
 	return next

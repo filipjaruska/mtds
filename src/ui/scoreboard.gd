@@ -13,15 +13,8 @@ func _ready() -> void:
 func update_results(results: Array) -> void:
 	if _results_list == null:
 		return
-	_results_list.clear()
 	if results.is_empty():
+		_results_list.clear()
 		_results_list.add_item("No match stats yet")
 		return
-	for entry in results:
-		var line := "%s  ||  %d kills  |  %d deaths  |  %d dmg" % [
-			entry.get("name", "Unknown"),
-			entry.get("kills", 0),
-			entry.get("deaths", 0),
-			int(entry.get("damage_dealt", 0.0)),
-		]
-		_results_list.add_item(line)
+	ResultsFormat.fill(_results_list, results, GameManager.is_team_mode())

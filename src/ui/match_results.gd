@@ -15,15 +15,7 @@ func _ready() -> void:
 	continue_button.pressed.connect(_on_continue_pressed)
 
 func setup(results: Array) -> void:
-	results_list.clear()
-	for entry in results:
-		var line := "%s  ||  %d kills  |  %d deaths  |  %d dmg" % [
-			entry.get("name", "Unknown"),
-			entry.get("kills", 0),
-			entry.get("deaths", 0),
-			int(entry.get("damage_dealt", 0.0))
-		]
-		results_list.add_item(line)
+	ResultsFormat.fill(results_list, results, GameManager.is_team_mode())
 
 	_time_remaining = AUTO_CONTINUE_SECONDS
 	_continued = false

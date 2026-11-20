@@ -10,24 +10,32 @@ var _menu_overlay: Node = null
 const MATCH_RESULTS_SCENE := preload("res://src/ui/menus/match_results.tscn")
 const MAIN_MENU_SCENE := "res://src/ui/menus/main.tscn"
 const DEBUG_MAP := "res://src/scenes/debug.tscn"
-const GAME_MODE_OPTIONS := [
-	"deathmatch",
-	"deathmatch+shuffle",
-	"deathmatch+poker",
+## Dropdown entries: [setting value, label, description (also the tooltip)].
+const GAME_TYPES := [
+	[GameManager.GAME_TYPE_DEATHMATCH, "Deathmatch",
+		"Everyone for themselves. Players are ranked by damage dealt."],
+	[GameManager.GAME_TYPE_TEAMS, "Team Deathmatch",
+		"Red vs Blue. No friendly fire, each team spawns on its own side, and the team with the most kills wins."],
 ]
-const GAME_MODE_DESCRIPTIONS := {
-	"deathmatch": "Cards stack only after you activate matching pickups.",
-	"deathmatch+shuffle": "Hold Shift (RB on controller) and press slots to merge matching cards in inventory up to x4.",
-	"deathmatch+poker": "One random card type is worth x4 for the whole match; all others stay single-stack.",
-}
+const CARD_RULES := [
+	[GameManager.CARD_RULES_STANDARD, "Standard",
+		"Each card gives one stack. Using a card again while it is active adds a stack."],
+	[GameManager.CARD_RULES_SHUFFLE, "Shuffle",
+		"Hold Shift (RB on controller) and press slots to merge matching cards in your inventory, up to x4."],
+	[GameManager.CARD_RULES_POKER, "Poker",
+		"One random card type is worth x4 for the whole match; all other cards stay single-stack."],
+]
 
 @onready var player_name_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer/HBoxContainer/LineEdit
 @onready var start_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/StartButton
 @onready var ready_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/ReadyButton
 @onready var player_list: ItemList = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer/PlayerList
 @onready var map_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/MapSelectionContainer/MapDropdown
-@onready var game_mode_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/GametypeDropdown
-@onready var game_mode_description: Label = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/Description
+@onready var game_type_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/GametypeDropdown
+@onready var game_type_description: Label = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/Description
+@onready var card_rules_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/CardRulesContainer/CardRulesDropdown
+@onready var card_rules_description: Label = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/CardRulesContainer/Description
+@onready var switch_team_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/SwitchTeamButton
 
 func _enter_tree() -> void:
 	# Before children are ready, so the nav bar already sees an active lobby.
@@ -48,7 +56,9 @@ func _ready() -> void:
 	player_name_input.editable = false
 	
 	_load_available_maps()
-	_sync_game_mode_dropdown(GameManager.get_game_mode())
+	_fill_dropdown(game_type_dropdown, GAME_TYPES)
+	_fill_dropdown(card_rules_dropdown, CARD_RULES)
+	_sync_settings_ui()
 	_setup_ui_for_role()
 	
 	var player_color: Color = GameSettings.player_color
@@ -56,7 +66,7 @@ func _ready() -> void:
 	if multiplayer.get_unique_id() != 1:
 		request_register.rpc_id(1, player_name, player_color)
 	else:
-		GameManager.add_player(1, {"id": 1, "name": player_name, "color": player_color})
+		GameManager.add_player(1, {"id": 1, "name": player_name, "color": player_color, "team": 0})
 		player_ready_states[1] = true
 		_update_player_list()
 
@@ -66,13 +76,15 @@ func _setup_ui_for_role() -> void:
 		start_button.disabled = false
 		ready_button.visible = false
 		map_dropdown.disabled = false
-		game_mode_dropdown.disabled = false
+		game_type_dropdown.disabled = false
+		card_rules_dropdown.disabled = false
 	else:
 		start_button.visible = false
 		ready_button.visible = true
 		ready_button.disabled = false
 		map_dropdown.disabled = true
-		game_mode_dropdown.disabled = true
+		game_type_dropdown.disabled = true
+		card_rules_dropdown.disabled = true
 		player_ready_states[multiplayer.get_unique_id()] = false
 
 func _load_available_maps() -> void:
@@ -94,17 +106,36 @@ func _load_available_maps() -> void:
 	
 	map_dropdown.select(0)
 
-func _sync_game_mode_dropdown(game_mode: String) -> void:
-	var mode_index := GAME_MODE_OPTIONS.find(game_mode)
-	if mode_index == -1:
-		mode_index = 0
-	game_mode_dropdown.select(mode_index)
-	game_mode_description.text = GAME_MODE_DESCRIPTIONS.get(game_mode, GAME_MODE_DESCRIPTIONS["deathmatch"])
+func _fill_dropdown(dropdown: OptionButton, options: Array) -> void:
+	dropdown.clear()
+	for i in range(options.size()):
+		dropdown.add_item(options[i][1])
+		dropdown.set_item_tooltip(i, options[i][2])
+
+func _option_index(options: Array, value: String) -> int:
+	for i in range(options.size()):
+		if options[i][0] == value:
+			return i
+	return 0
+
+func _show_option(dropdown: OptionButton, description: Label, options: Array, value: String) -> void:
+	var index := _option_index(options, value)
+	dropdown.select(index)
+	description.text = options[index][2]
+	dropdown.tooltip_text = options[index][2]
+
+## Shows the current GameManager settings in the dropdowns and player list.
+func _sync_settings_ui() -> void:
+	_show_option(game_type_dropdown, game_type_description, GAME_TYPES, GameManager.get_game_type())
+	_show_option(card_rules_dropdown, card_rules_description, CARD_RULES, GameManager.get_card_rules())
+	switch_team_button.visible = GameManager.is_team_mode()
+	_update_player_list()
 
 @rpc("authority", "call_local", "reliable")
-func sync_lobby_game_mode(game_mode: String) -> void:
-	GameManager.set_game_mode(game_mode)
-	_sync_game_mode_dropdown(game_mode)
+func sync_lobby_settings(game_type: String, card_rules: String) -> void:
+	GameManager.set_game_type(game_type)
+	GameManager.set_card_rules(card_rules)
+	_sync_settings_ui()
 
 func _on_player_connected(id: int) -> void:
 	EventManager.emit_event(EventManager.Events.PLAYER_CONNECTED, [id])
@@ -132,30 +163,47 @@ func request_register(player_name: String, color: Color = Color.WHITE) -> void:
 	if not multiplayer.is_server():
 		return
 	var id := multiplayer.get_remote_sender_id()
-	_store_player(id, player_name, color)
+	var team := GameManager.get_team(id) if GameManager.players.has(id) else TeamRules.pick_team(GameManager.players)
+	_store_player(id, player_name, color, team)
 	if not player_ready_states.has(id):
 		player_ready_states[id] = false
-	
+
 	for player_id in GameManager.players:
-		var player_data: Dictionary = GameManager.get_player(player_id)
-		sync_player.rpc(player_id, player_data.name, player_data.get("color", Color.WHITE))
-	sync_lobby_game_mode.rpc_id(id, GameManager.get_game_mode())
+		_broadcast_player(player_id)
+	sync_lobby_settings.rpc_id(id, GameManager.get_game_type(), GameManager.get_card_rules())
 	sync_ready_states.rpc(player_ready_states)
 	_update_player_list()
 
+func _broadcast_player(player_id: int) -> void:
+	var data: Dictionary = GameManager.get_player(player_id)
+	sync_player.rpc(player_id, data.name, data.get("color", Color.WHITE), GameManager.get_team(player_id))
+
 @rpc("authority", "reliable")
-func sync_player(id: int, player_name: String, color: Color) -> void:
-	_store_player(id, player_name, color)
+func sync_player(id: int, player_name: String, color: Color, team: int) -> void:
+	_store_player(id, player_name, color, team)
 	_update_player_list()
 
-func _store_player(id: int, player_name: String, color: Color) -> void:
+func _store_player(id: int, player_name: String, color: Color, team: int) -> void:
 	var tint := color
 	tint.a = 1.0
 	if GameManager.players.has(id):
 		GameManager.players[id]["name"] = player_name
 		GameManager.players[id]["color"] = tint
+		GameManager.set_team(id, team)
 	else:
-		GameManager.add_player(id, {"id": id, "name": player_name, "color": tint})
+		GameManager.add_player(id, {"id": id, "name": player_name, "color": tint, "team": team})
+
+## Any player -> host: move the sender to the other team.
+@rpc("any_peer", "call_local", "reliable")
+func request_switch_team() -> void:
+	if not multiplayer.is_server():
+		return
+	var id := multiplayer.get_remote_sender_id()
+	if not GameManager.players.has(id):
+		return
+	GameManager.set_team(id, TeamRules.other_team(GameManager.get_team(id)))
+	_broadcast_player(id)
+	_update_player_list()
 
 @rpc("authority", "reliable")
 func sync_ready_states(states: Dictionary) -> void:
@@ -175,10 +223,21 @@ func request_set_ready(is_ready: bool) -> void:
 
 func _update_player_list() -> void:
 	player_list.clear()
-	for player in GameManager.get_all_players():
+	var team_mode := GameManager.is_team_mode()
+	var players := GameManager.get_all_players()
+	if team_mode:
+		players.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+			return GameManager.get_team(a.id) < GameManager.get_team(b.id))
+	for player in players:
 		var ready_status = " [READY]" if player_ready_states.get(player.id, false) else ""
 		var host_status = " (Host)" if player.id == 1 else ""
-		player_list.add_item(player.name + host_status + ready_status)
+		var line: String = player.name + host_status + ready_status
+		if not team_mode:
+			player_list.add_item(line)
+			continue
+		var team := GameManager.get_team(player.id)
+		var index := player_list.add_item("[%s] %s" % [TeamRules.NAMES[team], line])
+		player_list.set_item_custom_fg_color(index, TeamRules.COLORS[team])
 
 func _check_ready_state() -> void:
 	if not multiplayer.is_server():
@@ -282,7 +341,7 @@ func _reset_lobby_for_new_match() -> void:
 	
 	if not multiplayer.is_server():
 		ready_button.text = "Ready"
-	_sync_game_mode_dropdown(GameManager.get_game_mode())
+	_sync_settings_ui()
 	
 	if multiplayer.is_server():
 		sync_ready_states.rpc(player_ready_states)
@@ -292,8 +351,7 @@ func _reset_lobby_for_new_match() -> void:
 
 func _on_start_pressed() -> void:
 	if multiplayer.is_server():
-		var selected_mode: String = GAME_MODE_OPTIONS[game_mode_dropdown.selected]
-		sync_lobby_game_mode.rpc(selected_mode)
+		sync_lobby_settings.rpc(GAME_TYPES[game_type_dropdown.selected][0], CARD_RULES[card_rules_dropdown.selected][0])
 		start_game.rpc(available_maps[map_dropdown.selected])
 
 func _on_ready_pressed() -> void:
@@ -306,8 +364,12 @@ func _on_ready_pressed() -> void:
 	request_set_ready.rpc_id(1, new_ready_state)
 
 func _on_gametype_dropdown_item_selected(index: int) -> void:
-	if not multiplayer.is_server():
-		return
-	if index < 0 or index >= GAME_MODE_OPTIONS.size():
-		return
-	sync_lobby_game_mode.rpc(GAME_MODE_OPTIONS[index])
+	if multiplayer.is_server() and index >= 0 and index < GAME_TYPES.size():
+		sync_lobby_settings.rpc(GAME_TYPES[index][0], GameManager.get_card_rules())
+
+func _on_card_rules_dropdown_item_selected(index: int) -> void:
+	if multiplayer.is_server() and index >= 0 and index < CARD_RULES.size():
+		sync_lobby_settings.rpc(GameManager.get_game_type(), CARD_RULES[index][0])
+
+func _on_switch_team_pressed() -> void:
+	request_switch_team.rpc_id(1)

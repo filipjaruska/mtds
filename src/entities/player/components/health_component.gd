@@ -103,11 +103,17 @@ func _die(attacker_id: int) -> void:
 	current_health = max_health
 	_on_respawned.rpc(get_random_spawn_location(), current_health, max_health)
 
+## In team matches players respawn on their own team's side (see TeamRules).
 func get_random_spawn_location() -> Vector2:
-	var spawns := get_tree().get_nodes_in_group("PlayerSpawnLocation")
-	if spawns.is_empty():
+	var by_index := {}
+	for spawn in get_tree().get_nodes_in_group("PlayerSpawnLocation"):
+		by_index[spawn.name.to_int()] = spawn
+	if by_index.is_empty():
 		return Vector2.ZERO
-	return spawns.pick_random().global_position
+	var team := GameManager.get_team(get_multiplayer_authority())
+	var choices := TeamRules.respawn_indices(team, by_index.size(), GameManager.is_team_mode())
+	var spawn: Node2D = by_index.get(choices.pick_random(), by_index.values()[0])
+	return spawn.global_position
 
 func _start_regen_delay() -> void:
 	if regen_percent_per_tick <= 0.0 or current_health >= max_health:

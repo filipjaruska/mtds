@@ -120,11 +120,17 @@ static func cast_shot(space: PhysicsDirectSpaceState2D, origin: Vector2, rotatio
 		health = collider.get_parent() as HealthComponent
 	return {"end": hit.position, "health": health}
 
+## Shots pass through the shooter and, in team matches, through teammates.
 func _exclude_for(shooter: Node) -> Array[RID]:
 	var exclude: Array[RID] = []
-	var hitbox := shooter.get_node_or_null("HealthComponent/PlayerHitbox") as Area2D
-	if hitbox:
-		exclude.append(hitbox.get_rid())
+	var shooter_id := shooter.get_multiplayer_authority()
+	for player in get_tree().get_nodes_in_group("Player"):
+		var player_id: int = player.get_multiplayer_authority()
+		if player != shooter and not GameManager.are_teammates(shooter_id, player_id):
+			continue
+		var hitbox := player.get_node_or_null("HealthComponent/PlayerHitbox") as Area2D
+		if hitbox:
+			exclude.append(hitbox.get_rid())
 	return exclude
 
 func _find_player(peer_id: int) -> Node2D:
