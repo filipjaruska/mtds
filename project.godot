@@ -161,3 +161,7 @@ scoreboard={
 2d_physics/layer_2="hitboxes"
 2d_physics/layer_3="walls"
 2d_physics/layer_4="shields"
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true
