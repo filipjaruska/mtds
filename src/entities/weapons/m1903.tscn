@@ -1,0 +1,72 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" uid="uid://mdurqy28abs5" path="res://src/entities/weapons/weapon_view.gd" id="1_5i0fo"]
+[ext_resource type="Texture2D" uid="uid://dvr1esoibqjob" path="res://src/assets/weapons/m1903/M1903.base.png" id="3_k83dr"]
+
+[sub_resource type="Animation" id="Animation_3aled"]
+resource_name = "Idle"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [15]
+}
+
+[sub_resource type="Animation" id="Animation_tor5g"]
+resource_name = "Shooting"
+length = 1.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0503902, 0.10039, 0.15, 0.2, 0.25, 0.3, 0.35, 0.45, 0.55, 0.6, 0.65, 0.7, 0.8, 0.85, 0.95),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_vod60"]
+_data = {
+&"Idle": SubResource("Animation_3aled"),
+&"Shooting": SubResource("Animation_tor5g")
+}
+
+[node name="M1903" type="Node2D" node_paths=PackedStringArray("muzzle", "sprite", "animation_player")]
+script = ExtResource("1_5i0fo")
+shooting_animation = "Shooting"
+idle_animation = "Idle"
+casing_size = Vector2(8, 2.5)
+casing_color = Color(0.85, 0.66, 0.25, 1)
+casing_port = Vector2(40, -10)
+muzzle = NodePath("Sprite2D/Muzzle")
+sprite = NodePath("Sprite2D")
+animation_player = NodePath("AnimationPlayer")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(40, -10)
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("3_k83dr")
+hframes = 18
+frame = 15
+
+[node name="Muzzle" type="Marker2D" parent="Sprite2D"]
+position = Vector2(39, 0)
+scale = Vector2(0.666667, 0.666667)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_vod60")
+}
+
+[connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_animation_player_animation_finished"]

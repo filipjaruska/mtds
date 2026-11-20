@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponDef" format=3]
+
+[ext_resource type="Script" path="res://src/entities/weapons/weapon_def.gd" id="1_def"]
+[ext_resource type="PackedScene" path="res://src/entities/weapons/m1903.tscn" id="2_view"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"m1903"
+display_name = "M1903"
+fire_rate = 0.7
+spread_degrees = 0.3
+pellets = 1
+fire_pattern = &"random"
+damage = 55.0
+armor_penetration = 0.5
+max_range = 1400.0
+mag_size = 5
+reload_time = 3.5
+move_speed_mult = 0.5
+slow_duration = 0.6
+view_scene = ExtResource("2_view")

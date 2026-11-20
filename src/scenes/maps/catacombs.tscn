@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://src/entities/weapons/weapon_spawner.tscn" id="7_y8o3a"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/shotgun.tres" id="8_ke45c"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/m4.tres" id="9_m4"]
+[ext_resource type="Resource" path="res://src/entities/weapons/defs/m1903.tres" id="10_m1903"]
 [ext_resource type="PackedScene" path="res://src/entities/powerups/powerup_spawner.tscn" id="9_vg5cl"]
 
 [node name="Catacombs" type="Node2D" unique_id=62682039]
@@ -70,6 +71,11 @@ texture = ExtResource("4_ctr42")
 [node name="M4Gallery" type="Sprite2D" parent="Markers" unique_id=622700958]
 modulate = Color(1, 1, 1, 0.45)
 position = Vector2(2208, 352)
+texture = ExtResource("5_g3su7")
+
+[node name="M1903Chapel" type="Sprite2D" parent="Markers"]
+modulate = Color(1, 1, 1, 0.45)
+position = Vector2(2848, 544)
 texture = ExtResource("5_g3su7")
 
 [node name="M4Cistern" type="Sprite2D" parent="Markers" unique_id=708013553]
@@ -148,6 +154,11 @@ weapon_def = ExtResource("8_ke45c")
 [node name="ShotgunOssuary" parent="WeaponDrops" unique_id=996723901 instance=ExtResource("7_y8o3a")]
 position = Vector2(544, 1632)
 weapon_def = ExtResource("8_ke45c")
+
+[node name="M1903Chapel" parent="WeaponDrops" instance=ExtResource("7_y8o3a")]
+position = Vector2(2848, 544)
+weapon_def = ExtResource("10_m1903")
+respawn_time = 30.0
 
 [node name="CardDrops" type="Node2D" parent="." unique_id=1837960998]
 
