@@ -30,7 +30,7 @@ var game_settings: Dictionary = {
 	"max_players": MAX_PLAYERS,
 	"game_type": GAME_TYPE_DEATHMATCH,
 	"card_rules": CARD_RULES_STANDARD,
-	"map": "default",
+	"map": "", # res:// path of the selected map scene
 	"match_duration_seconds": 300.0
 }
 
@@ -87,6 +87,12 @@ func is_shuffle_mode() -> bool:
 
 func is_poker_mode() -> bool:
 	return get_card_rules() == CARD_RULES_POKER
+
+func set_map(map_path: String) -> void:
+	game_settings["map"] = map_path
+
+func get_map() -> String:
+	return game_settings.get("map", "")
 
 ## Team index of a player (0 Red, 1 Blue); see TeamRules.
 func get_team(player_id: int) -> int:

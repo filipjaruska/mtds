@@ -266,3 +266,4 @@ size_flags_vertical = 3
 [connection signal="item_selected" from="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/GametypeDropdown" to="." method="_on_gametype_dropdown_item_selected"]
 [connection signal="item_selected" from="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/CardRulesContainer/CardRulesDropdown" to="." method="_on_card_rules_dropdown_item_selected"]
 [connection signal="pressed" from="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/SwitchTeamButton" to="." method="_on_switch_team_pressed"]
+[connection signal="item_selected" from="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/MapSelectionContainer/MapDropdown" to="." method="_on_map_dropdown_item_selected"]

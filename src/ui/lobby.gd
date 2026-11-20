@@ -105,6 +105,9 @@ func _load_available_maps() -> void:
 			map_dropdown.add_item(file_name.trim_suffix(".tscn"))
 	
 	map_dropdown.select(0)
+	# The host starts on its first map; clients get the host's choice on join.
+	if multiplayer.is_server() and not available_maps.has(GameManager.get_map()):
+		GameManager.set_map(available_maps[0] if not available_maps.is_empty() else "")
 
 func _fill_dropdown(dropdown: OptionButton, options: Array) -> void:
 	dropdown.clear()
@@ -128,14 +131,32 @@ func _show_option(dropdown: OptionButton, description: Label, options: Array, va
 func _sync_settings_ui() -> void:
 	_show_option(game_type_dropdown, game_type_description, GAME_TYPES, GameManager.get_game_type())
 	_show_option(card_rules_dropdown, card_rules_description, CARD_RULES, GameManager.get_card_rules())
+	_show_map(GameManager.get_map())
 	switch_team_button.visible = GameManager.is_team_mode()
 	_update_player_list()
 
+## Selects the host's map. A map this build does not list (e.g. the debug map
+## on a release client) is still shown, by file name.
+func _show_map(map_path: String) -> void:
+	if map_path.is_empty():
+		return
+	var index := available_maps.find(map_path)
+	if index == -1:
+		available_maps.append(map_path)
+		map_dropdown.add_item(map_path.get_file().trim_suffix(".tscn"))
+		index = available_maps.size() - 1
+	map_dropdown.select(index)
+
+## Host -> everyone: the lobby settings. Sent whole so they can never drift apart.
 @rpc("authority", "call_local", "reliable")
-func sync_lobby_settings(game_type: String, card_rules: String) -> void:
+func sync_lobby_settings(game_type: String, card_rules: String, map_path: String) -> void:
 	GameManager.set_game_type(game_type)
 	GameManager.set_card_rules(card_rules)
+	GameManager.set_map(map_path)
 	_sync_settings_ui()
+
+func _broadcast_settings() -> void:
+	sync_lobby_settings.rpc(GameManager.get_game_type(), GameManager.get_card_rules(), GameManager.get_map())
 
 func _on_player_connected(id: int) -> void:
 	EventManager.emit_event(EventManager.Events.PLAYER_CONNECTED, [id])
@@ -170,7 +191,7 @@ func request_register(player_name: String, color: Color = Color.WHITE) -> void:
 
 	for player_id in GameManager.players:
 		_broadcast_player(player_id)
-	sync_lobby_settings.rpc_id(id, GameManager.get_game_type(), GameManager.get_card_rules())
+	sync_lobby_settings.rpc_id(id, GameManager.get_game_type(), GameManager.get_card_rules(), GameManager.get_map())
 	sync_ready_states.rpc(player_ready_states)
 	_update_player_list()
 
@@ -351,8 +372,8 @@ func _reset_lobby_for_new_match() -> void:
 
 func _on_start_pressed() -> void:
 	if multiplayer.is_server():
-		sync_lobby_settings.rpc(GAME_TYPES[game_type_dropdown.selected][0], CARD_RULES[card_rules_dropdown.selected][0])
-		start_game.rpc(available_maps[map_dropdown.selected])
+		_broadcast_settings()
+		start_game.rpc(GameManager.get_map())
 
 func _on_ready_pressed() -> void:
 	var player_id = multiplayer.get_unique_id()
@@ -365,11 +386,18 @@ func _on_ready_pressed() -> void:
 
 func _on_gametype_dropdown_item_selected(index: int) -> void:
 	if multiplayer.is_server() and index >= 0 and index < GAME_TYPES.size():
-		sync_lobby_settings.rpc(GAME_TYPES[index][0], GameManager.get_card_rules())
+		GameManager.set_game_type(GAME_TYPES[index][0])
+		_broadcast_settings()
 
 func _on_card_rules_dropdown_item_selected(index: int) -> void:
 	if multiplayer.is_server() and index >= 0 and index < CARD_RULES.size():
-		sync_lobby_settings.rpc(GameManager.get_game_type(), CARD_RULES[index][0])
+		GameManager.set_card_rules(CARD_RULES[index][0])
+		_broadcast_settings()
+
+func _on_map_dropdown_item_selected(index: int) -> void:
+	if multiplayer.is_server() and index >= 0 and index < available_maps.size():
+		GameManager.set_map(available_maps[index])
+		_broadcast_settings()
 
 func _on_switch_team_pressed() -> void:
 	request_switch_team.rpc_id(1)
