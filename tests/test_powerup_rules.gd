@@ -19,11 +19,11 @@ func test_stack_scale() -> void:
 
 func test_activation_stacks_per_card_rules() -> void:
 	var def := _def(&"x")
-	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_STANDARD, &""), 1)
-	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_SHUFFLE, &""), 3)
-	check_eq(PowerupRules.activation_stacks(def, 9, PowerupRules.RULES_SHUFFLE, &""), 4, "capped")
-	check_eq(PowerupRules.activation_stacks(def, 1, PowerupRules.RULES_POKER, &"x"), 4, "featured maxed")
-	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_POKER, &"y"), 1, "not featured")
+	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_STANDARD, 1), 1)
+	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_SHUFFLE, 1), 3)
+	check_eq(PowerupRules.activation_stacks(def, 9, PowerupRules.RULES_SHUFFLE, 1), 4, "capped")
+	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_POKER, 2), 2, "poker plays the hand's stacks")
+	check_eq(PowerupRules.activation_stacks(def, 1, PowerupRules.RULES_POKER, 9), 4, "capped at max stacks")
 
 func test_reactivation_adds_stacks_and_refreshes() -> void:
 	var def := _def(&"x")
@@ -121,3 +121,13 @@ func test_charge_damage_scales() -> void:
 	var def := PowerupDefs.get_def(&"faster_dash")
 	check_eq(PowerupRules.charge_params(def, 1).damage, 25.0)
 	check(PowerupRules.charge_params(def, 2).damage > 25.0)
+
+func test_slots_keep_their_hole_card() -> void:
+	var inv := PowerupRules.empty_inventory(3)
+	check_eq(inv[0].hole, -1)
+	inv = PowerupRules.with_slot(inv, 0, &"x", 1, 17)
+	check_eq(inv[0].hole, 17)
+	inv = PowerupRules.with_slot(inv, 1, &"x", 1, 30)
+	var merged := PowerupRules.merge(inv, 0, 1, 4)
+	check_eq(merged[1].hole, 30, "target keeps its card")
+	check_eq(merged[0].hole, -1, "emptied slot has no card")

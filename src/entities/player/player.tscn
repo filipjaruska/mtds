@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://qgub06sgnvml"]
+[gd_scene load_steps=20 format=3 uid="uid://qgub06sgnvml"]
 
 [ext_resource type="Script" uid="uid://drtw2we68sgym" path="res://src/entities/player/player_tool.gd" id="1_new"]
 [ext_resource type="Script" uid="uid://d3ln8ymurgub" path="res://src/entities/player/components/player_controller.gd" id="2_new"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://d0fx2h5lnky3i" path="res://src/ui/powerup_hand_ui.gd" id="10_inventory"]
 [ext_resource type="Script" uid="uid://dmlrypu5xkgqa" path="res://src/ui/active_powerups_ui.gd" id="11_active"]
 [ext_resource type="Script" path="res://src/entities/powerups/card_effects.gd" id="12_effects"]
+[ext_resource type="Script" path="res://src/ui/poker_board_ui.gd" id="13_poker"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b7jsc"]
 radius = 26.0192
@@ -340,36 +341,16 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
 
-[node name="FeaturedCard" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
-visible = false
+[node name="PokerBoard" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
+layout_mode = 3
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -120.0
-offset_top = 44.0
-offset_right = 120.0
-offset_bottom = 66.0
+offset_top = 50.0
+offset_bottom = 50.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(0.98, 0.58, 0.08, 0.9)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 13
-text = "4x CARD"
-horizontal_alignment = 1
-
-[node name="Backdrop" type="Panel" parent="CameraComponent/PlayerCamera/PlayerUI/FeaturedCard"]
-show_behind_parent = true
 mouse_filter = 2
-layout_mode = 1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -16.0
-offset_top = -6.0
-offset_right = 16.0
-offset_bottom = 6.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+script = ExtResource("13_poker")
 
 [node name="PlayerNameLabel" type="Label" parent="."]
 z_index = 10

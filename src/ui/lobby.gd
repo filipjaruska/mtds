@@ -23,7 +23,7 @@ const CARD_RULES := [
 	[GameManager.CARD_RULES_SHUFFLE, "Shuffle",
 		"Hold Shift (RB on controller) and press slots to merge matching cards in your inventory, up to x4."],
 	[GameManager.CARD_RULES_POKER, "Poker",
-		"One random card type is worth x4 for the whole match; all other cards stay single-stack."],
+		"Every card you pick up comes with a playing card. Play it with the 4 cards under the clock (one more every 15 s, new ones each minute): the better the poker hand, the stronger the card, up to x4."],
 ]
 
 @onready var player_name_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer/HBoxContainer/LineEdit

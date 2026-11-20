@@ -6,7 +6,7 @@ class_name PowerupHandUI
 ## (HandLayout.diff) to decide what to animate:
 ##   collected  card rises into its slot
 ##   merged     (shuffle) a copy flies from the source slot onto the pile, which thunks
-##   played     a copy lifts, grows and fades upwards (poker's featured card adds "x4")
+##   played     a copy lifts, grows and fades upwards (Poker shows the hand, e.g. "FLUSH x3")
 ##   cleared    (death) the card drops away
 ## Holding details spreads the fan into a flat row with descriptions; holding
 ## shuffle makes the cards jiggle, lifts the picked card and lights up matches.
@@ -69,7 +69,7 @@ func _process(delta: float) -> void:
 	_hint.text = "Merge"
 
 ## `inventory` is PowerupManager.get_inventory_display_data():
-## one {card: PowerupDef or null, count, selected, featured} per slot.
+## one {card: PowerupDef or null, count, selected, hole, hand} per slot.
 func update_inventory(inventory: Array) -> void:
 	var next: Array = []
 	_selected = -1
@@ -86,7 +86,7 @@ func update_inventory(inventory: Array) -> void:
 		old_textures.append(view.art_texture())
 	for i in range(SLOT_COUNT):
 		var entry: Dictionary = inventory[i] if i < inventory.size() else {}
-		_views[i].set_card(entry.get("card", null), int(entry.get("count", 0)), entry.get("featured", false))
+		_views[i].set_card(entry.get("card", null), int(entry.get("count", 0)), int(entry.get("hole", -1)), entry.get("hand", {}))
 	_inventory = next
 	for change in changes:
 		match change.kind:
@@ -113,8 +113,9 @@ func play_card(slot: int) -> void:
 	tween.tween_property(ghost, "scale", Vector2(1.7, 1.7), 0.5)
 	tween.tween_property(ghost, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
 	tween.chain().tween_callback(ghost.queue_free)
-	if view.featured:
-		_burst_text("x4", rise + Vector2(HandLayout.CARD_SIZE.x * 0.5, HandLayout.CARD_SIZE.y * 0.4), CardView.FEATURED_GOLD)
+	if not view.hand.is_empty():
+		var label := "%s x%d" % [String(view.hand.name).to_upper(), view.strength()]
+		_burst_text(label, rise + Vector2(HandLayout.CARD_SIZE.x * 0.5, HandLayout.CARD_SIZE.y * 0.4), CardView.strength_color(view.strength()))
 	elif view.count > 1:
 		_burst_text("x%d" % view.count, rise + Vector2(HandLayout.CARD_SIZE.x * 0.5, HandLayout.CARD_SIZE.y * 0.4), Color(1.0, 0.92, 0.55))
 
@@ -178,7 +179,7 @@ func _burst_text(text: String, at: Vector2, color: Color) -> void:
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_constant_override("outline_size", 8)
 	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
-	label.size = Vector2(90, 44)
+	label.size = Vector2(260, 44)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.pivot_offset = label.size * 0.5
 	label.position = at - label.size * 0.5

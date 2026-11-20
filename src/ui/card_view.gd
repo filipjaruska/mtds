@@ -2,7 +2,10 @@ extends Control
 class_name CardView
 ## One slot of the hand: the card image, a pile of copies behind it when cards
 ## are stacked, a hotkey badge, an xN chip, the name and (details mode) the
-## description. Built in code. The slot's own position/rotation/scale are
+## description. Under Poker it also shows the card's playing card (sticking out
+## on the left, the side that stays visible in the fan), the poker hand it makes
+## with the board right now ("x2 Trips", above the name) and a gold halo that
+## grows with the hand's strength. Built in code. The slot's own position/rotation/scale are
 ## driven by PowerupHandUI; this node only animates its inner `_body` (idle
 ## sway, jiggle, punch), so the two never fight over the same property.
 
@@ -12,7 +15,8 @@ const FEATURED_GOLD := Color(1.0, 0.82, 0.3)
 
 var def: PowerupDef = null
 var count := 0
-var featured := false
+var hole := -1 # playing card under Poker, -1 otherwise
+var hand: Dictionary = {} # PokerRules.evaluate() result, {} outside Poker
 
 var _body: Control
 var _pile: Control
@@ -23,6 +27,8 @@ var _name: Label
 var _hotkey: Label
 var _chip: Label
 var _details: Label
+var _badge: PlayingCardView
+var _hand_label: Label
 var _highlight := 0.0 # 0..1, matching-card glow in shuffle mode
 var _phase := randf() * TAU
 
@@ -41,7 +47,7 @@ func _init() -> void:
 
 	_pile = _control(_body)
 
-	# Poker's featured card: a pulsing gold halo behind the card.
+	# Poker: a gold halo behind the card, stronger for better hands.
 	_glow = Panel.new()
 	_glow.size = size_px
 	_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -87,17 +93,35 @@ func _init() -> void:
 	_details.add_theme_color_override("font_color", Color(0.88, 0.88, 0.9))
 	_details.visible = false
 
+	_badge = PlayingCardView.new(Vector2(24, 33))
+	_badge.position = Vector2(-12, 14)
+	_badge.rotation = -0.14
+	_body.add_child(_badge)
+
+	_hand_label = _label(_body, 11)
+	_hand_label.position = Vector2(5, size_px.y - NAME_BAND - 17)
+	_hand_label.size = Vector2(size_px.x - 8, 16)
+	_hand_label.clip_text = true
+
 	_refresh()
 
 # --- Content ---------------------------------------------------------------------
 
-func set_card(new_def: PowerupDef, new_count: int, is_featured: bool) -> void:
-	if new_def == def and new_count == count and is_featured == featured:
+func set_card(new_def: PowerupDef, new_count: int, new_hole: int = -1, new_hand: Dictionary = {}) -> void:
+	if new_def == def and new_count == count and new_hole == hole and new_hand.get("rank", -1) == hand.get("rank", -1):
 		return
+	var hand_improved: bool = new_def == def and new_hole == hole and new_hand.get("stacks", 0) > hand.get("stacks", 0)
 	def = new_def
 	count = new_count
-	featured = is_featured
+	hole = new_hole
+	hand = new_hand
 	_refresh()
+	if hand_improved:
+		animate_merge_in(0.0) # a board card made this hand better
+
+## Poker stacks this card would be played with now (0 outside Poker).
+func strength() -> int:
+	return int(hand.get("stacks", 0))
 
 func set_hotkey(text: String) -> void:
 	_hotkey.text = text
@@ -117,8 +141,10 @@ func _refresh() -> void:
 	_outline.visible = not has_card
 	_art.visible = has_card
 	_name.visible = has_card
-	_chip.visible = has_card and count > 1
-	_glow.visible = has_card and featured
+	_chip.visible = has_card and count > 1 and hole < 0
+	_glow.visible = has_card and strength() >= 2
+	_badge.visible = has_card and hole >= 0
+	_hand_label.visible = has_card and not hand.is_empty()
 	_hotkey.modulate.a = 1.0 if has_card else 0.35
 	for child in _pile.get_children():
 		child.queue_free()
@@ -128,6 +154,11 @@ func _refresh() -> void:
 	var texture: Texture2D = def.card_texture if def.card_texture else CARD_BACK
 	_art.texture = texture
 	_name.text = def.get_display_name()
+	if hole >= 0:
+		_badge.show_card(hole)
+	if not hand.is_empty():
+		_hand_label.text = "x%d %s" % [strength(), hand.short]
+		_hand_label.add_theme_color_override("font_color", strength_color(strength()))
 	_chip.text = "x%d" % count
 	_details.text = def.get_type_description()
 	for layer in HandLayout.pile_offsets(count):
@@ -149,8 +180,11 @@ func tick(time: float, jiggle: float) -> void:
 	var sway := sin(time * 1.6 + _phase)
 	_body.position.y = sway * 2.0
 	_body.rotation = sin(time * 22.0 + _phase) * 0.05 * jiggle
-	if featured:
-		_glow.modulate.a = 0.55 + 0.35 * sin(time * 3.0 + _phase)
+	if _glow.visible:
+		# x2: faint and steady, x3-x4: bright and pulsing.
+		var base := 0.25 if strength() < 3 else 0.6
+		var pulse := 0.0 if strength() < 3 else 0.3 * sin(time * (3.0 + strength()) + _phase)
+		_glow.modulate.a = base + pulse
 	var lit := _highlight * (0.6 + 0.4 * sin(time * 8.0))
 	_art.modulate = Color(1.0 + 0.35 * lit, 1.0 + 0.3 * lit, 1.0 + 0.1 * lit)
 
@@ -193,6 +227,17 @@ func animate_clear(old_texture: Texture2D) -> void:
 ## Global rect of the card art, for ghosts that fly elsewhere.
 func art_texture() -> Texture2D:
 	return _art.texture if def != null else null
+
+## Colour for a poker hand's stacks: grey, white, gold, hot orange.
+static func strength_color(stacks: int) -> Color:
+	match stacks:
+		1:
+			return Color(0.7, 0.7, 0.72)
+		2:
+			return Color(0.95, 0.95, 0.95)
+		3:
+			return FEATURED_GOLD
+	return Color(1.0, 0.55, 0.2)
 
 # --- Building blocks ---------------------------------------------------------------
 

@@ -5,7 +5,8 @@ class_name PowerupRules
 ##
 ## Active powerup entry: {def: StringName, stacks: int, expires_at: int, uses_left: int}
 ##   uses_left is -1 when the powerup has no use limit.
-## Inventory: Array of slots {def: StringName, count: int}; an empty slot has def &"".
+## Inventory: Array of slots {def: StringName, count: int, hole: int}; an empty
+## slot has def &"". `hole` is the slot's playing card under Poker (-1 otherwise).
 
 ## Card rules (independent of the game type).
 const RULES_STANDARD := "standard"
@@ -25,11 +26,11 @@ static func max_uses(def: PowerupDef, stacks: int) -> int:
 		return -1
 	return def.max_uses + maxi(stacks - 1, 0) * def.uses_per_stack
 
-## Stacks granted when using a card: poker's featured card is always maxed,
-## shuffle uses the merged inventory count, standard rules give one stack.
-static func activation_stacks(def: PowerupDef, inventory_count: int, rules: String, featured_id: StringName) -> int:
-	if rules == RULES_POKER and def.id == featured_id:
-		return def.max_stack_count
+## Stacks granted when using a card: poker plays the stacks of the card's poker
+## hand (PokerRules), shuffle uses the merged inventory count, standard is one.
+static func activation_stacks(def: PowerupDef, inventory_count: int, rules: String, poker_stacks: int) -> int:
+	if rules == RULES_POKER:
+		return clampi(poker_stacks, 1, def.max_stack_count)
 	if rules == RULES_SHUFFLE:
 		return clampi(inventory_count, 1, def.max_stack_count)
 	return 1
@@ -165,7 +166,7 @@ static func last_stand_entry(active: Array) -> Dictionary:
 static func empty_inventory(slots: int) -> Array:
 	var out: Array = []
 	for i in range(slots):
-		out.append({"def": &"", "count": 0})
+		out.append({"def": &"", "count": 0, "hole": -1})
 	return out
 
 static func empty_slot(inventory: Array) -> int:
@@ -174,9 +175,10 @@ static func empty_slot(inventory: Array) -> int:
 			return i
 	return -1
 
-static func with_slot(inventory: Array, index: int, def_id: StringName, count: int) -> Array:
+static func with_slot(inventory: Array, index: int, def_id: StringName, count: int, hole: int = -1) -> Array:
 	var next := inventory.duplicate(true)
-	next[index] = {"def": def_id, "count": count if def_id != &"" else 0}
+	var empty := def_id == &""
+	next[index] = {"def": def_id, "count": 0 if empty else count, "hole": -1 if empty else hole}
 	return next
 
 ## Moves as many cards as fit from `source` onto a matching `target` stack.
@@ -186,6 +188,6 @@ static func merge(inventory: Array, source: int, target: int, max_stack: int) ->
 	if source == target or from.def == &"" or from.def != to.def or to.count >= max_stack:
 		return inventory
 	var moved := mini(from.count, max_stack - to.count)
-	var next := with_slot(inventory, target, to.def, to.count + moved)
+	var next := with_slot(inventory, target, to.def, to.count + moved, to.get("hole", -1))
 	var left: int = from.count - moved
-	return with_slot(next, source, from.def if left > 0 else &"", left)
+	return with_slot(next, source, from.def if left > 0 else &"", left, from.get("hole", -1))

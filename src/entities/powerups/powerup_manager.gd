@@ -64,29 +64,34 @@ func get_inventory_stack_count(slot_index: int) -> int:
 func get_used_inventory_slots() -> int:
 	return inventory.filter(func(slot): return slot.def != &"").size()
 
-## For the hand UI: one {card: PowerupDef or null, count, selected, featured} per
-## slot; `featured` marks poker's x4 card.
+## For the hand UI: one {card: PowerupDef or null, count, selected, hole, hand}
+## per slot. Under Poker `hole` is the slot's playing card and `hand` the poker
+## hand it makes with the board right now ({rank, name, stacks}); otherwise
+## hole is -1 and hand is {}.
 func get_inventory_display_data() -> Array[Dictionary]:
 	var display_data: Array[Dictionary] = []
-	var featured_id := GameManager.get_poker_featured_id() if GameManager.is_poker_mode() else &""
+	var poker := GameManager.is_poker_mode()
 	for i in range(inventory.size()):
 		var slot: Dictionary = inventory[i]
+		var hole: int = slot.get("hole", -1) if poker else -1
 		display_data.append({
 			"card": PowerupDefs.get_def(slot.def) if slot.def != &"" else null,
 			"count": slot.count,
 			"selected": i == _shuffle_selected_slot,
-			"featured": slot.def != &"" and slot.def == featured_id,
+			"hole": hole,
+			"hand": PokerRules.hand_with_board(hole, GameManager.poker_board) if hole >= 0 else {},
 		})
 	return display_data
 
 # --- Owner actions -------------------------------------------------------------
 
-func add_to_inventory(def_id: StringName) -> bool:
+## `hole` is the playing card dealt with the pickup under Poker (-1 otherwise).
+func add_to_inventory(def_id: StringName, hole: int = -1) -> bool:
 	var slot := PowerupRules.empty_slot(inventory)
 	var def := PowerupDefs.get_def(def_id)
 	if slot < 0 or def == null:
 		return false
-	inventory = PowerupRules.with_slot(inventory, slot, def_id, 1)
+	inventory = PowerupRules.with_slot(inventory, slot, def_id, 1, hole)
 	inventory_updated.emit(get_inventory_display_data())
 	EventManager.emit_event(EventManager.Events.POWERUP_COLLECTED, [player_node, def, slot])
 	return true
@@ -98,7 +103,9 @@ func use_powerup_at_slot(slot_index: int) -> void:
 	var def := PowerupDefs.get_def(slot.def)
 	if def == null:
 		return
-	var stacks := PowerupRules.activation_stacks(def, slot.count, GameManager.get_card_rules(), GameManager.get_poker_featured_id())
+	var hole: int = slot.get("hole", -1)
+	var poker_stacks: int = PokerRules.hand_with_board(hole, GameManager.poker_board).stacks if hole >= 0 else 1
+	var stacks := PowerupRules.activation_stacks(def, slot.count, GameManager.get_card_rules(), poker_stacks)
 	inventory = PowerupRules.with_slot(inventory, slot_index, &"", 0)
 	_shuffle_selected_slot = -1
 	inventory_updated.emit(get_inventory_display_data())

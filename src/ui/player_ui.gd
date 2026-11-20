@@ -5,7 +5,6 @@ const VALUE_PULSE_DURATION := 0.16
 
 @onready var powerup_inventory_ui: PowerupHandUI = $PowerupHandUI
 @onready var active_powerups_ui = $ActivePowerupsUI
-@onready var featured_card_label: Label = $FeaturedCard
 @onready var time_label: Label = $Time
 @onready var ammo_display: Label = $AmmoDisplay
 @onready var health_display: Label = $HealthDisplay
@@ -14,13 +13,10 @@ const VALUE_PULSE_DURATION := 0.16
 var _player_node: Node = null
 var _scoreboard: CanvasLayer = null
 var _last_match_time: int = -1
-var _featured_visible := false
 var _value_tweens: Dictionary = {}
-var _featured_tween: Tween = null
 
 func _process(_delta: float):
 	_update_match_time()
-	_update_featured_card_label()
 	if _player_node == null or not _player_node.is_multiplayer_authority():
 		if _scoreboard:
 			_scoreboard.visible = false
@@ -45,10 +41,6 @@ func _ready():
 	EventManager.register(EventManager.Events.POWERUP_USED, _on_powerup_used)
 	EventManager.register(EventManager.Events.POWERUP_EXPIRED, _on_powerup_expired)
 	EventManager.register(EventManager.Events.PLAYER_DIED, _on_player_died)
-	if featured_card_label:
-		featured_card_label.modulate.a = 0.0
-		featured_card_label.visible = false
-	_update_featured_card_label()
 
 func _ensure_scoreboard() -> void:
 	if _scoreboard != null and is_instance_valid(_scoreboard):
@@ -158,34 +150,6 @@ func update_powerup_displays(player_node: Node):
 		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
 	if active_powerups_ui:
 		active_powerups_ui.update_active_powerups(powerup_manager.active)
-
-func _update_featured_card_label() -> void:
-	if not featured_card_label:
-		return
-	var featured_name: String = GameManager.get_poker_featured_card_display_name()
-	var should_show_label: bool = GameManager.is_poker_mode() and not featured_name.is_empty()
-	if should_show_label:
-		featured_card_label.text = "4x %s" % featured_name
-	_set_featured_visible(should_show_label)
-
-func _set_featured_visible(should_show: bool) -> void:
-	if _featured_visible == should_show:
-		return
-	_featured_visible = should_show
-	if _featured_tween and _featured_tween.is_valid():
-		_featured_tween.kill()
-	if should_show:
-		featured_card_label.visible = true
-		featured_card_label.modulate.a = 0.0
-		_featured_tween = create_tween()
-		_featured_tween.tween_property(featured_card_label, "modulate:a", 1.0, 0.2)
-	else:
-		_featured_tween = create_tween()
-		_featured_tween.tween_property(featured_card_label, "modulate:a", 0.0, 0.15)
-		_featured_tween.tween_callback(func():
-			if not _featured_visible:
-				featured_card_label.visible = false
-		)
 
 func _exit_tree():
 	if _scoreboard and is_instance_valid(_scoreboard):
