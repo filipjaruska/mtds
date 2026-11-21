@@ -22,6 +22,10 @@ class_name WeaponDef
 @export var damage: float = 10.0
 @export_range(0.0, 1.0, 0.05) var armor_penetration: float = 0.0
 @export_range(50.0, 2000.0, 10.0, "suffix:px") var max_range: float = 500.0
+## Which band max_range must fall in, relative to what players can see
+## (ViewRules.range_band): &"close", &"standard" or &"marksman".
+## tests/test_view_rules.gd fails when a weapon's range leaves its band.
+@export var range_class: StringName = &"standard"
 
 @export_group("Ammo")
 @export_range(1, 200) var mag_size: int = 10

@@ -5,10 +5,10 @@ class_name CameraComponent
 @onready var ui_canvas: CanvasLayer = $PlayerCamera/PlayerUI
 
 # default camera settings
-var lookahead_distance: float = 175.0
+var lookahead_distance: float = ViewRules.LOOKAHEAD
 var offset_disable_threshold: float = 200.0
 var transition_speed: float = 5.0
-var zoom_out_factor: float = 0.7
+var zoom_out_factor: float = ViewRules.CTRL_ZOOM
 var zoom_transition_speed: float = 2.0
 
 var player_root: CharacterBody2D

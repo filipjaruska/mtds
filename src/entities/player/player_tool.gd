@@ -42,7 +42,7 @@ class_name PlayerTool
 		_update_components()
 
 @export_category("Camera System")
-@export_range(50, 400, 5, "suffix:px") var camera_lookahead_distance: float = 175.0:
+@export_range(50, 400, 5, "suffix:px") var camera_lookahead_distance: float = ViewRules.LOOKAHEAD:
 	set(value):
 		camera_lookahead_distance = value
 		_update_components()
@@ -55,7 +55,7 @@ class_name PlayerTool
 		camera_transition_speed = value
 		_update_components()
 @export_subgroup("Camera Zoom")
-@export_range(0.3, 1.0, 0.05) var camera_zoom_out_factor: float = 0.7:
+@export_range(0.3, 1.0, 0.05) var camera_zoom_out_factor: float = ViewRules.CTRL_ZOOM:
 	set(value):
 		camera_zoom_out_factor = value
 		_update_components()
@@ -126,10 +126,10 @@ func player_reset_to_defaults():
 	movement_crouch_speed = 100.0
 	dash_duration = 0.3
 	dash_cooldown = 3500.0
-	camera_lookahead_distance = 175.0
+	camera_lookahead_distance = ViewRules.LOOKAHEAD
 	camera_offset_disable_threshold = 200.0
 	camera_transition_speed = 5.0
-	camera_zoom_out_factor = 0.7
+	camera_zoom_out_factor = ViewRules.CTRL_ZOOM
 	camera_zoom_transition_speed = 2.0
 	health_max_health = 100.0
 	health_physical_resist = 0.0

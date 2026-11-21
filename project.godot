@@ -31,7 +31,11 @@ ChatManager="*res://src/systems/chat_system.gd"
 
 [display]
 
+window/size/viewport_width=1536
+window/size/viewport_height=864
 window/size/resizable=false
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep_height"
 
 [dotnet]
 

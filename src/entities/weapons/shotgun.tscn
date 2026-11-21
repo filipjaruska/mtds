@@ -47,15 +47,15 @@ shooting_animation = "Shooting"
 idle_animation = "Idle"
 casing_size = Vector2(8, 4)
 casing_color = Color(0.78, 0.15, 0.12, 1)
-casing_port = Vector2(40, -10)
+casing_port = Vector2(24.0, 0)
 muzzle = NodePath("Sprite2D/Muzzle")
 sprite = NodePath("Sprite2D")
 animation_player = NodePath("AnimationPlayer")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture_filter = 1
-position = Vector2(40, -10)
-scale = Vector2(1.5, 1.5)
+position = Vector2(31.5, 0)
+scale = Vector2(0.75, 0.75)
 texture = ExtResource("3_k83dr")
 hframes = 18
 frame = 15
