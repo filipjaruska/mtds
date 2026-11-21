@@ -48,7 +48,7 @@ func _apply_visuals() -> void:
 		glow_effect.modulate = Color(powerup_def.rarity_color, 0.5)
 		glow_effect.self_modulate = Color(2.0, 2.0, 2.0)
 	if label:
-		label.text = "Press E to collect " + powerup_def.get_display_name()
+		label.text = _prompt()
 
 func _process(_delta: float) -> void:
 	if _local_player_inside and not is_instance_valid(_local_player_inside):
@@ -100,14 +100,17 @@ func _find_player(peer_id: int) -> Node2D:
 func _show_inventory_full_feedback() -> void:
 	if not label:
 		return
-	label.text = "Inventory Full!"
-	label.modulate = Color.RED
+	label.text = "Inventory full"
+	label.modulate = UiPalette.BAD
 	var tween := create_tween()
 	tween.tween_property(label, "modulate", Color.WHITE, 1.0)
 	tween.tween_callback(func():
 		if label and powerup_def:
-			label.text = "Press E to collect " + powerup_def.get_display_name()
+			label.text = _prompt()
 	)
+
+func _prompt() -> String:
+	return "[%s] %s" % [GameSettings.get_action_binding_text("interact"), powerup_def.get_display_name()]
 
 func _on_body_entered(body: Node) -> void:
 	if not body.is_in_group("Player") or not body.is_multiplayer_authority() or _taken:
@@ -149,7 +152,9 @@ static func create_pickup(def: PowerupDef, spawn_position: Vector2) -> PowerupPi
 	pickup.label.name = "Label"
 	pickup.label.visible = false
 	pickup.label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	pickup.label.position = Vector2(-50, -78) # above the card
+	pickup.label.theme_type_variation = &"PromptTag"
+	pickup.label.size = Vector2(150, 0)
+	pickup.label.position = Vector2(-75, -82) # above the card
 	pickup.add_child(pickup.label)
 
 	pickup.sprite = Sprite2D.new()

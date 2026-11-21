@@ -2,10 +2,12 @@
 
 [ext_resource type="Script" uid="uid://cprofilemenu01a" path="res://src/ui/menu_profile.gd" id="1_profile"]
 [ext_resource type="PackedScene" uid="uid://bc8fb0d072pqj" path="res://src/ui/library/menu_nav_bar.tscn" id="2_navbar"]
+[ext_resource type="Theme" path="res://src/ui/theme/main_theme.tres" id="main_theme"]
 
 
 
 [node name="ProfileMenu" type="Control"]
+theme = ExtResource("main_theme")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,14 +16,14 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_profile")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="Background" type="Panel" parent="."]
+theme_type_variation = &"ScreenBackground"
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.054902, 0.0627451, 0.0784314, 1)
 
 [node name="MenuNavBar" parent="." instance=ExtResource("2_navbar")]
 layout_mode = 1

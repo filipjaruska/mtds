@@ -22,7 +22,7 @@ var _body: Control
 var _pile: Control
 var _glow: Panel
 var _art: TextureRect
-var _outline: TextureRect
+var _outline: Panel
 var _name: Label
 var _hotkey: Label
 var _chip: Label
@@ -42,8 +42,17 @@ func _init() -> void:
 	_body = _control(self)
 	_body.pivot_offset = pivot_offset
 
-	_outline = _texture(_body, CARD_BACK)
-	_outline.modulate = Color(1, 1, 1, 0.14)
+	# Empty slot: a plain outline where a card can go.
+	_outline = Panel.new()
+	_outline.size = size_px
+	_outline.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var slot_box := StyleBoxFlat.new()
+	slot_box.draw_center = false
+	slot_box.set_border_width_all(2)
+	slot_box.border_color = UiPalette.BORDER_STRONG
+	slot_box.set_corner_radius_all(8)
+	_outline.add_theme_stylebox_override("panel", slot_box)
+	_body.add_child(_outline)
 
 	_pile = _control(_body)
 
@@ -75,13 +84,16 @@ func _init() -> void:
 	_hotkey.size = Vector2(22, 22)
 	_hotkey.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hotkey.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var key_box := UiPalette.panel(&"raised", 0)
+	key_box.border_color = UiPalette.BORDER_STRONG
+	_hotkey.add_theme_stylebox_override("normal", key_box)
 
 	_chip = _label(_body, 15)
 	_chip.position = Vector2(size_px.x - 30, -10)
 	_chip.size = Vector2(36, 22)
 	_chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_chip.pivot_offset = _chip.size * 0.5
-	_chip.add_theme_color_override("font_color", Color(1.0, 0.92, 0.55))
+	_chip.add_theme_color_override("font_color", UiPalette.ACCENT)
 
 	# Details text sits above the card: the hand is at the bottom of the screen.
 	_details = _label(self, 10)
@@ -90,7 +102,7 @@ func _init() -> void:
 	_details.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_details.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	_details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_details.add_theme_color_override("font_color", Color(0.88, 0.88, 0.9))
+	_details.add_theme_color_override("font_color", UiPalette.TEXT)
 	_details.visible = false
 
 	_badge = PlayingCardView.new(Vector2(24, 33))
@@ -232,9 +244,9 @@ func art_texture() -> Texture2D:
 static func strength_color(stacks: int) -> Color:
 	match stacks:
 		1:
-			return Color(0.7, 0.7, 0.72)
+			return UiPalette.TEXT_DIM
 		2:
-			return Color(0.95, 0.95, 0.95)
+			return UiPalette.TEXT
 		3:
 			return FEATURED_GOLD
 	return Color(1.0, 0.55, 0.2)
@@ -264,6 +276,7 @@ func _label(parent: Node, font_size: int) -> Label:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_constant_override("outline_size", 5)
-	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	label.add_theme_font_override("font", UiPalette.HEADING_FONT)
+	label.add_theme_color_override("font_outline_color", UiPalette.OUTLINE)
 	parent.add_child(label)
 	return label

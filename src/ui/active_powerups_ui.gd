@@ -56,11 +56,11 @@ func _create_effect_display(entry: Dictionary) -> Control:
 	row.custom_minimum_size = ROW_MIN_SIZE
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	var bar_bg := ColorRect.new()
+	var bar_bg := Panel.new()
 	bar_bg.name = "BarBg"
 	bar_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bar_bg.offset_left = BAR_LEFT
-	bar_bg.color = Color(1, 1, 1, 0.06)
+	bar_bg.offset_left = BAR_LEFT - 6.0
+	bar_bg.add_theme_stylebox_override("panel", UiPalette.panel(&"panel", 0))
 	bar_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(bar_bg)
 
@@ -89,7 +89,8 @@ func _create_effect_display(entry: Dictionary) -> Control:
 	name_label.offset_right = -22.0
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 12)
-	name_label.add_theme_color_override("font_color", Color(0.92, 0.92, 0.94, 0.9))
+	name_label.add_theme_color_override("font_color", UiPalette.TEXT)
+	name_label.add_theme_font_override("font", UiPalette.HEADING_FONT)
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(name_label)
 
@@ -105,7 +106,7 @@ func _create_effect_display(entry: Dictionary) -> Control:
 	uses_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	uses_badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	uses_badge.add_theme_font_size_override("font_size", 11)
-	uses_badge.add_theme_color_override("font_color", Color(0.85, 0.85, 0.88, 0.8))
+	uses_badge.add_theme_color_override("font_color", UiPalette.TEXT_DIM)
 	uses_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	uses_badge.visible = false
 	row.add_child(uses_badge)
@@ -169,22 +170,23 @@ func _update_row_progress(display: Control, entry: Dictionary) -> void:
 	var fill_width: float = maxf((row_width - bar_left) * percentage, 0.0)
 	_update_shield_bar(display, card, row_width)
 
+	# Time left: a solid strip along the bottom of the row.
 	bar_fill.anchor_left = 0.0
 	bar_fill.anchor_right = 0.0
-	bar_fill.anchor_top = 0.0
+	bar_fill.anchor_top = 1.0
 	bar_fill.anchor_bottom = 1.0
-	bar_fill.offset_left = bar_left
-	bar_fill.offset_right = bar_left + fill_width
-	bar_fill.offset_top = 0.0
-	bar_fill.offset_bottom = 0.0
+	bar_fill.offset_left = bar_left - 5.0
+	bar_fill.offset_right = bar_left - 5.0 + fill_width
+	bar_fill.offset_top = -4.0
+	bar_fill.offset_bottom = -1.0
 
 	var uses_low: bool = entry.uses_left >= 0 and entry.uses_left <= 3
 	if uses_low or percentage < 0.25:
-		bar_fill.color = Color(0.85, 0.3, 0.28, 0.35)
+		bar_fill.color = UiPalette.BAD
 	elif percentage < 0.5:
-		bar_fill.color = Color(0.9, 0.6, 0.25, 0.3)
+		bar_fill.color = UiPalette.WARN
 	else:
-		bar_fill.color = Color(card.rarity_color.r, card.rarity_color.g, card.rarity_color.b, 0.28)
+		bar_fill.color = card.rarity_color
 
 ## A thin bar under the Steel Skin row showing what is left of the shield.
 func _update_shield_bar(display: Control, card: PowerupDef, row_width: float) -> void:
@@ -192,6 +194,6 @@ func _update_shield_bar(display: Control, card: PowerupDef, row_width: float) ->
 	bar.visible = card.ability == &"riot_shield" and shield_fraction >= 0.0
 	if not bar.visible:
 		return
-	bar.position = Vector2(BAR_LEFT, ROW_MIN_SIZE.y - 4.0)
+	bar.position = Vector2(BAR_LEFT - 5.0, ROW_MIN_SIZE.y - 8.0)
 	bar.size = Vector2((row_width - BAR_LEFT) * shield_fraction, 3.0)
-	bar.color = Color(0.75, 0.85, 1.0, 0.85) if shield_fraction > 0.3 else Color(1.0, 0.45, 0.35, 0.9)
+	bar.color = UiPalette.INFO if shield_fraction > 0.3 else UiPalette.BAD

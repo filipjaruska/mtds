@@ -22,20 +22,17 @@ func _init(font_size: int = 13, width: float = 180.0, alignment: Align = Align.C
 	align = alignment
 	grow_up = upwards
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.06, 0.08, 0.86)
-	style.set_corner_radius_all(7)
-	style.content_margin_left = 7
-	style.content_margin_right = 7
-	style.content_margin_top = 3
-	style.content_margin_bottom = 4
-	style.border_color = Color(1, 1, 1, 0.12)
-	style.set_border_width_all(1)
+	var style := UiPalette.panel(&"panel", 0)
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 4
+	style.content_margin_bottom = 5
+	style.border_color = UiPalette.BORDER_STRONG
 	add_theme_stylebox_override("panel", style)
 	_label = Label.new()
 	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label.add_theme_font_size_override("font_size", font_size)
-	_label.add_theme_color_override("font_color", Color(0.96, 0.96, 0.96))
+	_label.add_theme_color_override("font_color", UiPalette.TEXT)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_label)
 	visible = false

@@ -1,66 +1,133 @@
 [gd_scene format=3 uid="uid://drjn2pmrkojbg"]
 
 [ext_resource type="Script" uid="uid://cd76ufyvi88bx" path="res://src/ui/match_results.gd" id="1_results"]
+[ext_resource type="Script" path="res://src/ui/library/score_table.gd" id="2_table"]
+[ext_resource type="Theme" path="res://src/ui/theme/main_theme.tres" id="main_theme"]
 
 [node name="MatchResults" type="CanvasLayer"]
 layer = 100
 script = ExtResource("1_results")
 
-[node name="Dimmer" type="ColorRect" parent="."]
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.054902, 0.0627451, 0.0784314, 1)
+theme = ExtResource("main_theme")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="Background" type="Panel" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ScreenBackground"
+
+[node name="Margin" type="MarginContainer" parent="Root"]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 48
-theme_override_constants/margin_top = 48
+theme_override_constants/margin_top = 36
 theme_override_constants/margin_right = 48
-theme_override_constants/margin_bottom = 48
+theme_override_constants/margin_bottom = 32
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="VBox" type="VBoxContainer" parent="Root/Margin"]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 24
-alignment = 1
+theme_override_constants/separation = 20
 
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="Head" type="VBoxContainer" parent="Root/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/outline_size = 5
-text = "Match Results"
+theme_override_constants/separation = 0
+
+[node name="Eyebrow" type="Label" parent="Root/Margin/VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"EyebrowLabel"
+text = "Match over  ·  Deathmatch"
 horizontal_alignment = 1
-theme_type_variation = &"TitleLabel"
 uppercase = true
 
-[node name="Subtitle" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="Root/Margin/VBox/Head"]
+unique_name_in_owner = true
 layout_mode = 2
-text = "How about you try next time..."
+theme_type_variation = &"HeroLabel"
+text = "Victory"
 horizontal_alignment = 1
+uppercase = true
+
+[node name="Subtitle" type="Label" parent="Root/Margin/VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
 theme_type_variation = &"MutedLabel"
-
-[node name="ResultsList" type="ItemList" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 280)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-auto_height = true
-
-[node name="TimerLabel" type="Label" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = "Returning to lobby in 12..."
+theme_override_font_sizes/font_size = 16
+text = "You topped the board with 340 damage."
 horizontal_alignment = 1
 
-[node name="ContinueButton" type="Button" parent="MarginContainer/VBoxContainer"]
-theme_type_variation = &"AccentButton"
-custom_minimum_size = Vector2(160, 50)
+[node name="Podium" type="HBoxContainer" parent="Root/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="TablePanel" type="PanelContainer" parent="Root/Margin/VBox"]
+custom_minimum_size = Vector2(820, 0)
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_vertical = 3
+
+[node name="Scroll" type="ScrollContainer" parent="Root/Margin/VBox/TablePanel"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Margin" type="MarginContainer" parent="Root/Margin/VBox/TablePanel/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="Table" type="VBoxContainer" parent="Root/Margin/VBox/TablePanel/Scroll/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+script = ExtResource("2_table")
+
+[node name="Footer" type="HBoxContainer" parent="Root/Margin/VBox"]
+custom_minimum_size = Vector2(820, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 14
+
+[node name="TimerLabel" type="Label" parent="Root/Margin/VBox/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Back to the lobby in 12"
+vertical_alignment = 1
+
+[node name="AutoBar" type="ProgressBar" parent="Root/Margin/VBox/Footer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 6)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"DashBar"
+max_value = 1.0
+value = 1.0
+show_percentage = false
+
+[node name="ContinueButton" type="Button" parent="Root/Margin/VBox/Footer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 46)
+layout_mode = 2
+theme_type_variation = &"AccentButton"
 text = "Continue"

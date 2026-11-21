@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://qgub06sgnvml"]
+[gd_scene format=3 uid="uid://qgub06sgnvml"]
 
 [ext_resource type="Script" uid="uid://drtw2we68sgym" path="res://src/entities/player/player_tool.gd" id="1_new"]
 [ext_resource type="Script" uid="uid://d3ln8ymurgub" path="res://src/entities/player/components/player_controller.gd" id="2_new"]
@@ -16,6 +16,7 @@
 [ext_resource type="Script" path="res://src/ui/chat_bubble.gd" id="14_chat_bubble"]
 [ext_resource type="Script" path="res://src/ui/top_bar_ui.gd" id="15_top_bar"]
 [ext_resource type="Script" path="res://src/ui/chat_input.gd" id="16_chat_input"]
+[ext_resource type="Theme" path="res://src/ui/theme/main_theme.tres" id="main_theme"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b7jsc"]
 radius = 26.0192
@@ -31,43 +32,9 @@ properties/2/path = NodePath("PlayerSprite:modulate")
 properties/2/spawn = true
 properties/2/replication_mode = 1
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.08, 0.08, 0.1, 0.6)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 1, 1, 0.1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
-bg_color = Color(0.08, 0.08, 0.1, 0.55)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 1, 1, 0.1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dashbg"]
-bg_color = Color(0, 0, 0, 0.3)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dashfill"]
-bg_color = Color(0.98, 0.58, 0.08, 0.85)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
 
 [node name="Player" type="CharacterBody2D" groups=["Player"]]
 collision_mask = 5
@@ -117,158 +84,137 @@ drag_bottom_margin = 0.1
 [node name="PlayerUI" type="CanvasLayer" parent="CameraComponent/PlayerCamera"]
 script = ExtResource("6_vdean")
 
-[node name="HudPanelBottomLeft" type="Panel" parent="CameraComponent/PlayerCamera/PlayerUI"]
+[node name="Hud" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("main_theme")
+
+[node name="Vitals" type="PanelContainer" parent="CameraComponent/PlayerCamera/PlayerUI/Hud"]
+layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 16.0
-offset_top = -160.0
-offset_right = 260.0
-offset_bottom = -14.0
+offset_top = -110.0
+offset_right = 196.0
+offset_bottom = -16.0
 grow_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+mouse_filter = 2
+theme_type_variation = &"HudPanel"
 
-[node name="WeaponSlots" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = -146.0
-offset_right = 244.0
-offset_bottom = -104.0
-grow_vertical = 0
-script = ExtResource("8_xljkp")
+[node name="VBox" type="VBoxContainer" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Vitals"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
 
-[node name="WeaponSlot1" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/WeaponSlots"]
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 212.0
-offset_bottom = 18.0
-theme_override_colors/font_color = Color(0.82, 0.82, 0.86, 0.85)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 13
-text = "1. Empty"
+[node name="HealthCaption" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Vitals/VBox"]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Health"
+uppercase = true
 
-[node name="WeaponSlot2" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/WeaponSlots"]
-offset_left = 0.0
-offset_top = 22.0
-offset_right = 212.0
-offset_bottom = 40.0
-theme_override_colors/font_color = Color(0.82, 0.82, 0.86, 0.85)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 13
-text = "2. Empty"
+[node name="HealthDisplay" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Vitals/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HudValueLabel"
+text = "100"
 
-[node name="HealthCaption" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = -98.0
-offset_right = 244.0
-offset_bottom = -85.0
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 0.75)
-theme_override_font_sizes/font_size = 11
-text = "HEALTH"
+[node name="DashCaption" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Vitals/VBox"]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Dash"
+uppercase = true
 
-[node name="HealthDisplay" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = -85.0
-offset_right = 244.0
-offset_bottom = -61.0
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.92, 0.92, 0.95, 0.95)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 22
-text = "100 / 100 HP"
-
-[node name="DashCaption" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = -55.0
-offset_right = 140.0
-offset_bottom = -43.0
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 0.75)
-theme_override_font_sizes/font_size = 10
-text = "DASH"
-
-[node name="DashCooldownBar" type="ProgressBar" parent="CameraComponent/PlayerCamera/PlayerUI"]
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = -43.0
-offset_right = 244.0
-offset_bottom = -28.0
-grow_vertical = 0
-theme_override_styles/background = SubResource("StyleBoxFlat_dashbg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_dashfill")
+[node name="DashCooldownBar" type="ProgressBar" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Vitals/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(152, 6)
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"DashBar"
 max_value = 1.0
+value = 1.0
 show_percentage = false
 
-[node name="HudPanelBottomRight" type="Panel" parent="CameraComponent/PlayerCamera/PlayerUI"]
-mouse_filter = 2
+[node name="Weapon" type="PanelContainer" parent="CameraComponent/PlayerCamera/PlayerUI/Hud"]
+layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -216.0
-offset_top = -90.0
+offset_left = -196.0
+offset_top = -110.0
 offset_right = -16.0
-offset_bottom = -14.0
+offset_bottom = -16.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+mouse_filter = 2
+theme_type_variation = &"HudPanel"
 
-[node name="AmmoCaption" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -200.0
-offset_top = -76.0
-offset_right = -30.0
-offset_bottom = -63.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 0.75)
-theme_override_font_sizes/font_size = 11
-text = "AMMO"
-horizontal_alignment = 1
+[node name="VBox" type="VBoxContainer" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Weapon"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
 
-[node name="AmmoDisplay" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -200.0
-offset_top = -55.0
-offset_right = -30.0
-offset_bottom = -31.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.92, 0.92, 0.95, 0.95)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 22
-text = "0 / 0"
+[node name="AmmoCaption" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Weapon/VBox"]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Ammo"
+horizontal_alignment = 2
+uppercase = true
+
+[node name="AmmoDisplay" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Weapon/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HudValueLabel"
+text = "16"
+horizontal_alignment = 2
+
+[node name="WeaponSlots" type="HBoxContainer" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Weapon/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 2
+script = ExtResource("8_xljkp")
+
+[node name="WeaponSlot1" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Weapon/VBox/WeaponSlots"]
+layout_mode = 2
+theme_type_variation = &"SlotTagActive"
+text = "1 PISTOL"
+
+[node name="WeaponSlot2" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Weapon/VBox/WeaponSlots"]
+layout_mode = 2
+theme_type_variation = &"SlotTag"
+text = "2 EMPTY"
+
+[node name="Clock" type="PanelContainer" parent="CameraComponent/PlayerCamera/PlayerUI/Hud"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -48.0
+offset_top = 8.0
+offset_right = 48.0
+offset_bottom = 46.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_type_variation = &"HudClock"
+
+[node name="Time" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/Hud/Clock"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HudClockLabel"
+text = "3:32"
 horizontal_alignment = 1
 
 [node name="PowerupHandUI" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
+theme = ExtResource("main_theme")
 layout_mode = 3
 anchors_preset = 7
 anchor_left = 0.5
@@ -283,6 +229,7 @@ mouse_filter = 2
 script = ExtResource("10_inventory")
 
 [node name="ActivePowerupsUI" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
+theme = ExtResource("main_theme")
 layout_mode = 3
 anchors_preset = 4
 anchor_top = 0.5
@@ -305,46 +252,8 @@ grow_vertical = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="CameraComponent/PlayerCamera/PlayerUI/ActivePowerupsUI/ScrollContainer"]
 layout_mode = 2
 
-[node name="HudPillTopCenter" type="Panel" parent="CameraComponent/PlayerCamera/PlayerUI"]
-mouse_filter = 2
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -46.0
-offset_top = 8.0
-offset_right = 46.0
-offset_bottom = 40.0
-grow_horizontal = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
-
-[node name="Time" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI"]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -40.0
-offset_top = 12.0
-offset_right = 40.0
-offset_bottom = 36.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(0.92, 0.92, 0.95, 0.95)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.4)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 20
-text = "0"
-horizontal_alignment = 1
-
-[node name="Pulse" type="Panel" parent="CameraComponent/PlayerCamera/PlayerUI/Time"]
-show_behind_parent = true
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
-
 [node name="PokerBoard" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
+theme = ExtResource("main_theme")
 layout_mode = 3
 anchors_preset = 5
 anchor_left = 0.5
@@ -356,6 +265,7 @@ mouse_filter = 2
 script = ExtResource("13_poker")
 
 [node name="TopBar" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
+theme = ExtResource("main_theme")
 layout_mode = 3
 anchors_preset = 5
 anchor_left = 0.5
@@ -365,6 +275,7 @@ mouse_filter = 2
 script = ExtResource("15_top_bar")
 
 [node name="ChatInput" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
+theme = ExtResource("main_theme")
 layout_mode = 3
 anchors_preset = 0
 mouse_filter = 2
@@ -375,19 +286,23 @@ position = Vector2(0, -58)
 script = ExtResource("14_chat_bubble")
 
 [node name="PlayerNameLabel" type="Label" parent="."]
+theme = ExtResource("main_theme")
 z_index = 10
 offset_left = -23.0
 offset_top = -49.0
 offset_right = 24.0
 offset_bottom = -26.0
 text = "Name"
+theme_type_variation = &"NameTag"
 
 [node name="PlayerHealthBar" type="ProgressBar" parent="."]
+theme = ExtResource("main_theme")
 offset_left = -25.0
 offset_top = -52.0
 offset_right = 25.0
 offset_bottom = -44.0
 show_percentage = false
+theme_type_variation = &"HealthBar"
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_i0rdp")

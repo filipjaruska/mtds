@@ -1,16 +1,11 @@
-extends Control
+extends HBoxContainer
+## The two weapon slots under the ammo count: "1 PISTOL" "2 EMPTY", the one in
+## your hands outlined in orange (SlotTagActive).
 
-@onready var slot_1 = $WeaponSlot1
-@onready var slot_2 = $WeaponSlot2
+@onready var _slots: Array[Label] = [$WeaponSlot1, $WeaponSlot2]
 
-func update_slot(index: int, weapon_name: String):
-    var display_name = weapon_name if weapon_name != "" else "Empty"
-    match index:
-        0:
-            if slot_1:
-                slot_1.text = "1. " + display_name
-        1:
-            if slot_2:
-                slot_2.text = "2. " + display_name
-        _:
-            pass
+func show_slots(names: Array, active: int) -> void:
+	for i in range(_slots.size()):
+		var weapon_name: String = names[i] if i < names.size() else ""
+		_slots[i].text = "%d %s" % [i + 1, weapon_name.to_upper() if weapon_name != "" else "EMPTY"]
+		_slots[i].theme_type_variation = &"SlotTagActive" if i == active and weapon_name != "" else &"SlotTag"

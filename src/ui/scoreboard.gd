@@ -1,20 +1,23 @@
 extends CanvasLayer
+## The scoreboard shown while Tab is held: every player's kills, deaths and
+## damage (ScoreTable), with the game type and time left in the corner.
 
-@onready var _results_list: ItemList = $MarginContainer/Panel/Padding/VBoxContainer/ResultsList
+@onready var _table: ScoreTable = %Table
+@onready var _info: Label = %Info
 
+var _shown_key := 0 # rows are rebuilt only when the stats change
 
 func _ready() -> void:
 	layer = 80
 	visible = false
-	for child in find_children("*", "Control", true, false):
-		(child as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
-
 
 func update_results(results: Array) -> void:
-	if _results_list == null:
+	if _table == null:
 		return
-	if results.is_empty():
-		_results_list.clear()
-		_results_list.add_item("No match stats yet")
-		return
-	ResultsFormat.fill(_results_list, results, GameManager.is_team_mode())
+	var remaining := int(GameManager.get_match_time_remaining())
+	var mode := "Team deathmatch" if GameManager.is_team_mode() else "Deathmatch"
+	_info.text = "%s  ·  %d:%02d left" % [mode, remaining / 60, remaining % 60]
+	var key := hash([results, GameManager.is_team_mode()])
+	if key != _shown_key:
+		_shown_key = key
+		_table.show_results(results, GameManager.is_team_mode(), multiplayer.get_unique_id())

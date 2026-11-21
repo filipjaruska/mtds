@@ -70,12 +70,10 @@ func _make_slot(peer_id: int, at: Vector2, left_side: bool, team_mode: bool) -> 
 	var frame := Panel.new()
 	frame.size = Vector2(SLOT, SLOT)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.07, 0.07, 0.09, 0.85)
-	style.set_corner_radius_all(7)
+	var style := UiPalette.panel(&"panel", 0)
 	style.set_border_width_all(2)
 	var mine := peer_id == player.get_multiplayer_authority()
-	style.border_color = Color.WHITE if mine else Color(color, 0.55)
+	style.border_color = UiPalette.ACCENT if mine else color.darkened(0.35)
 	frame.add_theme_stylebox_override("panel", style)
 	root.add_child(frame)
 
@@ -89,14 +87,35 @@ func _make_slot(peer_id: int, at: Vector2, left_side: bool, team_mode: bool) -> 
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_child(icon)
 
+	# The first letter of the name on a tab at the icon's bottom corner (the side
+	# away from the clock), so players with the same colour can be told apart.
+	var badge := PanelContainer.new()
+	var badge_style := StyleBoxFlat.new()
+	badge_style.bg_color = UiPalette.SURFACE
+	badge_style.set_border_width_all(1)
+	badge_style.border_color = style.border_color
+	badge_style.content_margin_left = 3
+	badge_style.content_margin_right = 3
+	badge.add_theme_stylebox_override("panel", badge_style)
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var letter := UiPalette.label(_initial(peer_id), 10, UiPalette.TEXT)
+	letter.add_theme_font_override("font", UiPalette.HEADING_FONT_BOLD)
+	letter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	letter.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	badge.add_child(letter)
+	badge.custom_minimum_size = Vector2(13, 14)
+	badge.size = badge.custom_minimum_size
+	badge.position = Vector2(-4 if left_side else SLOT - 9, SLOT - 11)
+	root.add_child(badge)
+
 	var hp_bg := ColorRect.new()
-	hp_bg.color = Color(0, 0, 0, 0.55)
+	hp_bg.color = UiPalette.WELL
 	hp_bg.position = Vector2(0, SLOT + 2)
 	hp_bg.size = Vector2(SLOT, HP_HEIGHT)
 	hp_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(hp_bg)
 	var hp := ColorRect.new()
-	hp.color = Color(0.35, 0.9, 0.4)
+	hp.color = UiPalette.GOOD
 	hp.position = hp_bg.position
 	hp.size = hp_bg.size
 	hp.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -110,7 +129,7 @@ func _make_slot(peer_id: int, at: Vector2, left_side: bool, team_mode: bool) -> 
 	var bubble := ChatBubbleView.new(11, 160.0, ChatBubbleView.Align.RIGHT_EDGE if left_side else ChatBubbleView.Align.LEFT_EDGE, false)
 	anchor.add_child(bubble)
 
-	return {"root": root, "frame": frame, "hp": hp, "hp_bg": hp_bg, "anchor": anchor, "bubble": bubble}
+	return {"root": root, "frame": frame, "badge": badge, "hp": hp, "hp_bg": hp_bg, "anchor": anchor, "bubble": bubble}
 
 func _update_state() -> void:
 	var nodes := {}
@@ -126,8 +145,9 @@ func _update_state() -> void:
 			dead = health.is_dead
 			fraction = clampf(health.current_health / maxf(health.max_health, 1.0), 0.0, 1.0)
 		slot.hp.size.x = slot.hp_bg.size.x * fraction
-		slot.hp.color = Color(0.35, 0.9, 0.4) if fraction > 0.5 else (Color(1.0, 0.75, 0.25) if fraction > 0.25 else Color(1.0, 0.3, 0.25))
-		slot.frame.modulate = Color(0.45, 0.45, 0.45, 0.55) if dead else Color.WHITE
+		slot.hp.color = UiPalette.GOOD if fraction > 0.5 else (UiPalette.WARN if fraction > 0.25 else UiPalette.BAD)
+		slot.frame.modulate = Color(0.4, 0.4, 0.42) if dead else Color.WHITE # greyed, still solid
+		slot.badge.modulate = slot.frame.modulate
 	_stack_bubbles()
 
 ## Visible bubbles on each side take rows, nearest the clock on top.
@@ -143,6 +163,10 @@ func _stack_bubbles() -> void:
 func _on_message(peer_id: int, text: String) -> void:
 	if _slots.has(peer_id):
 		_slots[peer_id].bubble.push(text)
+
+func _initial(peer_id: int) -> String:
+	var player_name := str(GameManager.get_player(peer_id).get("name", "")).strip_edges()
+	return player_name.left(1).to_upper() if player_name != "" else "?"
 
 func _player_color(peer_id: int) -> Color:
 	var value = GameManager.get_player(peer_id).get("color", Color.WHITE)

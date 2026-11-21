@@ -37,7 +37,7 @@ func _refresh() -> void:
 		_view = weapon_def.view_scene.instantiate()
 		add_child(_view)
 	if label:
-		label.text = "E: %s" % weapon_def.get_display_name()
+		label.text = "[%s] %s" % [GameSettings.get_action_binding_text("interact"), weapon_def.get_display_name()]
 
 func _process(_delta: float) -> void:
 	if _local_player_inside and not is_instance_valid(_local_player_inside):

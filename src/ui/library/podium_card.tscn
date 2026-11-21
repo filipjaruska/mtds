@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/library/podium_card.gd" id="1_card"]
+[ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://src/assets/icon.svg" id="2_icon"]
+[ext_resource type="Theme" path="res://src/ui/theme/main_theme.tres" id="main_theme"]
+
+[node name="PodiumCard" type="PanelContainer"]
+custom_minimum_size = Vector2(210, 250)
+size_flags_vertical = 8
+mouse_filter = 2
+theme = ExtResource("main_theme")
+theme_type_variation = &"PodiumCard"
+script = ExtResource("1_card")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+alignment = 2
+
+[node name="Place" type="Label" parent="VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "1st"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="Icon" type="TextureRect" parent="VBox"]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+texture = ExtResource("2_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Player"
+horizontal_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Damage" type="Label" parent="VBox"]
+layout_mode = 2
+theme_type_variation = &"HudValueLabel"
+text = "0"
+horizontal_alignment = 1
+
+[node name="DamageCaption" type="Label" parent="VBox"]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Damage"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="Line" type="Label" parent="VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "0 kills  ·  0 deaths"
+horizontal_alignment = 1

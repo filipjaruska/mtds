@@ -87,7 +87,7 @@ func _on_leave() -> void:
 	if _leave_armed_until == 0:
 		_leave_armed_until = Time.get_ticks_msec() + int(CONFIRM_SECONDS * 1000.0)
 		_leave.text = "Click again to leave"
-		_leave.modulate = Color(1.0, 0.55, 0.45)
+		_leave.modulate = UiPalette.BAD.lightened(0.3)
 		return
 	_set_open(false)
 	lobby.leave_session()
@@ -113,7 +113,7 @@ func _build() -> void:
 	_root.mouse_filter = Control.MOUSE_FILTER_STOP # clicks don't reach the game
 	add_child(_root)
 	var dim := ColorRect.new()
-	dim.color = Color(0.03, 0.03, 0.05, 0.6)
+	dim.color = UiPalette.BACKDROP # the one dimmed layer in the UI
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.add_child(dim)
 
@@ -121,12 +121,10 @@ func _build() -> void:
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.add_child(center)
 	_panel = PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.12, 0.97)
-	style.set_corner_radius_all(10)
-	style.set_border_width_all(1)
-	style.border_color = Color(1, 1, 1, 0.1)
-	style.set_content_margin_all(24)
+	var style := UiPalette.panel(&"panel", 28)
+	style.border_color = UiPalette.BORDER_STRONG
+	style.border_width_top = 3
+	style.border_color = UiPalette.ACCENT
 	_panel.add_theme_stylebox_override("panel", style)
 	center.add_child(_panel)
 
@@ -137,20 +135,21 @@ func _build() -> void:
 	var title := Label.new()
 	title.text = "Paused"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 28)
+	title.theme_type_variation = &"TitleLabel"
+	title.uppercase = true
 	column.add_child(title)
 	var note := Label.new()
 	_note = note
 	note.text = "The match keeps going"
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	note.add_theme_font_size_override("font_size", 13)
-	note.add_theme_color_override("font_color", Color(0.7, 0.7, 0.75))
+	note.theme_type_variation = &"MutedLabel"
 	column.add_child(note)
 	var gap := Control.new()
 	gap.custom_minimum_size = Vector2(0, 8)
 	column.add_child(gap)
 
 	_resume = _button(column, "Resume", _on_resume)
+	_resume.theme_type_variation = &"AccentButton"
 	_button(column, "Options", _on_options)
 	_end_match = _button(column, "End match (show results)", _on_end_match)
 	_leave = _button(column, "Leave game", _on_leave)
@@ -159,7 +158,6 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(0, 44)
-	button.add_theme_font_size_override("font_size", 17)
 	button.pressed.connect(action)
 	parent.add_child(button)
 	return button

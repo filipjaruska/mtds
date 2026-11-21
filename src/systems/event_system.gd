@@ -27,7 +27,7 @@ enum Events {
 	# UI events
 	UI_HEALTH_UPDATED, # [player_node, current_health: int, max_health: int]
 	UI_AMMO_UPDATED, # [player_node, primary_ammo, primary_max, offhand_ammo, offhand_max]
-	UI_WEAPON_SLOTS_UPDATED, # [player_node, Array of slot display names]
+	UI_WEAPON_SLOTS_UPDATED, # [player_node, Array of slot display names, active slot index]
 	
 	# Multiplayer events
 	PLAYER_CONNECTED, # [player_id: int]
@@ -65,7 +65,7 @@ func _initialize_event_contracts() -> void:
 		Events.WEAPON_DROPPED: [TYPE_OBJECT, TYPE_OBJECT],
 		Events.UI_HEALTH_UPDATED: [TYPE_OBJECT, TYPE_INT, TYPE_INT],
 		Events.UI_AMMO_UPDATED: [TYPE_OBJECT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT],
-		Events.UI_WEAPON_SLOTS_UPDATED: [TYPE_OBJECT, TYPE_ARRAY],
+		Events.UI_WEAPON_SLOTS_UPDATED: [TYPE_OBJECT, TYPE_ARRAY, TYPE_INT],
 		Events.PLAYER_CONNECTED: [TYPE_INT],
 		Events.PLAYER_DISCONNECTED: [TYPE_INT, TYPE_DICTIONARY],
 		Events.CONNECTION_SUCCEEDED: [],

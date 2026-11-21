@@ -5,7 +5,7 @@ class_name PlayerController
 @onready var sprite = get_parent().get_node("PlayerSprite")
 @onready var player_root: CharacterBody2D = get_parent()
 @onready var camera_component: Node2D = get_parent().get_node("CameraComponent")
-@onready var dash_cooldown_indicator = get_parent().get_node("CameraComponent/PlayerCamera/PlayerUI/DashCooldownBar")
+@onready var dash_cooldown_indicator = get_parent().get_node("%DashCooldownBar")
 @onready var health: HealthComponent = get_parent().get_node("HealthComponent")
 
 # default settings

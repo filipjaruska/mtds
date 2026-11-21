@@ -37,7 +37,9 @@ func _ready() -> void:
 		_place(i, &"normal", false)
 	_hint = Label.new()
 	_hint.add_theme_font_size_override("font_size", 12)
-	_hint.add_theme_color_override("font_color", Color(0.98, 0.7, 0.2))
+	_hint.add_theme_color_override("font_color", UiPalette.ACCENT)
+	_hint.add_theme_font_override("font", UiPalette.HEADING_FONT)
+	_hint.uppercase = true
 	_hint.add_theme_constant_override("outline_size", 4)
 	_hint.add_theme_color_override("font_outline_color", Color.BLACK)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -117,7 +119,7 @@ func play_card(slot: int) -> void:
 		var label := "%s x%d" % [String(view.hand.name).to_upper(), view.strength()]
 		_burst_text(label, rise + Vector2(HandLayout.CARD_SIZE.x * 0.5, HandLayout.CARD_SIZE.y * 0.4), CardView.strength_color(view.strength()))
 	elif view.count > 1:
-		_burst_text("x%d" % view.count, rise + Vector2(HandLayout.CARD_SIZE.x * 0.5, HandLayout.CARD_SIZE.y * 0.4), Color(1.0, 0.92, 0.55))
+		_burst_text("x%d" % view.count, rise + Vector2(HandLayout.CARD_SIZE.x * 0.5, HandLayout.CARD_SIZE.y * 0.4), UiPalette.ACCENT)
 
 ## Kept for callers of the old inventory UI.
 func highlight_slot(slot: int, _duration: float = 0.4) -> void:
@@ -178,7 +180,8 @@ func _burst_text(text: String, at: Vector2, color: Color) -> void:
 	label.add_theme_font_size_override("font_size", 34)
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_constant_override("outline_size", 8)
-	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	label.add_theme_font_override("font", UiPalette.HEADING_FONT_BOLD)
+	label.add_theme_color_override("font_outline_color", UiPalette.OUTLINE)
 	label.size = Vector2(260, 44)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.pivot_offset = label.size * 0.5

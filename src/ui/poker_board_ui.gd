@@ -25,12 +25,12 @@ func _ready() -> void:
 		add_child(view)
 		_cards.append(view)
 	_bar_bg = ColorRect.new()
-	_bar_bg.color = Color(0, 0, 0, 0.45)
+	_bar_bg.color = UiPalette.BORDER
 	_bar_bg.position = Vector2(-total * 0.5, SLOT_SIZE.y + 5)
 	_bar_bg.size = Vector2(total, 3)
 	add_child(_bar_bg)
 	_bar = ColorRect.new()
-	_bar.color = Color(1.0, 0.82, 0.3, 0.9)
+	_bar.color = UiPalette.ACCENT
 	_bar.position = _bar_bg.position
 	_bar.size = Vector2(0, 3)
 	add_child(_bar)

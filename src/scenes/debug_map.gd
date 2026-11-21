@@ -64,8 +64,7 @@ func _label(parent: Node, text: String, at: Vector2) -> void:
 	var label := Label.new()
 	label.text = text
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 14)
-	label.add_theme_color_override("font_color", Color(1, 1, 1, 0.55))
+	UiPalette.world_text(label, UiPalette.S, UiPalette.TEXT_DIM)
 	label.size = Vector2(STATION_GAP, 20)
 	label.position = at + Vector2(-STATION_GAP / 2.0, 46)
 	label.z_index = -1

@@ -259,7 +259,7 @@ func _emit_slots() -> void:
 	for i in range(LoadoutRules.MAX_SLOTS):
 		var def := WeaponDefs.get_def(loadout.slots[i].def) if i < loadout.slots.size() else null
 		names.append(def.get_display_name() if def else "")
-	EventManager.emit_event(EventManager.Events.UI_WEAPON_SLOTS_UPDATED, [player, names])
+	EventManager.emit_event(EventManager.Events.UI_WEAPON_SLOTS_UPDATED, [player, names, int(loadout.active)])
 
 # --- Views ------------------------------------------------------------------
 

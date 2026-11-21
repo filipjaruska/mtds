@@ -23,11 +23,8 @@ func _ready() -> void:
 	_field.custom_minimum_size = Vector2(FIELD_WIDTH, 0)
 	_field.size = Vector2(FIELD_WIDTH, 30)
 	_field.add_theme_font_size_override("font_size", 13)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.06, 0.08, 0.92)
-	style.set_corner_radius_all(7)
-	style.border_color = Color(1.0, 0.82, 0.3, 0.8)
-	style.set_border_width_all(1)
+	var style := UiPalette.panel(&"inset", 0)
+	style.border_color = UiPalette.ACCENT
 	style.content_margin_left = 8
 	style.content_margin_right = 8
 	_field.add_theme_stylebox_override("normal", style)
