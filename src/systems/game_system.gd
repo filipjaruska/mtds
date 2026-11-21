@@ -422,6 +422,10 @@ func _reset_poker() -> void:
 	poker_round = -1
 	_poker_deck = []
 
+## Host: end the round now (Esc menu), with results for everyone.
+func finish_match_now() -> void:
+	_on_match_timer_timeout()
+
 func _on_match_timer_timeout() -> void:
 	if not multiplayer.is_server():
 		return

@@ -14,6 +14,8 @@ enum InputDevice {
 }
 
 var current_device: InputDevice = InputDevice.KEYBOARD_MOUSE
+## Set by PauseMenu while the in-match Esc menu is open.
+var menu_open := false
 var last_movement_input := Vector2.ZERO
 var last_aim_direction := Vector2.RIGHT
 
@@ -48,7 +50,7 @@ func _set_device(device: InputDevice) -> void:
 ##
 ## @return Vector2 representing the movement direction and magnitude
 func get_movement_vector() -> Vector2:
-	if _typing():
+	if _muted():
 		return Vector2.ZERO
 	var input_vector := Vector2.ZERO
 
@@ -76,43 +78,43 @@ func is_moving() -> bool:
 	return get_movement_vector() != Vector2.ZERO
 
 func is_dash_pressed() -> bool:
-	return not _typing() and Input.is_action_just_pressed("dash")
+	return not _muted() and Input.is_action_just_pressed("dash")
 
 func is_shoot_pressed() -> bool:
-	return not _typing() and Input.is_action_pressed("shoot")
+	return not _muted() and Input.is_action_pressed("shoot")
 
 func is_reload_pressed() -> bool:
-	return not _typing() and Input.is_action_just_pressed("reload")
+	return not _muted() and Input.is_action_just_pressed("reload")
 
 func is_crouch_pressed() -> bool:
-	return not _typing() and Input.is_action_pressed("ui_crouch")
+	return not _muted() and Input.is_action_pressed("ui_crouch")
 
 func is_interact_pressed() -> bool:
-	return not _typing() and Input.is_action_just_pressed("interact")
+	return not _muted() and Input.is_action_just_pressed("interact")
 
 func is_weapon_switch_pressed() -> bool:
-	return not _typing() and Input.is_action_just_pressed("switch_weapon")
+	return not _muted() and Input.is_action_just_pressed("switch_weapon")
 
 func is_weapon_1_pressed() -> bool:
-	return not _typing() and Input.is_action_just_pressed("switch_weapon_1")
+	return not _muted() and Input.is_action_just_pressed("switch_weapon_1")
 
 func is_weapon_2_pressed() -> bool:
-	return not _typing() and Input.is_action_just_pressed("switch_weapon_2")
+	return not _muted() and Input.is_action_just_pressed("switch_weapon_2")
 
 func is_drop_weapon_pressed() -> bool:
-	return not _typing() and Input.is_action_just_pressed("ui_drop_weapon")
+	return not _muted() and Input.is_action_just_pressed("ui_drop_weapon")
 
 func is_powerup_details_held() -> bool:
-	return not _typing() and Input.is_action_pressed("powerup_details")
+	return not _muted() and Input.is_action_pressed("powerup_details")
 
 func is_powerup_shuffle_held() -> bool:
-	return not _typing() and Input.is_action_pressed("powerup_shuffle")
+	return not _muted() and Input.is_action_pressed("powerup_shuffle")
 
 func is_scoreboard_held() -> bool:
-	return not _typing() and Input.is_action_pressed("scoreboard")
+	return not _muted() and Input.is_action_pressed("scoreboard")
 
 func get_powerup_slot_use_index() -> int:
-	if _typing():
+	if _muted():
 		return -1
 	if Input.is_action_just_pressed("powerup_slot_1"):
 		return 0
@@ -164,6 +166,7 @@ func get_aim_direction(player_position: Vector2) -> Vector2:
 
 		return last_aim_direction
 
-## A chat message is being typed: gameplay input is muted (aim still works).
-func _typing() -> bool:
-	return ChatManager.is_typing
+## Gameplay input is muted while typing a chat message or with the Esc menu
+## open (aim still follows the mouse).
+func _muted() -> bool:
+	return ChatManager.is_typing or menu_open

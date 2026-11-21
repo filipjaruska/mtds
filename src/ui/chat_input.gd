@@ -45,7 +45,7 @@ func _exit_tree() -> void:
 func _input(event: InputEvent) -> void:
 	if _open or not event.is_action_pressed("chat") or event.is_echo():
 		return
-	if not player.is_multiplayer_authority() or not GameManager.is_state(GameManager.GameState.PLAYING):
+	if not player.is_multiplayer_authority() or not GameManager.is_state(GameManager.GameState.PLAYING) or InputManager.menu_open:
 		return
 	_open = true
 	_field.text = ""

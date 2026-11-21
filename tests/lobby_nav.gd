@@ -23,10 +23,17 @@ func frames(count: int) -> void:
 func _nav_button(menu: Node, button_name: String) -> Button:
 	return menu.get_node("MenuNavBar/HBoxContainer/" + button_name)
 
+## The menu tab the lobby opened on top of itself (it sits on its own CanvasLayer).
 func _overlay() -> Node:
 	for child in root.get_children():
-		if child != current_scene and child.has_node("MenuNavBar"):
+		if child == current_scene:
+			continue
+		if child.has_node("MenuNavBar"):
 			return child
+		if child is CanvasLayer:
+			for inner in child.get_children():
+				if inner.has_node("MenuNavBar"):
+					return inner
 	return null
 
 func _run() -> void:

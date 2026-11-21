@@ -42,5 +42,8 @@ jobs:
       - name: Smoke test (host match)
         run: sh tests/run.sh smoke
 
+      - name: Esc menu test
+        run: sh tests/run.sh pause
+
       - name: Network test (host + client)
         run: sh tests/run.sh net

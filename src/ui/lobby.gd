@@ -56,6 +56,7 @@ func _ready() -> void:
 	player_name_input.editable = false
 	
 	_load_available_maps()
+	add_child(PauseMenu.new())
 	_fill_dropdown(game_type_dropdown, GAME_TYPES)
 	_fill_dropdown(card_rules_dropdown, CARD_RULES)
 	_sync_settings_ui()
@@ -279,13 +280,35 @@ func _check_ready_state() -> void:
 	else:
 		start_button.disabled = ready_count < 1
 
-## Shows another menu tab on top of the lobby. The lobby node stays alive and
-## keeps handling RPCs; it is only hidden.
+## Shows another menu tab on top of the lobby (or, from the Esc menu, on top of
+## the match). The lobby node stays alive and keeps handling RPCs; it is only
+## hidden. The tab sits on its own CanvasLayer so a match camera can't move it.
 func open_menu_overlay(scene_path: String) -> void:
 	close_menu_overlay()
-	_menu_overlay = load(scene_path).instantiate()
+	var layer := CanvasLayer.new()
+	layer.layer = 95
+	layer.add_child(load(scene_path).instantiate())
+	_menu_overlay = layer
 	get_tree().root.add_child(_menu_overlay)
 	hide()
+
+func has_menu_overlay() -> bool:
+	return is_instance_valid(_menu_overlay)
+
+func is_in_match() -> bool:
+	return is_instance_valid(_active_map)
+
+## Leave the session from inside a match (Esc menu). A client simply
+## disconnects; the host closing the server sends every client to the menu.
+func leave_session() -> void:
+	_clear_match_results_overlay()
+	close_menu_overlay()
+	_free_active_map()
+	if multiplayer.multiplayer_peer:
+		multiplayer.multiplayer_peer.close()
+	multiplayer.multiplayer_peer = null
+	GameManager.return_to_menu()
+	get_tree().change_scene_to_file(MAIN_MENU_SCENE)
 
 func close_menu_overlay() -> void:
 	if is_instance_valid(_menu_overlay):
