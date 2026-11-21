@@ -15,6 +15,7 @@ damage = 10.0
 armor_penetration = 0.0
 max_range = 650.0
 range_class = &"standard"
+bullet_speed = 2400.0
 mag_size = 16
 reload_time = 2.0
 move_speed_mult = 0.85

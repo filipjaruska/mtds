@@ -23,9 +23,12 @@ class_name WeaponDef
 @export_range(0.0, 1.0, 0.05) var armor_penetration: float = 0.0
 @export_range(50.0, 2000.0, 10.0, "suffix:px") var max_range: float = 500.0
 ## Which band max_range must fall in, relative to what players can see
-## (ViewRules.range_band): &"close", &"standard" or &"marksman".
+## (ViewRules.range_band): &"close", &"standard", &"marksman" or &"melee".
 ## tests/test_view_rules.gd fails when a weapon's range leaves its band.
 @export var range_class: StringName = &"standard"
+## How fast the visible bullet flies. Damage lands when it arrives (the host
+## delays it by the travel time), so what you see is what hits.
+@export_range(500.0, 10000.0, 100.0, "suffix:px/s") var bullet_speed: float = 2600.0
 
 @export_group("Ammo")
 @export_range(1, 200) var mag_size: int = 10

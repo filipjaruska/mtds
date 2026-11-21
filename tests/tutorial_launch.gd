@@ -47,8 +47,7 @@ func _run() -> void:
 	await physics_frame
 	await physics_frame
 	map.get_node("Combat").fire(player, player.global_position, PackedFloat32Array([0.0]), &"pistol", 650.0)
-	for i in range(4):
-		await physics_frame
+	await create_timer(0.4).timeout # the bullet has to fly there first
 	check(target.hp < target.MAX_HP, "a shot damages the target (hp %.0f)" % target.hp)
 
 	var menu = current_scene.get_children().filter(func(c): return c is CanvasLayer and c.has_method("is_open"))[0]

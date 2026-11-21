@@ -10,7 +10,7 @@ class_name BulletFx
 
 enum Impact { NONE, WALL, PLAYER, SHIELD }
 
-const SPEED := 2600.0 # px/s
+const DEFAULT_SPEED := 2600.0 # px/s; each weapon sets its own (WeaponDef.bullet_speed)
 const TRAIL_LENGTH := 70.0
 const HOLE_SECONDS := 5.0
 
@@ -20,12 +20,14 @@ var _dir: Vector2
 var _distance := 0.0
 var _travelled := 0.0
 var _impact := Impact.NONE
+var _speed := DEFAULT_SPEED
 var _arrived := false
 var _trail: Line2D
 var _slug: Node2D
 
-static func spawn(parent: Node, from: Vector2, to: Vector2, impact: int) -> BulletFx:
+static func spawn(parent: Node, from: Vector2, to: Vector2, impact: int, speed: float = DEFAULT_SPEED) -> BulletFx:
 	var fx := BulletFx.new()
+	fx._speed = maxf(speed, 1.0)
 	fx.top_level = true
 	fx.z_index = 5
 	fx._from = from
@@ -76,7 +78,7 @@ func _process(delta: float) -> void:
 	_update(delta)
 
 func _update(delta: float) -> void:
-	_travelled = minf(_travelled + SPEED * delta, _distance)
+	_travelled = minf(_travelled + _speed * delta, _distance)
 	var head := _from + _dir * _travelled
 	var tail := _from + _dir * maxf(_travelled - TRAIL_LENGTH, 0.0)
 	_slug.position = head

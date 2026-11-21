@@ -58,9 +58,10 @@ func _predict(item: Dictionary) -> void:
 	if WeaponDefs.has(item.def) and WeaponDefs.get_def(item.def).melee:
 		return # a blade has no bullet; the swing is drawn by its WeaponView
 	var pierce: int = holder.stats_for(item.def).pierce if holder and WeaponDefs.has(item.def) else 0
+	var speed: float = WeaponDefs.get_def(item.def).bullet_speed if WeaponDefs.has(item.def) else BulletFx.DEFAULT_SPEED
 	for rot in item.rotations:
 		var hit := cast_piercing(space, item.origin, rot, item.range, exclude, pierce)
-		BulletFx.spawn(get_parent(), item.origin, hit.end, hit.impact)
+		BulletFx.spawn(get_parent(), item.origin, hit.end, hit.impact, speed)
 
 func _resolve(item: Dictionary) -> void:
 	var shooter_id: int = item.shooter_id
@@ -95,17 +96,36 @@ func _resolve(item: Dictionary) -> void:
 		ends.append(hit.end)
 		impacts.append(hit.impact)
 		for victim in hit.healths:
-			victim.apply_damage(stats.damage, stats.armor_penetration, shooter_id)
+			_on_arrival(origin, victim.global_position, def.bullet_speed, func() -> void:
+				if is_instance_valid(victim):
+					victim.apply_damage(stats.damage, stats.armor_penetration, shooter_id))
 		if hit.shield:
-			hit.shield.take_hit(stats.damage)
+			var shield: RiotShield = hit.shield
+			_on_arrival(origin, hit.end, def.bullet_speed, func() -> void:
+				if is_instance_valid(shield):
+					shield.take_hit(stats.damage))
 		if hit.target:
-			hit.target.take_hit(stats.damage)
+			var target: TrainingTarget = hit.target
+			_on_arrival(origin, hit.end, def.bullet_speed, func() -> void:
+				if is_instance_valid(target):
+					target.take_hit(stats.damage))
 
 	for peer in multiplayer.get_peers():
 		if peer != shooter_id:
-			_show_tracers.rpc_id(peer, origin, ends, impacts)
+			_show_tracers.rpc_id(peer, origin, ends, impacts, def.bullet_speed)
 	if shooter_id != multiplayer.get_unique_id():
-		_spawn_tracers(origin, ends, impacts)
+		_spawn_tracers(origin, ends, impacts, def.bullet_speed)
+
+## Runs `effect` once a bullet from `from` would reach `to`, so damage lands
+## when the visible bullet does. The thing it hits may be gone by then.
+func _on_arrival(from: Vector2, to: Vector2, speed: float, effect: Callable) -> void:
+	var delay := from.distance_to(to) / maxf(speed, 1.0)
+	if delay < 0.01:
+		effect.call()
+		return
+	get_tree().create_timer(delay, false, true).timeout.connect(func() -> void:
+		if is_inside_tree():
+			effect.call())
 
 ## Melee: the closest living enemy in the arc takes the hit, unless a wall or
 ## riot shield is in between (a shield takes the hit instead). Dual-wielded
@@ -170,12 +190,12 @@ func _within_budget(shooter_id: int, shot_count: int, now: int) -> bool:
 	return result.allowed
 
 @rpc("authority", "call_remote", "unreliable")
-func _show_tracers(origin: Vector2, ends: PackedVector2Array, impacts: PackedByteArray) -> void:
-	_spawn_tracers(origin, ends, impacts)
+func _show_tracers(origin: Vector2, ends: PackedVector2Array, impacts: PackedByteArray, speed: float) -> void:
+	_spawn_tracers(origin, ends, impacts, speed)
 
-func _spawn_tracers(origin: Vector2, ends: PackedVector2Array, impacts: PackedByteArray) -> void:
+func _spawn_tracers(origin: Vector2, ends: PackedVector2Array, impacts: PackedByteArray, speed: float) -> void:
 	for i in range(ends.size()):
-		BulletFx.spawn(get_parent(), origin, ends[i], impacts[i] if i < impacts.size() else BulletFx.Impact.NONE)
+		BulletFx.spawn(get_parent(), origin, ends[i], impacts[i] if i < impacts.size() else BulletFx.Impact.NONE, speed)
 
 ## Returns {end: Vector2, health: HealthComponent or null, shield: RiotShield or null}.
 static func cast_shot(space: PhysicsDirectSpaceState2D, origin: Vector2, rotation: float, max_range: float, exclude: Array[RID]) -> Dictionary:
