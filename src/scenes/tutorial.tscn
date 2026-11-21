@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://src/scenes/tutorial_map.gd" id="1_xn0vq"]
 [ext_resource type="PackedScene" path="res://src/entities/player/player.tscn" id="2_rquni"]
-[ext_resource type="TileSet" path="res://src/assets/scaffolding/scaffolding_tiles.tres" id="3_uhttd"]
+[ext_resource type="TileSet" path="res://src/assets/maps/tutorial/tiles.tres" id="3_uhttd"]
 [ext_resource type="Script" path="res://src/entities/training_target.gd" id="4_4kbl0"]
 [ext_resource type="PackedScene" path="res://src/entities/weapons/weapon_spawner.tscn" id="5_gl65t"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/shotgun.tres" id="6_squ5h"]

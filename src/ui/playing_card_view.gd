@@ -4,12 +4,12 @@ class_name PlayingCardView
 ## with rank and suit, or the card back. Used for the poker board under the
 ## clock and as the badge on powerup cards in the hand.
 
-const CARD_BACK := preload("res://src/assets/cards/card_back.png")
+const CARD_BACK := preload("res://src/assets/cards/card_back (tmp).png")
 const SUIT_ICONS := [
-	preload("res://src/assets/cards/suits/spades.png"),
-	preload("res://src/assets/cards/suits/hearts.png"),
-	preload("res://src/assets/cards/suits/diamonds.png"),
-	preload("res://src/assets/cards/suits/clubs.png"),
+	preload("res://src/assets/cards/suits/spades (tmp).png"),
+	preload("res://src/assets/cards/suits/hearts (tmp).png"),
+	preload("res://src/assets/cards/suits/diamonds (tmp).png"),
+	preload("res://src/assets/cards/suits/clubs (tmp).png"),
 ]
 const FACE_COLOR := Color("f4f1ea")
 const RED := Color("d62828")

@@ -20,7 +20,8 @@ class_name PowerupDef
 @export var id: StringName
 @export var display_name: String = ""
 @export_multiline var description: String = ""
-## The card image (src/assets/cards/<id>.png). Replace the PNG to change the art.
+## The card image (src/assets/cards/<id> (tmp).png while it is a placeholder).
+## Replace the PNG (and drop "(tmp)" from its name) to change the art.
 @export var card_texture: Texture2D
 @export var rarity_color: Color = Color.WHITE
 

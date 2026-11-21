@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="PowerupDef" format=3]
 
 [ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
-[ext_resource type="Texture2D" uid="uid://bf4oyvwjcao5d" path="res://src/assets/cards/reload_speed.png" id="2_card"]
+[ext_resource type="Texture2D" uid="uid://bf4oyvwjcao5d" path="res://src/assets/cards/reload_speed (tmp).png" id="2_card"]
 
 [resource]
 script = ExtResource("1_def")

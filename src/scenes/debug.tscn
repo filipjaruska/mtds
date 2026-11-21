@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://src/scenes/debug_map.gd" id="1_eglss"]
 [ext_resource type="PackedScene" path="res://src/entities/player/player.tscn" id="2_828io"]
-[ext_resource type="TileSet" path="res://src/assets/scaffolding/scaffolding_tiles.tres" id="3_fjwj1"]
+[ext_resource type="TileSet" path="res://src/assets/maps/debug/tiles.tres" id="3_fjwj1"]
 [ext_resource type="Script" path="res://src/entities/training_target.gd" id="4_giquw"]
 
 [node name="Debug" type="Node2D" unique_id=1144231477]

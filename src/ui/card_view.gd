@@ -9,7 +9,7 @@ class_name CardView
 ## driven by PowerupHandUI; this node only animates its inner `_body` (idle
 ## sway, jiggle, punch), so the two never fight over the same property.
 
-const CARD_BACK := preload("res://src/assets/cards/card_back.png")
+const CARD_BACK := preload("res://src/assets/cards/card_back (tmp).png")
 const NAME_BAND := 25.0 # height of the PNG's name band at drawn size
 const FEATURED_GOLD := Color(1.0, 0.82, 0.3)
 
