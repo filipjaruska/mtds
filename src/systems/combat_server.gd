@@ -21,6 +21,7 @@ const MAX_SHOTS_PER_REQUEST := 4
 
 var _pending: Array[Dictionary] = []
 var _recent_shots: Dictionary = {} # peer id -> Array of msec timestamps
+var _last_swing: Dictionary = {} # peer id -> msec of their last accepted melee swing
 
 ## Called on the shooting player's machine for every trigger pull.
 func fire(shooter: Node2D, origin: Vector2, rotations: PackedFloat32Array, def_id: StringName, max_range: float) -> void:
@@ -54,6 +55,8 @@ func _predict(item: Dictionary) -> void:
 	var space := shooter.get_world_2d().direct_space_state
 	var exclude := _exclude_for(shooter)
 	var holder: WeaponHolder = shooter.get_weapon_holder()
+	if WeaponDefs.has(item.def) and WeaponDefs.get_def(item.def).melee:
+		return # a blade has no bullet; the swing is drawn by its WeaponView
 	var pierce: int = holder.stats_for(item.def).pierce if holder and WeaponDefs.has(item.def) else 0
 	for rot in item.rotations:
 		var hit := cast_piercing(space, item.origin, rot, item.range, exclude, pierce)
@@ -82,6 +85,9 @@ func _resolve(item: Dictionary) -> void:
 	var stats := holder.stats_for(def.id)
 	var space := shooter.get_world_2d().direct_space_state
 	var exclude := _exclude_for(shooter)
+	if stats.melee:
+		_resolve_swing(shooter, shooter_id, item.rotations[0], stats, space, exclude)
+		return
 	var ends := PackedVector2Array()
 	var impacts := PackedByteArray()
 	for rot in item.rotations:
@@ -98,6 +104,42 @@ func _resolve(item: Dictionary) -> void:
 			_show_tracers.rpc_id(peer, origin, ends, impacts)
 	if shooter_id != multiplayer.get_unique_id():
 		_spawn_tracers(origin, ends, impacts)
+
+## Melee: the closest enemy in the arc takes the hit, unless a wall or riot
+## shield is in between (a shield takes the hit instead).
+func _resolve_swing(shooter: Node2D, shooter_id: int, aim: float, stats: Dictionary,
+		space: PhysicsDirectSpaceState2D, exclude: Array[RID]) -> void:
+	var now := Time.get_ticks_msec()
+	var interval := WeaponRules.interval_msec(stats.fire_rate)
+	if now - int(_last_swing.get(shooter_id, -interval)) < interval * 0.8:
+		return # faster than the blade can swing
+	_last_swing[shooter_id] = now
+	var origin := shooter.global_position
+	var candidates: Array = []
+	for player in get_tree().get_nodes_in_group("Player"):
+		var id: int = player.get_multiplayer_authority()
+		var health = player.get_node_or_null("HealthComponent")
+		if player == shooter or health == null or health.is_dead or GameManager.are_teammates(shooter_id, id):
+			continue
+		candidates.append({"id": id, "position": player.global_position, "health": health})
+	var target_id := WeaponRules.melee_target(origin, aim, stats.max_range, stats.arc_degrees, candidates)
+	if target_id < 0:
+		return
+	var target: Dictionary = candidates.filter(func(c): return c.id == target_id)[0]
+	var query := PhysicsRayQueryParameters2D.create(origin, target.position, WALL_LAYER | SHIELD_LAYER, exclude)
+	query.collide_with_bodies = true
+	var blocked := space.intersect_ray(query)
+	var dir: Vector2 = (target.position - origin).normalized()
+	if blocked.is_empty():
+		target.health.apply_damage(stats.damage, stats.armor_penetration, shooter_id)
+		_show_slash_hit.rpc(target.position - dir * 18.0, dir, BulletFx.Impact.PLAYER)
+	elif blocked.collider is RiotShield:
+		blocked.collider.take_hit(stats.damage)
+		_show_slash_hit.rpc(blocked.position, dir, BulletFx.Impact.SHIELD)
+
+@rpc("authority", "call_local", "unreliable")
+func _show_slash_hit(at: Vector2, dir: Vector2, impact: int) -> void:
+	ImpactFx.play(get_parent(), at, dir, impact)
 
 func _within_budget(shooter_id: int, shot_count: int, now: int) -> bool:
 	var result := DamageRules.fire_budget(_recent_shots.get(shooter_id, []), shot_count, now, MAX_SHOTS_PER_SECOND)

@@ -36,6 +36,13 @@ class_name WeaponDef
 @export_range(0.1, 1.0, 0.05) var move_speed_mult: float = 1.0
 @export_range(0.0, 2.0, 0.05, "suffix:s") var slow_duration: float = 0.0
 
+@export_group("Melee")
+## A melee weapon swings instead of shooting: it hits the closest enemy within
+## max_range (from the player's centre) inside arc_degrees in front, uses no
+## ammo and never reloads. Walls and riot shields block the swing.
+@export var melee: bool = false
+@export_range(10.0, 360.0, 5.0, "suffix:°") var arc_degrees: float = 100.0
+
 @export_group("Visuals")
 ## Scene with a WeaponView root (sprite, animations, muzzle marker).
 @export var view_scene: PackedScene

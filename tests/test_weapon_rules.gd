@@ -117,3 +117,25 @@ func test_refill_fills_magazine_and_cancels_reload() -> void:
 func test_pierce_passes_through_stats() -> void:
 	check_eq(WeaponRules.effective_stats(_def()).pierce, 0)
 	check_eq(WeaponRules.effective_stats(_def(), {"pierce": 2}).pierce, 2)
+
+func test_melee_swing_uses_no_ammo() -> void:
+	var def := _def({"melee": true, "mag_size": 1, "fire_rate": 2.0})
+	var stats := WeaponRules.effective_stats(def)
+	var r := WeaponRules.fire(WeaponRules.new_state(def), stats, 0, _rng())
+	check_eq(r.shots.size(), 1, "one swing")
+	check_eq(r.state.ammo, 1, "no ammo used")
+	check(WeaponRules.fire(r.state, stats, 100, _rng()).shots.is_empty(), "swing rate still applies")
+	check_eq(WeaponRules.fire(r.state, stats, 500, _rng()).shots.size(), 1, "next swing after the interval")
+
+func test_melee_target_picks_closest_in_front() -> void:
+	var near_front := {"id": 2, "position": Vector2(60, 10)}
+	var far_front := {"id": 3, "position": Vector2(90, 0)}
+	var behind := {"id": 4, "position": Vector2(-30, 0)}
+	var too_far := {"id": 5, "position": Vector2(200, 0)}
+	var aim := 0.0 # facing right
+	check_eq(WeaponRules.melee_target(Vector2.ZERO, aim, 100.0, 100.0, [far_front, near_front, behind]), 2, "closest in the arc")
+	check_eq(WeaponRules.melee_target(Vector2.ZERO, aim, 100.0, 100.0, [behind, too_far]), -1, "nothing behind or out of reach")
+	check_eq(WeaponRules.melee_target(Vector2.ZERO, PI, 100.0, 100.0, [near_front, behind]), 4, "turning around hits the one behind")
+	var wide_side := {"id": 6, "position": Vector2(0, 50)} # 90 degrees off the aim
+	check_eq(WeaponRules.melee_target(Vector2.ZERO, aim, 100.0, 100.0, [wide_side]), -1, "outside a 100 degree arc")
+	check_eq(WeaponRules.melee_target(Vector2.ZERO, aim, 100.0, 200.0, [wide_side]), 6, "inside a 200 degree arc")

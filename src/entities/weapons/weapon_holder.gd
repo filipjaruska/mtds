@@ -93,7 +93,7 @@ func _handle_fire_input(now: int) -> void:
 		return
 
 	if InputManager.is_shoot_pressed():
-		if _try_start_burst(now):
+		if not _stats_for(primary).melee and _try_start_burst(now):
 			return
 		var hand: StringName = &"primary"
 		if LoadoutRules.is_dual(loadout):
@@ -174,6 +174,11 @@ func _on_powerups_changed(_active: Array) -> void:
 		return
 	var spread := powerup_manager.get_dual_wield_spread()
 	var is_dual := LoadoutRules.is_dual(loadout)
+	var primary := LoadoutRules.active(loadout)
+	if spread >= 0.0 and not is_dual and not primary.is_empty() and WeaponDefs.get_def(primary.def).melee:
+		# One blade, one hand: Dual Wield has nothing to mirror.
+		powerup_manager.expire_ability(&"dual_wield")
+		return
 	if spread < 0.0:
 		if is_dual:
 			_commit(LoadoutRules.disable_dual(loadout), true)
@@ -225,11 +230,17 @@ func _emit_hud() -> void:
 	if primary.is_empty():
 		EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [player, 0, 0, -1, -1])
 	else:
+		if WeaponDefs.get_def(primary.def).melee:
+			EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [player, -1, -1, -1, -1])
+			_emit_slots()
+			return
 		var mag: int = WeaponDefs.get_def(primary.def).mag_size
 		var off_ammo: int = loadout.offhand.ammo if LoadoutRules.is_dual(loadout) else -1
 		var off_mag: int = mag if LoadoutRules.is_dual(loadout) else -1
 		EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [player, int(primary.ammo), mag, off_ammo, off_mag])
+	_emit_slots()
 
+func _emit_slots() -> void:
 	var names: Array = []
 	for i in range(LoadoutRules.MAX_SLOTS):
 		var def := WeaponDefs.get_def(loadout.slots[i].def) if i < loadout.slots.size() else null

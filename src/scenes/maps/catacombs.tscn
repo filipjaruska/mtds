@@ -11,6 +11,7 @@
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/m4.tres" id="9_m4"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/m1903.tres" id="10_m1903"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/mp5.tres" id="11_mp5"]
+[ext_resource type="Resource" path="res://src/entities/weapons/defs/katana.tres" id="12_katana"]
 [ext_resource type="PackedScene" path="res://src/entities/powerups/powerup_spawner.tscn" id="9_vg5cl"]
 
 [node name="Catacombs" type="Node2D" unique_id=62682039]
@@ -82,6 +83,11 @@ texture = ExtResource("5_g3su7")
 [node name="MP5Catacomb" type="Sprite2D" parent="Markers"]
 modulate = Color(1, 1, 1, 0.45)
 position = Vector2(2336, 2272)
+texture = ExtResource("5_g3su7")
+
+[node name="KatanaTomb" type="Sprite2D" parent="Markers"]
+modulate = Color(1, 1, 1, 0.45)
+position = Vector2(608, 2336)
 texture = ExtResource("5_g3su7")
 
 [node name="M4Cistern" type="Sprite2D" parent="Markers" unique_id=708013553]
@@ -169,6 +175,11 @@ respawn_time = 30.0
 [node name="MP5Catacomb" parent="WeaponDrops" instance=ExtResource("7_y8o3a")]
 position = Vector2(2336, 2272)
 weapon_def = ExtResource("11_mp5")
+
+[node name="KatanaTomb" parent="WeaponDrops" instance=ExtResource("7_y8o3a")]
+position = Vector2(608, 2336)
+weapon_def = ExtResource("12_katana")
+respawn_time = 30.0
 
 [node name="CardDrops" type="Node2D" parent="." unique_id=1837960998]
 

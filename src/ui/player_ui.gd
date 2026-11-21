@@ -65,7 +65,8 @@ func _update_match_time() -> void:
 	_last_match_time = remaining
 
 func update_ammo(ammo: int, max_ammo: int):
-	ammo_display.text = "%d / %d" % [ammo, max_ammo]
+	# Melee weapons report -1: nothing to count.
+	ammo_display.text = "%d / %d" % [ammo, max_ammo] if max_ammo >= 0 else "—"
 	_pulse_control(ammo_display)
 
 func update_ammo_dual(primary_ammo: int, primary_max: int, offhand_ammo: int, offhand_max: int):

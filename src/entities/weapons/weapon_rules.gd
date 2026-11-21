@@ -50,6 +50,8 @@ static func effective_stats(def: WeaponDef, mods: Dictionary = {}) -> Dictionary
 		"move_speed_mult": def.move_speed_mult,
 		"slow_duration": def.slow_duration,
 		"pierce": int(mods.get("pierce", 0)),
+		"melee": def.melee,
+		"arc_degrees": def.arc_degrees,
 	}
 
 ## A full magazine right now (Kill Reload). Cancels a reload in progress.
@@ -76,7 +78,8 @@ static func fire(state: Dictionary, stats: Dictionary, now: int, rng: RandomNumb
 	if not can_fire(state, now):
 		return _result(state)
 	var next := state.duplicate()
-	next.ammo -= 1
+	if not stats.get("melee", false): # a blade never runs dry
+		next.ammo -= 1
 	next.next_shot_at = now + interval_msec(stats.fire_rate)
 	var shots := shot_offsets(stats.fire_pattern, stats.pellets, stats.spread_degrees, rng)
 	return _result(next, shots, [&"fired"])
@@ -146,3 +149,21 @@ static func interval_msec(rate_per_second: float) -> int:
 
 static func _result(state: Dictionary, shots: Array[float] = [], events: Array[StringName] = []) -> Dictionary:
 	return {"state": state, "shots": shots, "events": events}
+
+## Melee: which candidate a swing hits. `candidates` are {id, position}; the
+## closest one within `reach` of `origin` and inside the arc around `aim`
+## (radians) wins. Returns its id, or -1 for a miss.
+static func melee_target(origin: Vector2, aim: float, reach: float, arc_degrees: float, candidates: Array) -> int:
+	var best := -1
+	var best_distance := INF
+	var half_arc := deg_to_rad(arc_degrees) * 0.5
+	for c in candidates:
+		var to_target: Vector2 = c.position - origin
+		var distance := to_target.length()
+		if distance > reach or distance >= best_distance:
+			continue
+		if distance > 0.0 and absf(angle_difference(aim, to_target.angle())) > half_arc:
+			continue
+		best = c.id
+		best_distance = distance
+	return best

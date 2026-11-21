@@ -12,6 +12,7 @@ class_name ViewRules
 ##   close     ends inside the default view        (shotgun)
 ##   standard  ends past the default view's edge but inside the Ctrl view
 ##   marksman  ends just beyond the Ctrl view, even sideways (M1903)
+##   melee     arm's reach (katana), measured from the player's centre
 
 const VIEW_SIZE := Vector2(1536, 864)
 const CTRL_ZOOM := 0.7
@@ -38,4 +39,6 @@ static func range_band(range_class: StringName) -> Array[float]:
 			return [default_edge, ctrl_edge]
 		&"marksman":
 			return [ctrl_far, ctrl_far * MARKSMAN_MARGIN]
+		&"melee":
+			return [60.0, 160.0]
 	return [0.0, 0.0]
