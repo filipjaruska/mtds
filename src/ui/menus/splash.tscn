@@ -19,7 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.306923, 0.306923, 0.306923, 1)
+color = Color(0.054902, 0.0627451, 0.0784314, 1)
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=189489716]
 layout_mode = 1
@@ -38,13 +38,13 @@ stretch_mode = 5
 
 [node name="Title" type="Label" parent="CenterContainer" unique_id=376609451]
 layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 12
 theme_override_constants/shadow_offset_y = 12
-theme_override_font_sizes/font_size = 64
 text = "Multiplayer Top-Down Shooter"
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_type_variation = &"TitleLabel"
+uppercase = true
 
 [node name="Title2" type="Label" parent="CenterContainer/Title" unique_id=716451900]
 layout_mode = 0
@@ -52,10 +52,10 @@ offset_left = -16.0
 offset_top = 80.0
 offset_right = 929.0
 offset_bottom = 168.0
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 12
 theme_override_constants/shadow_offset_y = 12
-theme_override_font_sizes/font_size = 32
 text = "by mtej pushka and fiip jedlhruska"
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_type_variation = &"HeaderLabel"
+uppercase = true

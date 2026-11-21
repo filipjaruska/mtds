@@ -1,36 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://cj7khgmp38rev"]
+[gd_scene format=3 uid="uid://cj7khgmp38rev"]
 
 [ext_resource type="Script" uid="uid://p8j8a1molwus" path="res://src/ui/menu_main.gd" id="1_l7fxj"]
 [ext_resource type="PackedScene" uid="uid://e7nav2bar9lib" path="res://src/ui/library/menu_nav_bar.tscn" id="2_navbar"]
 [ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://src/assets/icon.svg" id="3_icon"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 18.0
-content_margin_top = 16.0
-content_margin_right = 18.0
-content_margin_bottom = 16.0
-bg_color = Color(0.08, 0.08, 0.1, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 1, 1, 0.1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_subpanel"]
-bg_color = Color(1, 1, 1, 0.03)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 1, 1, 0.08)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
 
 [node name="MainMenu" type="Control"]
 clip_contents = true
@@ -49,7 +23,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.12, 0.12, 0.14, 1)
+color = Color(0.054902, 0.0627451, 0.0784314, 1)
 
 [node name="MenuNavBar" parent="." instance=ExtResource("2_navbar")]
 z_index = 10
@@ -73,7 +47,7 @@ theme_override_constants/margin_bottom = 12
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+theme_type_variation = &"ScreenPanel"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/ContentPanel"]
 layout_mode = 2
@@ -91,7 +65,6 @@ theme_override_constants/separation = 16
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_subpanel")
 
 [node name="Padding" type="MarginContainer" parent="MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PreviewPanel"]
 layout_mode = 2
@@ -107,17 +80,16 @@ alignment = 1
 
 [node name="Title" type="Label" parent="MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PreviewPanel/Padding/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 22
 text = "Customize"
 horizontal_alignment = 1
+theme_type_variation = &"TitleLabel"
+uppercase = true
 
 [node name="Subtitle" type="Label" parent="MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PreviewPanel/Padding/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
-theme_override_font_sizes/font_size = 13
 text = "Pick a color for your Godot guy"
 horizontal_alignment = 1
+theme_type_variation = &"MutedLabel"
 
 [node name="Preview" type="TextureRect" parent="MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PreviewPanel/Padding/VBox"]
 custom_minimum_size = Vector2(120, 120)
@@ -131,7 +103,6 @@ stretch_mode = 5
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_subpanel")
 
 [node name="Padding" type="MarginContainer" parent="MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PickerPanel"]
 layout_mode = 2
@@ -146,9 +117,8 @@ theme_override_constants/separation = 10
 
 [node name="Label" type="Label" parent="MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PickerPanel/Padding/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.82, 0.82, 0.86, 1)
-theme_override_font_sizes/font_size = 14
 text = "Player Color"
+theme_type_variation = &"MutedLabel"
 
 [node name="ColorPicker" type="ColorPicker" parent="MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PickerPanel/Padding/VBox"]
 layout_mode = 2
@@ -179,9 +149,6 @@ offset_right = -16.0
 offset_bottom = -12.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
-theme_override_colors/font_hover_color = Color(0.9, 0.9, 0.95, 1)
-theme_override_font_sizes/font_size = 13
 text = "download latest release"
 underline = 1
 uri = "https://github.com/filipjaruska/mtds/releases/latest"

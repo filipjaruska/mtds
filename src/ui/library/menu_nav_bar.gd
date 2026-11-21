@@ -81,6 +81,9 @@ func _apply_active_item() -> void:
 	for item: NavItem in items:
 		var button: Button = items[item]
 		button.disabled = item == active_item
+		# The open tab is underlined in the accent colour (PLAY keeps its accent fill).
+		if button != _play:
+			button.theme_type_variation = &"NavTabActive" if item == active_item else &"NavTab"
 	var in_lobby := _active_lobby() != null
 	_play.text = "LOBBY" if in_lobby else "PLAY"
 	if in_lobby:

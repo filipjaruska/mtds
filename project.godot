@@ -45,6 +45,10 @@ window/stretch/aspect="keep_height"
 
 project/assembly_name="Multiplayer Top-down Shooter"
 
+[gui]
+
+theme/custom="res://src/ui/theme/main_theme.tres"
+
 [input]
 
 pause_menu={

@@ -1,9 +1,9 @@
 extends Control
 
-const LABEL_COLOR := Color(0.82, 0.82, 0.86, 1)
-const BINDING_COLOR := Color(0.65, 0.65, 0.7, 1)
-const BINDING_HOVER_COLOR := Color(1, 1, 1, 1)
-const LISTENING_COLOR := Color(0.98, 0.58, 0.08, 1)
+const LABEL_COLOR := UiPalette.TEXT
+const BINDING_COLOR := UiPalette.TEXT_DIM
+const BINDING_HOVER_COLOR := UiPalette.TEXT
+const LISTENING_COLOR := UiPalette.ACCENT
 
 ## Window sizes. Every size shows the same part of the map (see ViewRules);
 ## a bigger window is only sharper. Sizes larger than the screen are hidden.
