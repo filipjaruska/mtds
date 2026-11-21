@@ -23,30 +23,19 @@ var _played_slot := -1
 var _expanded := false
 var _shuffle_held := false
 var _time := 0.0
-var _hint: Label
+@onready var _hint: Label = $Hint # styled by the CardHint theme variation
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for i in range(SLOT_COUNT):
-		var view := CardView.new()
+		var view := CardView.create()
 		view.name = "Card%d" % (i + 1)
 		add_child(view)
 		_views.append(view)
 		_targets.append(&"")
 		_inventory.append({"def": &"", "count": 0})
 		_place(i, &"normal", false)
-	_hint = Label.new()
-	_hint.add_theme_font_size_override("font_size", 12)
-	_hint.add_theme_color_override("font_color", UiPalette.ACCENT)
-	_hint.add_theme_font_override("font", UiPalette.HEADING_FONT)
-	_hint.uppercase = true
-	_hint.add_theme_constant_override("outline_size", 4)
-	_hint.add_theme_color_override("font_outline_color", Color.BLACK)
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hint.position = Vector2(-60, -HandLayout.CARD_SIZE.y - 78)
-	_hint.size = Vector2(120, 18)
-	_hint.visible = false
-	add_child(_hint)
+	move_child(_hint, -1) # above the cards
 
 func _process(delta: float) -> void:
 	_time += delta

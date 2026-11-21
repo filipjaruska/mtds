@@ -1,6 +1,10 @@
 extends Control
 class_name ActivePowerupsUI
+## The cards in effect, down the left edge: one active_powerup_row.tscn per
+## card, with a strip along the bottom for the time (or uses) left and, for the
+## Riot Shield, a second strip for the shield's HP.
 
+const ROW_SCENE := preload("res://src/ui/library/active_powerup_row.tscn")
 const ROW_MIN_SIZE := Vector2(190, 38)
 const ROW_ENTER_DURATION := 0.15
 ## Card thumbnail size; stacked cards show as a small pile behind it.
@@ -52,65 +56,7 @@ func update_active_powerups(active: Array):
 	active_effect_displays = kept
 
 func _create_effect_display(entry: Dictionary) -> Control:
-	var row := Control.new()
-	row.custom_minimum_size = ROW_MIN_SIZE
-	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-	var bar_bg := Panel.new()
-	bar_bg.name = "BarBg"
-	bar_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bar_bg.offset_left = BAR_LEFT - 6.0
-	bar_bg.add_theme_stylebox_override("panel", UiPalette.panel(&"panel", 0))
-	bar_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(bar_bg)
-
-	var bar_fill := ColorRect.new()
-	bar_fill.name = "BarFill"
-	bar_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(bar_fill)
-
-	var thumb := Control.new()
-	thumb.name = "Thumb"
-	thumb.position = Vector2(10, 2)
-	thumb.size = THUMB_SIZE
-	thumb.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(thumb)
-
-	var shield_bar := ColorRect.new()
-	shield_bar.name = "ShieldBar"
-	shield_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	shield_bar.visible = false
-	row.add_child(shield_bar)
-
-	var name_label := Label.new()
-	name_label.name = "NameLabel"
-	name_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	name_label.offset_left = BAR_LEFT + 4.0
-	name_label.offset_right = -22.0
-	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 12)
-	name_label.add_theme_color_override("font_color", UiPalette.TEXT)
-	name_label.add_theme_font_override("font", UiPalette.HEADING_FONT)
-	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(name_label)
-
-	var uses_badge := Label.new()
-	uses_badge.name = "UsesBadge"
-	uses_badge.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	uses_badge.anchor_left = 1.0
-	uses_badge.anchor_right = 1.0
-	uses_badge.offset_left = -20.0
-	uses_badge.offset_right = -2.0
-	uses_badge.offset_top = -8.0
-	uses_badge.offset_bottom = 8.0
-	uses_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	uses_badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	uses_badge.add_theme_font_size_override("font_size", 11)
-	uses_badge.add_theme_color_override("font_color", UiPalette.TEXT_DIM)
-	uses_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	uses_badge.visible = false
-	row.add_child(uses_badge)
-
+	var row: Control = ROW_SCENE.instantiate()
 	row.set_meta("powerup", entry.def)
 	_refresh_static_labels(row, entry)
 	_update_row_progress(row, entry)
@@ -170,15 +116,8 @@ func _update_row_progress(display: Control, entry: Dictionary) -> void:
 	var fill_width: float = maxf((row_width - bar_left) * percentage, 0.0)
 	_update_shield_bar(display, card, row_width)
 
-	# Time left: a solid strip along the bottom of the row.
-	bar_fill.anchor_left = 0.0
-	bar_fill.anchor_right = 0.0
-	bar_fill.anchor_top = 1.0
-	bar_fill.anchor_bottom = 1.0
-	bar_fill.offset_left = bar_left - 5.0
-	bar_fill.offset_right = bar_left - 5.0 + fill_width
-	bar_fill.offset_top = -4.0
-	bar_fill.offset_bottom = -1.0
+	# Time left: the strip along the bottom of the row (placed in the scene) shrinks.
+	bar_fill.offset_right = bar_fill.offset_left + fill_width
 
 	var uses_low: bool = entry.uses_left >= 0 and entry.uses_left <= 3
 	if uses_low or percentage < 0.25:

@@ -10,7 +10,7 @@ var _view: ChatBubbleView
 
 func _ready() -> void:
 	z_index = 20
-	_view = ChatBubbleView.new(13, 180.0, ChatBubbleView.Align.CENTER, true)
+	_view = ChatBubbleView.create(13, 180.0, ChatBubbleView.Align.CENTER, true)
 	add_child(_view)
 	ChatManager.message_received.connect(_on_message)
 

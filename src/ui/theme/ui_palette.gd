@@ -35,6 +35,7 @@ const GOOD := Color("4cc36b")
 const WARN := Color("f2b33d")
 const BAD := Color("e5484d")
 const INFO := Color("5aa9f2")
+const GOLD := Color(1.0, 0.82, 0.3) # poker hands: the halo behind strong cards
 
 # --- Sizes ----------------------------------------------------------------------------
 const CUT := 8 # the cut top-right corner of panels and buttons
@@ -231,6 +232,82 @@ static func build_theme() -> Theme:
 	tag.content_margin_top = 3
 	tag.content_margin_bottom = 3
 	t.set_stylebox("normal", "PromptTag", tag)
+
+	# In-match pieces (each a scene: card_view, chat_bubble_view, top_bar_slot,
+	# active_powerup_row, pause_menu, lobby_player_row)
+	_label_variation(t, "CardText", HEADING_FONT, 11, TEXT) # outlined: drawn over the map
+	t.set_constant("outline_size", "CardText", 5)
+	t.set_color("font_outline_color", "CardText", OUTLINE)
+	for v in [["CardChip", 15, ACCENT], ["CardDetails", 10, TEXT], ["CardHint", 12, ACCENT]]:
+		t.set_type_variation(v[0], "CardText")
+		t.set_font_size("font_size", v[0], v[1])
+		t.set_color("font_color", v[0], v[2])
+	_label_variation(t, "CardHotkey", HEADING_FONT, 13, TEXT)
+	var key := panel(&"raised", 0)
+	key.border_color = BORDER_STRONG
+	t.set_stylebox("normal", "CardHotkey", key)
+	t.set_type_variation("CardSlot", "Panel")
+	var slot_outline := StyleBoxFlat.new()
+	slot_outline.draw_center = false
+	slot_outline.set_border_width_all(2)
+	slot_outline.border_color = BORDER_STRONG
+	slot_outline.set_corner_radius_all(8)
+	t.set_stylebox("panel", "CardSlot", slot_outline)
+	t.set_type_variation("CardGlow", "Panel")
+	var halo := StyleBoxFlat.new()
+	halo.bg_color = GOLD
+	halo.set_corner_radius_all(14)
+	halo.set_expand_margin_all(5.0)
+	halo.shadow_color = Color(GOLD, 0.6)
+	halo.shadow_size = 12
+	t.set_stylebox("panel", "CardGlow", halo)
+
+	t.set_type_variation("ChatBubble", "PanelContainer")
+	var bubble := panel(&"panel", 0)
+	bubble.border_color = BORDER_STRONG
+	bubble.content_margin_left = 8
+	bubble.content_margin_right = 8
+	bubble.content_margin_top = 4
+	bubble.content_margin_bottom = 5
+	t.set_stylebox("panel", "ChatBubble", bubble)
+	_label_variation(t, "ChatText", BODY_FONT, 13, TEXT)
+	t.set_type_variation("ChatField", "LineEdit")
+	var chat_field := panel(&"inset", 8)
+	chat_field.border_color = ACCENT
+	t.set_stylebox("normal", "ChatField", chat_field)
+	t.set_stylebox("focus", "ChatField", chat_field)
+	t.set_font_size("font_size", "ChatField", 13)
+
+	t.set_type_variation("TopBarFrame", "Panel")
+	var frame := panel(&"panel", 0)
+	frame.set_border_width_all(2) # colour: the player's, set by TopBarSlot
+	t.set_stylebox("panel", "TopBarFrame", frame)
+	t.set_type_variation("LetterTab", "PanelContainer")
+	var tab_box := StyleBoxFlat.new()
+	tab_box.bg_color = SURFACE
+	tab_box.set_border_width_all(1)
+	tab_box.border_color = BORDER_STRONG
+	tab_box.content_margin_left = 3
+	tab_box.content_margin_right = 3
+	t.set_stylebox("panel", "LetterTab", tab_box)
+	_label_variation(t, "LetterLabel", HEADING_FONT_BOLD, 10, TEXT)
+	t.set_type_variation("BarTrack", "Panel")
+	var track := StyleBoxFlat.new()
+	track.bg_color = WELL
+	t.set_stylebox("panel", "BarTrack", track)
+
+	t.set_type_variation("ActiveRowBg", "Panel")
+	t.set_stylebox("panel", "ActiveRowBg", panel(&"panel", 0))
+	_label_variation(t, "ActiveName", HEADING_FONT, 12, TEXT)
+	_label_variation(t, "ActiveUses", BODY_FONT, 11, TEXT_DIM)
+
+	t.set_type_variation("Backdrop", "Panel")
+	t.set_stylebox("panel", "Backdrop", panel(&"backdrop", 0))
+	t.set_type_variation("PausePanel", "PanelContainer")
+	var pause := panel(&"panel", 28)
+	pause.border_width_top = 3
+	pause.border_color = ACCENT
+	t.set_stylebox("panel", "PausePanel", pause)
 
 	# Buttons
 	_button(t, "Button", panel(&"raised", 10), panel(&"hover", 10), _pressed(), TEXT, TEXT)

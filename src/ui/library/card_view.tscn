@@ -1,0 +1,109 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/card_view.gd" id="1_card"]
+[ext_resource type="Texture2D" path="res://src/assets/cards/armor (tmp).png" id="2_preview"]
+[ext_resource type="Theme" path="res://src/ui/theme/main_theme.tres" id="main_theme"]
+
+[node name="CardView" type="Control"]
+custom_minimum_size = Vector2(88, 123)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 88.0
+offset_bottom = 123.0
+pivot_offset = Vector2(44, 123)
+mouse_filter = 2
+theme = ExtResource("main_theme")
+script = ExtResource("1_card")
+
+[node name="Body" type="Control" parent="."]
+layout_mode = 0
+offset_right = 88.0
+offset_bottom = 123.0
+pivot_offset = Vector2(44, 123)
+mouse_filter = 2
+
+[node name="Outline" type="Panel" parent="Body"]
+layout_mode = 0
+offset_right = 88.0
+offset_bottom = 123.0
+mouse_filter = 2
+theme_type_variation = &"CardSlot"
+
+[node name="Pile" type="Control" parent="Body"]
+layout_mode = 0
+offset_right = 88.0
+offset_bottom = 123.0
+mouse_filter = 2
+
+[node name="Glow" type="Panel" parent="Body"]
+visible = false
+layout_mode = 0
+offset_right = 88.0
+offset_bottom = 123.0
+mouse_filter = 2
+theme_type_variation = &"CardGlow"
+
+[node name="Art" type="TextureRect" parent="Body"]
+layout_mode = 0
+offset_right = 88.0
+offset_bottom = 123.0
+mouse_filter = 2
+texture = ExtResource("2_preview")
+expand_mode = 1
+
+[node name="Name" type="Label" parent="Body"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 98.0
+offset_right = 84.0
+offset_bottom = 123.0
+theme_type_variation = &"CardText"
+text = "Steel Skin"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+
+[node name="Hotkey" type="Label" parent="Body"]
+layout_mode = 0
+offset_left = -6.0
+offset_top = -8.0
+offset_right = 16.0
+offset_bottom = 14.0
+theme_type_variation = &"CardHotkey"
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Chip" type="Label" parent="Body"]
+layout_mode = 0
+offset_left = 58.0
+offset_top = -10.0
+offset_right = 94.0
+offset_bottom = 12.0
+pivot_offset = Vector2(18, 11)
+theme_type_variation = &"CardChip"
+text = "x2"
+horizontal_alignment = 1
+
+[node name="HandLabel" type="Label" parent="Body"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 81.0
+offset_right = 85.0
+offset_bottom = 97.0
+theme_type_variation = &"CardText"
+text = "x2 Pair"
+clip_text = true
+
+[node name="Details" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = -10.0
+offset_top = -118.0
+offset_right = 98.0
+offset_bottom = -8.0
+theme_type_variation = &"CardDetails"
+text = "Description"
+horizontal_alignment = 1
+vertical_alignment = 2
+autowrap_mode = 3

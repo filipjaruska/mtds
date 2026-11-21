@@ -1,0 +1,55 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/library/lobby_player_row.gd" id="1_row"]
+[ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://src/assets/icon.svg" id="2_icon"]
+[ext_resource type="Theme" path="res://src/ui/theme/main_theme.tres" id="main_theme"]
+
+[node name="LobbyPlayerRow" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 44)
+mouse_filter = 2
+theme = ExtResource("main_theme")
+theme_type_variation = &"ScoreRow"
+script = ExtResource("1_row")
+
+[node name="Columns" type="HBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Icon" type="TextureRect" parent="Columns"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"StatLabel"
+text = "Player"
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Team" type="Label" parent="Columns"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"SlotTag"
+text = "RED"
+
+[node name="Host" type="Label" parent="Columns"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"SlotTag"
+text = "HOST"
+
+[node name="Ready" type="Label" parent="Columns"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"SlotTagActive"
+text = "READY"
+horizontal_alignment = 1

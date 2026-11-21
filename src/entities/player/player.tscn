@@ -228,6 +228,19 @@ grow_vertical = 0
 mouse_filter = 2
 script = ExtResource("10_inventory")
 
+
+[node name="Hint" type="Label" parent="CameraComponent/PlayerCamera/PlayerUI/PowerupHandUI"]
+visible = false
+layout_mode = 0
+offset_left = -60.0
+offset_top = -201.0
+offset_right = 60.0
+offset_bottom = -183.0
+theme_type_variation = &"CardHint"
+text = "Merge"
+horizontal_alignment = 1
+uppercase = true
+
 [node name="ActivePowerupsUI" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
 theme = ExtResource("main_theme")
 layout_mode = 3
@@ -280,6 +293,15 @@ layout_mode = 3
 anchors_preset = 0
 mouse_filter = 2
 script = ExtResource("16_chat_input")
+
+
+[node name="Field" type="LineEdit" parent="CameraComponent/PlayerCamera/PlayerUI/ChatInput"]
+visible = false
+offset_right = 210.0
+offset_bottom = 30.0
+custom_minimum_size = Vector2(210, 0)
+theme_type_variation = &"ChatField"
+placeholder_text = "Say something…"
 
 [node name="ChatBubble" type="Node2D" parent="."]
 position = Vector2(0, -58)

@@ -7,24 +7,28 @@ class_name PauseMenu
 ##   Options    the options screen on top (Esc there comes back here)
 ##   End match  host only: finish the round now, results for everyone
 ##   Leave      click twice; the host leaving ends the session for everyone
+## The layout is pause_menu.tscn; this script only wires it up.
 
 const OPTIONS_SCENE := "res://src/ui/menus/options.tscn"
 const CONFIRM_SECONDS := 3.0
 
 @onready var lobby: Node = get_parent()
 
+@onready var _root: Control = %Root
+@onready var _panel: PanelContainer = %Panel
+@onready var _resume: Button = %Resume
+@onready var _end_match: Button = %EndMatch
+@onready var _leave: Button = %Leave
+@onready var _note: Label = %Note
+
 var _open := false
-var _root: Control
-var _panel: PanelContainer
-var _resume: Button
-var _end_match: Button
-var _leave: Button
 var _leave_armed_until := 0
-var _note: Label
 
 func _ready() -> void:
-	layer = 90
-	_build()
+	_resume.pressed.connect(_on_resume)
+	%Options.pressed.connect(_on_options)
+	_end_match.pressed.connect(_on_end_match)
+	_leave.pressed.connect(_on_leave)
 	_set_open(false)
 
 func is_open() -> bool:
@@ -104,60 +108,3 @@ func _leave_label() -> String:
 	if multiplayer.has_multiplayer_peer() and multiplayer.is_server():
 		return "Leave game (ends it for everyone)"
 	return "Leave game"
-
-# --- Building ----------------------------------------------------------------------
-
-func _build() -> void:
-	_root = Control.new()
-	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_root.mouse_filter = Control.MOUSE_FILTER_STOP # clicks don't reach the game
-	add_child(_root)
-	var dim := ColorRect.new()
-	dim.color = UiPalette.BACKDROP # the one dimmed layer in the UI
-	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_root.add_child(dim)
-
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_root.add_child(center)
-	_panel = PanelContainer.new()
-	var style := UiPalette.panel(&"panel", 28)
-	style.border_color = UiPalette.BORDER_STRONG
-	style.border_width_top = 3
-	style.border_color = UiPalette.ACCENT
-	_panel.add_theme_stylebox_override("panel", style)
-	center.add_child(_panel)
-
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 10)
-	column.custom_minimum_size = Vector2(320, 0)
-	_panel.add_child(column)
-	var title := Label.new()
-	title.text = "Paused"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.theme_type_variation = &"TitleLabel"
-	title.uppercase = true
-	column.add_child(title)
-	var note := Label.new()
-	_note = note
-	note.text = "The match keeps going"
-	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	note.theme_type_variation = &"MutedLabel"
-	column.add_child(note)
-	var gap := Control.new()
-	gap.custom_minimum_size = Vector2(0, 8)
-	column.add_child(gap)
-
-	_resume = _button(column, "Resume", _on_resume)
-	_resume.theme_type_variation = &"AccentButton"
-	_button(column, "Options", _on_options)
-	_end_match = _button(column, "End match (show results)", _on_end_match)
-	_leave = _button(column, "Leave game", _on_leave)
-
-func _button(parent: Node, text: String, action: Callable) -> Button:
-	var button := Button.new()
-	button.text = text
-	button.custom_minimum_size = Vector2(0, 44)
-	button.pressed.connect(action)
-	parent.add_child(button)
-	return button

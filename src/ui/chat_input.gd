@@ -12,28 +12,17 @@ const ABOVE_PLAYER := 96.0
 ## PlayerUI's owner: ChatInput -> PlayerUI -> PlayerCamera -> CameraComponent -> Player.
 @onready var player: Node2D = get_node("../../../..")
 
-var _field: LineEdit
+@onready var _field: LineEdit = $Field # styled by the ChatField theme variation
+
 var _open := false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_field = LineEdit.new()
 	_field.max_length = ChatRules.MAX_LENGTH
-	_field.placeholder_text = "Say something…"
-	_field.custom_minimum_size = Vector2(FIELD_WIDTH, 0)
-	_field.size = Vector2(FIELD_WIDTH, 30)
-	_field.add_theme_font_size_override("font_size", 13)
-	var style := UiPalette.panel(&"inset", 0)
-	style.border_color = UiPalette.ACCENT
-	style.content_margin_left = 8
-	style.content_margin_right = 8
-	_field.add_theme_stylebox_override("normal", style)
-	_field.add_theme_stylebox_override("focus", style)
 	_field.visible = false
 	_field.text_submitted.connect(_on_submitted)
 	_field.focus_exited.connect(_close)
 	_field.gui_input.connect(_on_field_input)
-	add_child(_field)
 
 func _exit_tree() -> void:
 	if _open:

@@ -1,0 +1,86 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://src/ui/theme/main_theme.tres" id="main_theme"]
+
+[node name="ActivePowerupRow" type="Control"]
+custom_minimum_size = Vector2(190, 38)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 190.0
+offset_bottom = 38.0
+size_flags_horizontal = 3
+mouse_filter = 2
+theme = ExtResource("main_theme")
+
+[node name="BarBg" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 34.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"ActiveRowBg"
+
+[node name="BarFill" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 35.0
+offset_top = -4.0
+offset_right = 120.0
+offset_bottom = -1.0
+mouse_filter = 2
+color = Color(0.298, 0.765, 0.42, 1)
+
+[node name="Thumb" type="Control" parent="."]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 2.0
+offset_right = 34.0
+offset_bottom = 36.0
+mouse_filter = 2
+
+[node name="ShieldBar" type="ColorRect" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 35.0
+offset_top = 30.0
+offset_right = 120.0
+offset_bottom = 33.0
+mouse_filter = 2
+color = Color(0.353, 0.663, 0.949, 1)
+
+[node name="NameLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 44.0
+offset_right = -22.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ActiveName"
+text = "Quick Dash x2"
+vertical_alignment = 1
+
+[node name="UsesBadge" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -8.0
+offset_right = -2.0
+offset_bottom = 8.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_type_variation = &"ActiveUses"
+text = "3"
+horizontal_alignment = 2
+vertical_alignment = 1

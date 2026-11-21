@@ -8,6 +8,8 @@ var _match_results_overlay: CanvasLayer = null
 var _menu_overlay: Node = null
 
 const MATCH_RESULTS_SCENE := preload("res://src/ui/menus/match_results.tscn")
+const PAUSE_MENU_SCENE := preload("res://src/ui/menus/pause_menu.tscn")
+const PLAYER_ROW_SCENE := preload("res://src/ui/library/lobby_player_row.tscn")
 const MAIN_MENU_SCENE := "res://src/ui/menus/main.tscn"
 const DEBUG_MAP := "res://src/scenes/debug.tscn"
 ## Dropdown entries: [setting value, label, description (also the tooltip)].
@@ -29,7 +31,7 @@ const CARD_RULES := [
 @onready var player_name_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer/HBoxContainer/LineEdit
 @onready var start_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/StartButton
 @onready var ready_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/ReadyButton
-@onready var player_list: ItemList = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer/PlayerList
+@onready var player_rows: VBoxContainer = %PlayerRows
 @onready var map_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/MapSelectionContainer/MapDropdown
 @onready var game_type_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/GametypeDropdown
 @onready var game_type_description: Label = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/Description
@@ -56,7 +58,7 @@ func _ready() -> void:
 	player_name_input.editable = false
 	
 	_load_available_maps()
-	add_child(PauseMenu.new())
+	add_child(PAUSE_MENU_SCENE.instantiate())
 	_fill_dropdown(game_type_dropdown, GAME_TYPES)
 	_fill_dropdown(card_rules_dropdown, CARD_RULES)
 	_sync_settings_ui()
@@ -244,22 +246,22 @@ func request_set_ready(is_ready: bool) -> void:
 	_check_ready_state()
 
 func _update_player_list() -> void:
-	player_list.clear()
+	for row in player_rows.get_children():
+		player_rows.remove_child(row)
+		row.queue_free()
 	var team_mode := GameManager.is_team_mode()
 	var players := GameManager.get_all_players()
 	if team_mode:
 		players.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 			return GameManager.get_team(a.id) < GameManager.get_team(b.id))
+	var my_id := multiplayer.get_unique_id() if multiplayer.has_multiplayer_peer() else 1
 	for player in players:
-		var ready_status = " [READY]" if player_ready_states.get(player.id, false) else ""
-		var host_status = " (Host)" if player.id == 1 else ""
-		var line: String = player.name + host_status + ready_status
-		if not team_mode:
-			player_list.add_item(line)
-			continue
-		var team := GameManager.get_team(player.id)
-		var index := player_list.add_item("[%s] %s" % [TeamRules.NAMES[team], line])
-		player_list.set_item_custom_fg_color(index, TeamRules.COLORS[team])
+		var row: LobbyPlayerRow = PLAYER_ROW_SCENE.instantiate()
+		player_rows.add_child(row)
+		var team := GameManager.get_team(player.id) if team_mode else -1
+		var color: Color = TeamRules.COLORS[team] if team_mode else ScoreTable.player_color(player.id)
+		row.show_player(str(player.name), color, team, player.id == 1,
+			player_ready_states.get(player.id, false), player.id == my_id)
 
 func _check_ready_state() -> void:
 	if not multiplayer.is_server():

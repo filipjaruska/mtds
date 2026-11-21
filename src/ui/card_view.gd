@@ -5,116 +5,43 @@ class_name CardView
 ## description. Under Poker it also shows the card's playing card (sticking out
 ## on the left, the side that stays visible in the fan), the poker hand it makes
 ## with the board right now ("x2 Trips", above the name) and a gold halo that
-## grows with the hand's strength. Built in code. The slot's own position/rotation/scale are
+## grows with the hand's strength. Layout in card_view.tscn (the preview card
+## there is only for the editor). The slot's own position/rotation/scale are
 ## driven by PowerupHandUI; this node only animates its inner `_body` (idle
 ## sway, jiggle, punch), so the two never fight over the same property.
 
 const CARD_BACK := preload("res://src/assets/cards/card_back (tmp).png")
-const NAME_BAND := 25.0 # height of the PNG's name band at drawn size
-const FEATURED_GOLD := Color(1.0, 0.82, 0.3)
+const SCENE := "res://src/ui/library/card_view.tscn"
 
 var def: PowerupDef = null
 var count := 0
 var hole := -1 # playing card under Poker, -1 otherwise
 var hand: Dictionary = {} # PokerRules.evaluate() result, {} outside Poker
 
-var _body: Control
-var _pile: Control
-var _glow: Panel
-var _art: TextureRect
-var _outline: Panel
-var _name: Label
-var _hotkey: Label
-var _chip: Label
-var _details: Label
+@onready var _body: Control = $Body
+@onready var _pile: Control = $Body/Pile
+@onready var _glow: Panel = $Body/Glow
+@onready var _art: TextureRect = $Body/Art
+@onready var _outline: Panel = $Body/Outline
+@onready var _name: Label = $Body/Name
+@onready var _hotkey: Label = $Body/Hotkey
+@onready var _chip: Label = $Body/Chip
+@onready var _details: Label = $Details
+@onready var _hand_label: Label = $Body/HandLabel
 var _badge: PlayingCardView
-var _hand_label: Label
 var _highlight := 0.0 # 0..1, matching-card glow in shuffle mode
 var _phase := randf() * TAU
 
-func _init() -> void:
-	var size_px := HandLayout.CARD_SIZE
-	size = size_px
-	custom_minimum_size = size_px
-	pivot_offset = Vector2(size_px.x * 0.5, size_px.y)
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
+static func create() -> CardView:
+	return load(SCENE).instantiate()
 
-	_body = _control(self)
-	_body.pivot_offset = pivot_offset
-
-	# Empty slot: a plain outline where a card can go.
-	_outline = Panel.new()
-	_outline.size = size_px
-	_outline.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var slot_box := StyleBoxFlat.new()
-	slot_box.draw_center = false
-	slot_box.set_border_width_all(2)
-	slot_box.border_color = UiPalette.BORDER_STRONG
-	slot_box.set_corner_radius_all(8)
-	_outline.add_theme_stylebox_override("panel", slot_box)
-	_body.add_child(_outline)
-
-	_pile = _control(_body)
-
-	# Poker: a gold halo behind the card, stronger for better hands.
-	_glow = Panel.new()
-	_glow.size = size_px
-	_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var halo := StyleBoxFlat.new()
-	halo.bg_color = FEATURED_GOLD
-	halo.set_corner_radius_all(14)
-	halo.set_expand_margin_all(5.0)
-	halo.shadow_color = Color(FEATURED_GOLD, 0.6)
-	halo.shadow_size = 12
-	_glow.add_theme_stylebox_override("panel", halo)
-	_glow.visible = false
-	_body.add_child(_glow)
-
-	_art = _texture(_body, null)
-
-	_name = _label(_body, 11)
-	_name.position = Vector2(4, size_px.y - NAME_BAND)
-	_name.size = Vector2(size_px.x - 8, NAME_BAND)
-	_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_name.clip_text = true
-
-	_hotkey = _label(_body, 13)
-	_hotkey.position = Vector2(-6, -8)
-	_hotkey.size = Vector2(22, 22)
-	_hotkey.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hotkey.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var key_box := UiPalette.panel(&"raised", 0)
-	key_box.border_color = UiPalette.BORDER_STRONG
-	_hotkey.add_theme_stylebox_override("normal", key_box)
-
-	_chip = _label(_body, 15)
-	_chip.position = Vector2(size_px.x - 30, -10)
-	_chip.size = Vector2(36, 22)
-	_chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_chip.pivot_offset = _chip.size * 0.5
-	_chip.add_theme_color_override("font_color", UiPalette.ACCENT)
-
-	# Details text sits above the card: the hand is at the bottom of the screen.
-	_details = _label(self, 10)
-	_details.position = Vector2(-10, -118)
-	_details.size = Vector2(size_px.x + 20, 110) # bottom-aligned, so text grows upwards
-	_details.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_details.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	_details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_details.add_theme_color_override("font_color", UiPalette.TEXT)
-	_details.visible = false
-
+func _ready() -> void:
+	# The poker playing card is drawn in code; it sits under the hand label.
 	_badge = PlayingCardView.new(Vector2(24, 33))
 	_badge.position = Vector2(-12, 14)
 	_badge.rotation = -0.14
 	_body.add_child(_badge)
-
-	_hand_label = _label(_body, 11)
-	_hand_label.position = Vector2(5, size_px.y - NAME_BAND - 17)
-	_hand_label.size = Vector2(size_px.x - 8, 16)
-	_hand_label.clip_text = true
-
+	_body.move_child(_badge, _hand_label.get_index())
 	_refresh()
 
 # --- Content ---------------------------------------------------------------------
@@ -248,17 +175,10 @@ static func strength_color(stacks: int) -> Color:
 		2:
 			return UiPalette.TEXT
 		3:
-			return FEATURED_GOLD
+			return UiPalette.GOLD
 	return Color(1.0, 0.55, 0.2)
 
 # --- Building blocks ---------------------------------------------------------------
-
-func _control(parent: Node) -> Control:
-	var c := Control.new()
-	c.size = HandLayout.CARD_SIZE
-	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	parent.add_child(c)
-	return c
 
 func _texture(parent: Node, texture: Texture2D) -> TextureRect:
 	var rect := TextureRect.new()
@@ -270,13 +190,3 @@ func _texture(parent: Node, texture: Texture2D) -> TextureRect:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(rect)
 	return rect
-
-func _label(parent: Node, font_size: int) -> Label:
-	var label := Label.new()
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_constant_override("outline_size", 5)
-	label.add_theme_font_override("font", UiPalette.HEADING_FONT)
-	label.add_theme_color_override("font_outline_color", UiPalette.OUTLINE)
-	parent.add_child(label)
-	return label

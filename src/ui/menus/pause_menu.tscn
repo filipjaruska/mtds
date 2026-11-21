@@ -1,0 +1,88 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/pause_menu.gd" id="1_pause"]
+[ext_resource type="Theme" path="res://src/ui/theme/main_theme.tres" id="main_theme"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1_pause")
+
+[node name="Root" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("main_theme")
+
+[node name="Backdrop" type="Panel" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"Backdrop"
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Root/Center"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PausePanel"
+
+[node name="Column" type="VBoxContainer" parent="Root/Center/Panel"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Root/Center/Panel/Column"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Paused"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="Note" type="Label" parent="Root/Center/Panel/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "The match keeps going"
+horizontal_alignment = 1
+
+[node name="Gap" type="Control" parent="Root/Center/Panel/Column"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+
+[node name="Resume" type="Button" parent="Root/Center/Panel/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_type_variation = &"AccentButton"
+text = "Resume"
+
+[node name="Options" type="Button" parent="Root/Center/Panel/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Options"
+
+[node name="EndMatch" type="Button" parent="Root/Center/Panel/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "End match (show results)"
+
+[node name="Leave" type="Button" parent="Root/Center/Panel/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Leave game"

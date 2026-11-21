@@ -8,21 +8,19 @@ class_name TopBarUI
 ## one side talk at once their bubbles stack into rows instead of overlapping.
 ## This node sits at the top-centre of the screen; only the local player's copy runs.
 
-const ICON := preload("res://src/assets/icon.svg")
-const SLOT := 34.0
+const SLOT_SCENE := preload("res://src/ui/library/top_bar_slot.tscn")
+const SLOT := TopBarSlot.SIZE
 const GAP := 6.0
 ## Distance from the screen centre to the nearest icon: clears the clock pill
 ## and the poker board under it.
 const START := 96.0
 const TOP := 8.0
-const HP_HEIGHT := 3.0
-const BUBBLE_TOP := SLOT + HP_HEIGHT + 6.0
 const BUBBLE_GAP := 4.0
 
 ## PlayerUI's owner: TopBar -> PlayerUI -> PlayerCamera -> CameraComponent -> Player.
 @onready var player: Node2D = get_node("../../../..")
 
-var _slots := {} # peer id -> {root, frame, hp, hp_bg, anchor, bubble, side, index}
+var _slots := {} # peer id -> TopBarSlot
 var _layout_key := ""
 
 func _ready() -> void:
@@ -48,95 +46,26 @@ func _process(_delta: float) -> void:
 
 func _rebuild(sides: Dictionary, team_mode: bool) -> void:
 	for slot in _slots.values():
-		slot.root.queue_free()
+		slot.queue_free()
 	_slots.clear()
 	for side in ["left", "right"]:
 		var ids: Array = sides[side]
 		for k in range(ids.size()):
 			var x := START + k * (SLOT + GAP)
 			var left_side: bool = side == "left"
-			var slot := _make_slot(ids[k], Vector2(-x - SLOT if left_side else x, TOP), left_side, team_mode)
-			slot["side"] = side
-			slot["index"] = k
+			var slot: TopBarSlot = SLOT_SCENE.instantiate()
+			slot.position = Vector2(-x - SLOT if left_side else x, TOP)
+			add_child(slot)
+			var color: Color = TeamRules.COLORS[GameManager.get_team(ids[k])] if team_mode else _player_color(ids[k])
+			slot.setup(color, ids[k] == player.get_multiplayer_authority(), left_side, _initial(ids[k]))
+			slot.index = k
 			_slots[ids[k]] = slot
-
-func _make_slot(peer_id: int, at: Vector2, left_side: bool, team_mode: bool) -> Dictionary:
-	var root := Control.new()
-	root.position = at
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(root)
-
-	var color: Color = TeamRules.COLORS[GameManager.get_team(peer_id)] if team_mode else _player_color(peer_id)
-	var frame := Panel.new()
-	frame.size = Vector2(SLOT, SLOT)
-	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := UiPalette.panel(&"panel", 0)
-	style.set_border_width_all(2)
-	var mine := peer_id == player.get_multiplayer_authority()
-	style.border_color = UiPalette.ACCENT if mine else color.darkened(0.35)
-	frame.add_theme_stylebox_override("panel", style)
-	root.add_child(frame)
-
-	var icon := TextureRect.new()
-	icon.texture = ICON
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.position = Vector2(4, 4)
-	icon.size = Vector2(SLOT - 8, SLOT - 8)
-	icon.modulate = color
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	frame.add_child(icon)
-
-	# The first letter of the name on a tab at the icon's bottom corner (the side
-	# away from the clock), so players with the same colour can be told apart.
-	var badge := PanelContainer.new()
-	var badge_style := StyleBoxFlat.new()
-	badge_style.bg_color = UiPalette.SURFACE
-	badge_style.set_border_width_all(1)
-	badge_style.border_color = style.border_color
-	badge_style.content_margin_left = 3
-	badge_style.content_margin_right = 3
-	badge.add_theme_stylebox_override("panel", badge_style)
-	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var letter := UiPalette.label(_initial(peer_id), 10, UiPalette.TEXT)
-	letter.add_theme_font_override("font", UiPalette.HEADING_FONT_BOLD)
-	letter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	letter.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	badge.add_child(letter)
-	badge.custom_minimum_size = Vector2(13, 14)
-	badge.size = badge.custom_minimum_size
-	badge.position = Vector2(-4 if left_side else SLOT - 9, SLOT - 11)
-	root.add_child(badge)
-
-	var hp_bg := ColorRect.new()
-	hp_bg.color = UiPalette.WELL
-	hp_bg.position = Vector2(0, SLOT + 2)
-	hp_bg.size = Vector2(SLOT, HP_HEIGHT)
-	hp_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(hp_bg)
-	var hp := ColorRect.new()
-	hp.color = UiPalette.GOOD
-	hp.position = hp_bg.position
-	hp.size = hp_bg.size
-	hp.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(hp)
-
-	# Messages hang under the icon and grow away from the clock.
-	var anchor := Control.new()
-	anchor.position = Vector2(SLOT if left_side else 0.0, BUBBLE_TOP)
-	anchor.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(anchor)
-	var bubble := ChatBubbleView.new(11, 160.0, ChatBubbleView.Align.RIGHT_EDGE if left_side else ChatBubbleView.Align.LEFT_EDGE, false)
-	anchor.add_child(bubble)
-
-	return {"root": root, "frame": frame, "badge": badge, "hp": hp, "hp_bg": hp_bg, "anchor": anchor, "bubble": bubble}
 
 func _update_state() -> void:
 	var nodes := {}
 	for node in get_tree().get_nodes_in_group("Player"):
 		nodes[node.get_multiplayer_authority()] = node
 	for peer_id in _slots:
-		var slot: Dictionary = _slots[peer_id]
 		var node: Node = nodes.get(peer_id)
 		var health = node.get_node_or_null("HealthComponent") if node else null
 		var fraction := 0.0
@@ -144,10 +73,7 @@ func _update_state() -> void:
 		if health:
 			dead = health.is_dead
 			fraction = clampf(health.current_health / maxf(health.max_health, 1.0), 0.0, 1.0)
-		slot.hp.size.x = slot.hp_bg.size.x * fraction
-		slot.hp.color = UiPalette.GOOD if fraction > 0.5 else (UiPalette.WARN if fraction > 0.25 else UiPalette.BAD)
-		slot.frame.modulate = Color(0.4, 0.4, 0.42) if dead else Color.WHITE # greyed, still solid
-		slot.badge.modulate = slot.frame.modulate
+		_slots[peer_id].show_health(fraction, dead)
 	_stack_bubbles()
 
 ## Visible bubbles on each side take rows, nearest the clock on top.
@@ -155,7 +81,7 @@ func _stack_bubbles() -> void:
 	for side in ["left", "right"]:
 		var talking: Array = _slots.values().filter(func(s): return s.side == side and s.bubble.visible)
 		talking.sort_custom(func(a, b): return a.index < b.index)
-		var y := BUBBLE_TOP
+		var y := TopBarSlot.BUBBLE_TOP
 		for slot in talking:
 			slot.anchor.position.y = y
 			y += slot.bubble.size.y + BUBBLE_GAP

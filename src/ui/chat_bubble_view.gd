@@ -8,34 +8,26 @@ class_name ChatBubbleView
 
 enum Align { CENTER, LEFT_EDGE, RIGHT_EDGE }
 
-var align := Align.CENTER
-var grow_up := true
-var max_width := 180.0
+const SCENE_PATH := "res://src/ui/library/chat_bubble_view.tscn"
 
-var _label: Label
+@export var align := Align.CENTER
+@export var grow_up := true
+@export var max_width := 180.0
+
+@onready var _label: Label = $Text
+
 var _queue: Array = []
 var _showing := false
 var _tween: Tween
 
-func _init(font_size: int = 13, width: float = 180.0, alignment: Align = Align.CENTER, upwards: bool = true) -> void:
-	max_width = width
-	align = alignment
-	grow_up = upwards
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := UiPalette.panel(&"panel", 0)
-	style.content_margin_left = 8
-	style.content_margin_right = 8
-	style.content_margin_top = 4
-	style.content_margin_bottom = 5
-	style.border_color = UiPalette.BORDER_STRONG
-	add_theme_stylebox_override("panel", style)
-	_label = Label.new()
-	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_label.add_theme_font_size_override("font_size", font_size)
-	_label.add_theme_color_override("font_color", UiPalette.TEXT)
-	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_label)
-	visible = false
+## A bubble from chat_bubble_view.tscn (the look lives there and in the theme).
+static func create(font_size: int, width: float, alignment: Align, upwards: bool) -> ChatBubbleView:
+	var view: ChatBubbleView = load(SCENE_PATH).instantiate()
+	view.max_width = width
+	view.align = alignment
+	view.grow_up = upwards
+	view.get_node("Text").add_theme_font_size_override("font_size", font_size)
+	return view
 
 ## Queues a message; it is typed out once the ones before it are done.
 func push(text: String) -> void:

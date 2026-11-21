@@ -229,10 +229,29 @@ text = "Players in Lobby"
 theme_type_variation = &"HeaderLabel"
 uppercase = true
 
-[node name="PlayerList" type="ItemList" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer"]
+[node name="PlayerList" type="PanelContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer"]
 custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
 size_flags_vertical = 3
+theme_type_variation = &"InsetPanel"
+
+[node name="Scroll" type="ScrollContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer/PlayerList"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer/PlayerList/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="PlayerRows" type="VBoxContainer" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/Padding/PlayerListContainer/PlayerList/Scroll/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [connection signal="pressed" from="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/StartButton" to="." method="_on_start_pressed"]
 [connection signal="pressed" from="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/ReadyButton" to="." method="_on_ready_pressed"]

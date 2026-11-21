@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/chat_bubble_view.gd" id="1_bubble"]
+[ext_resource type="Theme" path="res://src/ui/theme/main_theme.tres" id="main_theme"]
+
+[node name="ChatBubbleView" type="PanelContainer"]
+visible = false
+offset_right = 120.0
+offset_bottom = 28.0
+mouse_filter = 2
+theme = ExtResource("main_theme")
+theme_type_variation = &"ChatBubble"
+script = ExtResource("1_bubble")
+
+[node name="Text" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"ChatText"
+text = "anyone up for a 1v1?"
+autowrap_mode = 3
