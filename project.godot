@@ -29,6 +29,10 @@ EventManager="*res://src/systems/event_system.gd"
 GameSettings="*res://src/systems/game_settings.gd"
 ChatManager="*res://src/systems/chat_system.gd"
 
+[dev]
+
+quick_start=true
+
 [display]
 
 window/size/viewport_width=1536

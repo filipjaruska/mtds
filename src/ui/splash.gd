@@ -6,6 +6,10 @@ const FADE_DURATION := 0.5
 
 
 func _ready() -> void:
+	# Running from the editor: straight into the debug map (see DevQuickStart).
+	if DevQuickStart.enabled():
+		DevQuickStart.launch(get_tree())
+		return
 	if GameSettings.skip_splash:
 		get_tree().call_deferred("change_scene_to_file", MAIN_MENU_SCENE)
 		return
