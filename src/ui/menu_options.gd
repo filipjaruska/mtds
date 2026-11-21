@@ -5,10 +5,18 @@ const BINDING_COLOR := Color(0.65, 0.65, 0.7, 1)
 const BINDING_HOVER_COLOR := Color(1, 1, 1, 1)
 const LISTENING_COLOR := Color(0.98, 0.58, 0.08, 1)
 
+## Window sizes. Every size shows the same part of the map (see ViewRules);
+## a bigger window is only sharper. Sizes larger than the screen are hidden.
 const RESOLUTION: Dictionary = {
 	"1152 x 648": Vector2i(1152, 648),
 	"1280 x 720": Vector2i(1280, 720),
+	"1536 x 864": Vector2i(1536, 864),
+	"1600 x 900": Vector2i(1600, 900),
 	"1920 x 1080": Vector2i(1920, 1080),
+	"2560 x 1080 (ultrawide)": Vector2i(2560, 1080),
+	"2560 x 1440": Vector2i(2560, 1440),
+	"3440 x 1440 (ultrawide)": Vector2i(3440, 1440),
+	"3840 x 2160": Vector2i(3840, 2160),
 }
 
 ## Options Keybinds row node name -> InputMap action
@@ -50,8 +58,15 @@ func _ready() -> void:
 	skip_splash.set_pressed_no_signal(GameSettings.skip_splash)
 	_tab_container.set_tab_title(0, "Game")
 	resolution.item_selected.connect(on_resolution_selected)
+	var screen := DisplayServer.screen_get_size()
+	var current := DisplayServer.window_get_size()
 	for label: String in RESOLUTION:
+		var size: Vector2i = RESOLUTION[label]
+		if size.x > screen.x or size.y > screen.y:
+			continue
 		resolution.add_item(label)
+		if size == current:
+			resolution.select(resolution.item_count - 1)
 
 	fullscreen.button_pressed = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
 	_setup_keybind_rows()
@@ -83,7 +98,11 @@ func _on_skip_splash_toggled(toggled_on: bool) -> void:
 func on_resolution_selected(index: int) -> void:
 	var selected_text := resolution.get_item_text(index)
 	if RESOLUTION.has(selected_text):
-		DisplayServer.window_set_size(RESOLUTION[selected_text])
+		var size: Vector2i = RESOLUTION[selected_text]
+		DisplayServer.window_set_size(size)
+		# Keep the window on screen, centred.
+		var screen := DisplayServer.screen_get_usable_rect()
+		DisplayServer.window_set_position(screen.position + (screen.size - size) / 2)
 
 
 func _on_check_button_toggled(toggled_on: bool) -> void:
