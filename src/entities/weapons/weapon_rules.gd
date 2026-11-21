@@ -18,10 +18,12 @@ class_name WeaponRules
 ## `shots` are angle offsets in radians from the aim direction, one per pellet.
 ## Events: &"fired", &"reload_started", &"reloaded", &"burst_started", &"burst_finished".
 
+## For a breakable melee weapon `ammo` counts the hits it has left.
 static func new_state(def: WeaponDef, ammo: int = -1) -> Dictionary:
+	var full := def.durability if def.melee and def.durability > 0 else def.mag_size
 	return {
 		"def": def.id,
-		"ammo": def.mag_size if ammo < 0 else mini(ammo, def.mag_size),
+		"ammo": full if ammo < 0 else mini(ammo, full),
 		"next_shot_at": 0,
 		"reload_done_at": 0,
 		"burst_left": 0,
@@ -167,3 +169,9 @@ static func melee_target(origin: Vector2, aim: float, reach: float, arc_degrees:
 		best = c.id
 		best_distance = distance
 	return best
+
+## A breakable melee weapon landed a hit. Returns {state, broken}.
+static func use_durability(state: Dictionary) -> Dictionary:
+	var next := state.duplicate()
+	next.ammo = maxi(int(next.ammo) - 1, 0)
+	return {"state": next, "broken": next.ammo <= 0}

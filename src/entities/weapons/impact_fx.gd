@@ -79,3 +79,22 @@ static func _flash(parent: Node, at: Vector2, color: Color) -> void:
 	tween.tween_property(flash, "scale", Vector2(1.8, 1.8), 0.12)
 	tween.tween_property(flash, "modulate:a", 0.0, 0.12)
 	tween.chain().tween_callback(flash.queue_free)
+
+## A weapon breaking: a white flash and steel shards spinning away along `dir`.
+static func shatter(parent: Node, at: Vector2, dir: Vector2) -> void:
+	_flash(parent, at, Color(1.0, 1.0, 1.0, 0.9))
+	for i in range(7):
+		var shard := Polygon2D.new()
+		shard.top_level = true
+		shard.z_index = 6
+		shard.position = at
+		var length := randf_range(5.0, 11.0)
+		shard.polygon = PackedVector2Array([Vector2(-length * 0.5, -1.5), Vector2(length * 0.5, 0), Vector2(-length * 0.5, 1.5)])
+		shard.color = Color(0.82, 0.85, 0.9)
+		parent.add_child(shard)
+		var heading := dir.rotated(randf_range(-1.2, 1.2))
+		var tween := shard.create_tween().set_parallel()
+		tween.tween_property(shard, "position", at + heading * randf_range(30.0, 70.0), 0.45).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+		tween.tween_property(shard, "rotation", randf_range(-12.0, 12.0), 0.45)
+		tween.chain().tween_property(shard, "modulate:a", 0.0, 0.6)
+		tween.chain().tween_callback(shard.queue_free)

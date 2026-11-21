@@ -139,3 +139,15 @@ func test_melee_target_picks_closest_in_front() -> void:
 	var wide_side := {"id": 6, "position": Vector2(0, 50)} # 90 degrees off the aim
 	check_eq(WeaponRules.melee_target(Vector2.ZERO, aim, 100.0, 100.0, [wide_side]), -1, "outside a 100 degree arc")
 	check_eq(WeaponRules.melee_target(Vector2.ZERO, aim, 100.0, 200.0, [wide_side]), 6, "inside a 200 degree arc")
+
+func test_breakable_blade_counts_landed_hits() -> void:
+	var def := _def({"melee": true, "mag_size": 1, "durability": 2})
+	var state := WeaponRules.new_state(def)
+	check_eq(state.ammo, 2, "starts with its durability")
+	var first := WeaponRules.use_durability(state)
+	check(not first.broken, "one hit left")
+	var second := WeaponRules.use_durability(first.state)
+	check(second.broken, "breaks on the last hit")
+	check_eq(state.ammo, 2, "input state untouched")
+	var unbreakable := WeaponRules.new_state(_def({"melee": true, "mag_size": 1, "durability": 0}))
+	check_eq(unbreakable.ammo, 1, "an unbreakable blade can always swing")

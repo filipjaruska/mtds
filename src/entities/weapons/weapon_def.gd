@@ -42,6 +42,9 @@ class_name WeaponDef
 ## ammo and never reloads. Walls and riot shields block the swing.
 @export var melee: bool = false
 @export_range(10.0, 360.0, 5.0, "suffix:°") var arc_degrees: float = 100.0
+## Landed hits before the blade breaks and is gone (0 = never breaks). Misses
+## don't count. The HUD shows the hits left. With Dual Wield each blade has its own.
+@export_range(0, 50) var durability: int = 0
 
 @export_group("Visuals")
 ## Scene with a WeaponView root (sprite, animations, muzzle marker).

@@ -21,7 +21,7 @@ const MAX_SHOTS_PER_REQUEST := 4
 
 var _pending: Array[Dictionary] = []
 var _recent_shots: Dictionary = {} # peer id -> Array of msec timestamps
-var _last_swing: Dictionary = {} # peer id -> msec of their last accepted melee swing
+var _swings: Dictionary = {} # peer id -> recent accepted melee swings: [{t, dual}]
 
 ## Called on the shooting player's machine for every trigger pull.
 func fire(shooter: Node2D, origin: Vector2, rotations: PackedFloat32Array, def_id: StringName, max_range: float) -> void:
@@ -86,7 +86,7 @@ func _resolve(item: Dictionary) -> void:
 	var space := shooter.get_world_2d().direct_space_state
 	var exclude := _exclude_for(shooter)
 	if stats.melee:
-		_resolve_swing(shooter, shooter_id, item.rotations[0], stats, space, exclude)
+		_resolve_swing(shooter, shooter_id, def.id, holder.is_dual_wield_active(), item.rotations[0], stats, space, exclude)
 		return
 	var ends := PackedVector2Array()
 	var impacts := PackedByteArray()
@@ -105,15 +105,22 @@ func _resolve(item: Dictionary) -> void:
 	if shooter_id != multiplayer.get_unique_id():
 		_spawn_tracers(origin, ends, impacts)
 
-## Melee: the closest enemy in the arc takes the hit, unless a wall or riot
-## shield is in between (a shield takes the hit instead).
-func _resolve_swing(shooter: Node2D, shooter_id: int, aim: float, stats: Dictionary,
-		space: PhysicsDirectSpaceState2D, exclude: Array[RID]) -> void:
+## Melee: the closest living enemy in the arc takes the hit, unless a wall or
+## riot shield is in between (a shield takes the hit instead). Dual-wielded
+## blades strike together: the second swing finds the next-closest enemy,
+## because the first one's target is already down.
+func _resolve_swing(shooter: Node2D, shooter_id: int, def_id: StringName, dual: bool, aim: float,
+		stats: Dictionary, space: PhysicsDirectSpaceState2D, exclude: Array[RID]) -> void:
 	var now := Time.get_ticks_msec()
-	var interval := WeaponRules.interval_msec(stats.fire_rate)
-	if now - int(_last_swing.get(shooter_id, -interval)) < interval * 0.8:
-		return # faster than the blade can swing
-	_last_swing[shooter_id] = now
+	var window := int(WeaponRules.interval_msec(stats.fire_rate) * 0.8)
+	var recent: Array = _swings.get(shooter_id, []).filter(func(s): return now - s.t < window)
+	# Two blades strike together. The first blade's hit can already have ended
+	# Dual Wield (its blade broke), so remember the swing pair was dual.
+	var hands := 2 if dual or recent.any(func(s): return s.dual) else 1
+	if recent.size() >= hands:
+		return # faster than the blade(s) can swing
+	recent.append({"t": now, "dual": dual})
+	_swings[shooter_id] = recent
 	var origin := shooter.global_position
 	var candidates: Array = []
 	for player in get_tree().get_nodes_in_group("Player"):
@@ -130,12 +137,17 @@ func _resolve_swing(shooter: Node2D, shooter_id: int, aim: float, stats: Diction
 	query.collide_with_bodies = true
 	var blocked := space.intersect_ray(query)
 	var dir: Vector2 = (target.position - origin).normalized()
+	var landed := false
 	if blocked.is_empty():
 		target.health.apply_damage(stats.damage, stats.armor_penetration, shooter_id)
 		_show_slash_hit.rpc(target.position - dir * 18.0, dir, BulletFx.Impact.PLAYER)
+		landed = true
 	elif blocked.collider is RiotShield:
 		blocked.collider.take_hit(stats.damage)
 		_show_slash_hit.rpc(blocked.position, dir, BulletFx.Impact.SHIELD)
+		landed = true
+	if landed:
+		shooter.get_weapon_holder().melee_hit_landed.rpc_id(shooter_id, def_id)
 
 @rpc("authority", "call_local", "unreliable")
 func _show_slash_hit(at: Vector2, dir: Vector2, impact: int) -> void:

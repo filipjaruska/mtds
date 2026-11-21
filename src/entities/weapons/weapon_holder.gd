@@ -95,6 +95,9 @@ func _handle_fire_input(now: int) -> void:
 	if InputManager.is_shoot_pressed():
 		if not _stats_for(primary).melee and _try_start_burst(now):
 			return
+		if LoadoutRules.is_dual(loadout) and _stats_for(primary).melee:
+			_swing_both_blades(now)
+			return
 		var hand: StringName = &"primary"
 		if LoadoutRules.is_dual(loadout):
 			hand = LoadoutRules.pick_dual_hand(loadout, now)
@@ -115,6 +118,17 @@ func _handle_fire_input(now: int) -> void:
 		if not result.events.is_empty():
 			loadout = LoadoutRules.with_active_state(loadout, result.state)
 			_apply_result(&"primary", result, stats)
+
+## Dual blades strike together (one swing each), so a double kill is possible.
+func _swing_both_blades(now: int) -> void:
+	for hand in _hands():
+		var state := LoadoutRules.hand_state(loadout, hand)
+		var stats := _stats_for(state)
+		var result := WeaponRules.fire(state, stats, now, _rng)
+		if result.shots.is_empty():
+			continue
+		loadout = LoadoutRules.with_hand_state(loadout, hand, result.state)
+		_apply_result(hand, result, stats)
 
 ## Consumes a Burst powerup use (if one is active) and starts bursts on every
 ## hand that can fire.
@@ -174,11 +188,6 @@ func _on_powerups_changed(_active: Array) -> void:
 		return
 	var spread := powerup_manager.get_dual_wield_spread()
 	var is_dual := LoadoutRules.is_dual(loadout)
-	var primary := LoadoutRules.active(loadout)
-	if spread >= 0.0 and not is_dual and not primary.is_empty() and WeaponDefs.get_def(primary.def).melee:
-		# One blade, one hand: Dual Wield has nothing to mirror.
-		powerup_manager.expire_ability(&"dual_wield")
-		return
 	if spread < 0.0:
 		if is_dual:
 			_commit(LoadoutRules.disable_dual(loadout), true)
@@ -230,8 +239,13 @@ func _emit_hud() -> void:
 	if primary.is_empty():
 		EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [player, 0, 0, -1, -1])
 	else:
-		if WeaponDefs.get_def(primary.def).melee:
-			EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [player, -1, -1, -1, -1])
+		var primary_def := WeaponDefs.get_def(primary.def)
+		if primary_def.melee:
+			# Breakable blades show the hits they have left; others show nothing.
+			var most: int = primary_def.durability if primary_def.durability > 0 else -1
+			var left: int = int(primary.ammo) if most > 0 else -1
+			var off_left: int = int(loadout.offhand.ammo) if most > 0 and LoadoutRules.is_dual(loadout) else -1
+			EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [player, left, most, off_left, most if off_left >= 0 else -1])
 			_emit_slots()
 			return
 		var mag: int = WeaponDefs.get_def(primary.def).mag_size
@@ -360,6 +374,39 @@ func grant_weapon(def_id: StringName) -> void:
 	_drop_on_ground(result.dropped)
 	_commit(result.loadout, true)
 	EventManager.emit_event(EventManager.Events.WEAPON_PICKED_UP, [player, def])
+
+## Host -> owner: a melee swing landed. A breakable blade loses a use and
+## shatters at zero (it is gone, not dropped). With two blades the off-hand one
+## goes first; once it breaks Dual Wield ends, since there is nothing left to mirror.
+@rpc("any_peer", "call_local", "reliable")
+func melee_hit_landed(def_id: StringName) -> void:
+	if multiplayer.get_remote_sender_id() != 1 or not is_multiplayer_authority():
+		return
+	var def := WeaponDefs.get_def(def_id)
+	var primary := LoadoutRules.active(loadout)
+	if def == null or def.durability <= 0 or primary.is_empty() or primary.def != def_id:
+		return
+	var hand: StringName = &"offhand" if LoadoutRules.is_dual(loadout) else &"primary"
+	var result := WeaponRules.use_durability(LoadoutRules.hand_state(loadout, hand))
+	if not result.broken:
+		_commit(LoadoutRules.with_hand_state(loadout, hand, result.state), true)
+		return
+	_play_break_fx.rpc(player.global_position + Vector2.RIGHT.rotated(global_rotation) * 40.0, global_rotation)
+	if hand == &"offhand":
+		_commit(LoadoutRules.disable_dual(loadout), true)
+		if powerup_manager:
+			powerup_manager.expire_ability(&"dual_wield")
+		return
+	var remaining: Dictionary = LoadoutRules.drop(loadout, loadout.active).loadout
+	if LoadoutRules.active(remaining).is_empty():
+		remaining = LoadoutRules.with_weapon(WeaponDefs.default_def()) # never empty-handed
+	_commit(remaining, true)
+	var now_held := LoadoutRules.active(loadout)
+	EventManager.emit_event(EventManager.Events.WEAPON_SWITCHED, [player, loadout.active, WeaponDefs.get_def(now_held.def) if not now_held.is_empty() else null])
+
+@rpc("authority", "call_local", "reliable")
+func _play_break_fx(at: Vector2, rotation_value: float) -> void:
+	ImpactFx.shatter(player.get_parent(), at, Vector2.RIGHT.rotated(rotation_value))
 
 ## Host -> owner: Kill Reload. Every hand in use gets a full magazine.
 @rpc("any_peer", "call_local", "reliable")
