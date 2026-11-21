@@ -45,5 +45,8 @@ jobs:
       - name: Esc menu test
         run: sh tests/run.sh pause
 
+      - name: Tutorial test
+        run: sh tests/run.sh tutorial
+
       - name: Network test (host + client)
         run: sh tests/run.sh net

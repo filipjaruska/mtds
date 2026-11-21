@@ -35,6 +35,8 @@ var game_settings: Dictionary = {
 }
 
 var match_time_remaining: float = 0.0
+## A single-player tutorial session (TutorialLauncher); cleared on return to menu.
+var tutorial_mode := false
 var match_end_time_msec: int = 0
 var match_stats: Dictionary = {}
 ## Poker card rules: the board of shared playing cards under the clock (see
@@ -351,6 +353,9 @@ func disconnect_from_game() -> void:
 ## Return to menu (transition to MENU state)
 func return_to_menu() -> void:
 	_stop_match(false)
+	if tutorial_mode:
+		tutorial_mode = false
+		game_settings["match_duration_seconds"] = 300.0
 	set_game_state(GameState.MENU)
 	# Clear game data when returning to menu
 	players.clear()

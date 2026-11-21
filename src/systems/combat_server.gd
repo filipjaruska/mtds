@@ -98,6 +98,8 @@ func _resolve(item: Dictionary) -> void:
 			victim.apply_damage(stats.damage, stats.armor_penetration, shooter_id)
 		if hit.shield:
 			hit.shield.take_hit(stats.damage)
+		if hit.target:
+			hit.target.take_hit(stats.damage)
 
 	for peer in multiplayer.get_peers():
 		if peer != shooter_id:
@@ -129,6 +131,11 @@ func _resolve_swing(shooter: Node2D, shooter_id: int, def_id: StringName, dual: 
 		if player == shooter or health == null or health.is_dead or GameManager.are_teammates(shooter_id, id):
 			continue
 		candidates.append({"id": id, "position": player.global_position, "health": health})
+	# Practice targets can be cut too (ids below zero never clash with peers).
+	var targets := get_tree().get_nodes_in_group("training_target")
+	for i in range(targets.size()):
+		if targets[i].hp > 0.0:
+			candidates.append({"id": -1000 - i, "position": targets[i].global_position, "health": null})
 	var target_id := WeaponRules.melee_target(origin, aim, stats.max_range, stats.arc_degrees, candidates)
 	if target_id < 0:
 		return
@@ -138,11 +145,15 @@ func _resolve_swing(shooter: Node2D, shooter_id: int, def_id: StringName, dual: 
 	var blocked := space.intersect_ray(query)
 	var dir: Vector2 = (target.position - origin).normalized()
 	var landed := false
-	if blocked.is_empty():
+	if blocked.is_empty() and target.health:
 		target.health.apply_damage(stats.damage, stats.armor_penetration, shooter_id)
 		_show_slash_hit.rpc(target.position - dir * 18.0, dir, BulletFx.Impact.PLAYER)
 		landed = true
-	elif blocked.collider is RiotShield:
+	elif not blocked.is_empty() and blocked.collider is TrainingTarget:
+		blocked.collider.take_hit(stats.damage)
+		_show_slash_hit.rpc(blocked.position, dir, BulletFx.Impact.WALL)
+		landed = true
+	elif not blocked.is_empty() and blocked.collider is RiotShield:
 		blocked.collider.take_hit(stats.damage)
 		_show_slash_hit.rpc(blocked.position, dir, BulletFx.Impact.SHIELD)
 		landed = true
@@ -186,18 +197,18 @@ static func cast_piercing(space: PhysicsDirectSpaceState2D, origin: Vector2, rot
 		query.collide_with_bodies = true
 		var hit := space.intersect_ray(query)
 		if hit.is_empty():
-			return {"end": to, "healths": healths, "shield": null, "impact": BulletFx.Impact.NONE}
+			return {"end": to, "healths": healths, "shield": null, "target": null, "impact": BulletFx.Impact.NONE}
 		var collider: Object = hit.collider
 		if collider is Area2D:
 			var health := collider.get_parent() as HealthComponent if collider.is_in_group("hitbox") else null
 			if health and not healths.has(health):
 				healths.append(health)
 				if healths.size() > pierce:
-					return {"end": hit.position, "healths": healths, "shield": null, "impact": BulletFx.Impact.PLAYER}
+					return {"end": hit.position, "healths": healths, "shield": null, "target": null, "impact": BulletFx.Impact.PLAYER}
 			skip.append(hit.rid)
 			continue
 		var shield := collider as RiotShield
-		return {"end": hit.position, "healths": healths, "shield": shield,
+		return {"end": hit.position, "healths": healths, "shield": shield, "target": collider as TrainingTarget,
 			"impact": BulletFx.Impact.SHIELD if shield else BulletFx.Impact.WALL}
 	return {} # unreachable
 

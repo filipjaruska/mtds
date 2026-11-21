@@ -20,6 +20,7 @@ var _resume: Button
 var _end_match: Button
 var _leave: Button
 var _leave_armed_until := 0
+var _note: Label
 
 func _ready() -> void:
 	layer = 90
@@ -64,8 +65,9 @@ func _set_open(open: bool) -> void:
 	InputManager.menu_open = open
 	_disarm_leave()
 	if open:
-		_end_match.visible = multiplayer.is_server()
-		_leave.text = "Leave game (ends it for everyone)" if multiplayer.is_server() else "Leave game"
+		_end_match.visible = multiplayer.is_server() and not GameManager.tutorial_mode
+		_note.text = "The tutorial keeps going" if GameManager.tutorial_mode else "The match keeps going"
+		_leave.text = _leave_label()
 		_resume.grab_focus()
 	elif lobby.has_menu_overlay():
 		lobby.close_menu_overlay()
@@ -94,7 +96,14 @@ func _disarm_leave() -> void:
 	_leave_armed_until = 0
 	if _leave:
 		_leave.modulate = Color.WHITE
-		_leave.text = "Leave game (ends it for everyone)" if multiplayer.has_multiplayer_peer() and multiplayer.is_server() else "Leave game"
+		_leave.text = _leave_label()
+
+func _leave_label() -> String:
+	if GameManager.tutorial_mode:
+		return "Leave tutorial"
+	if multiplayer.has_multiplayer_peer() and multiplayer.is_server():
+		return "Leave game (ends it for everyone)"
+	return "Leave game"
 
 # --- Building ----------------------------------------------------------------------
 
@@ -131,6 +140,7 @@ func _build() -> void:
 	title.add_theme_font_size_override("font_size", 28)
 	column.add_child(title)
 	var note := Label.new()
+	_note = note
 	note.text = "The match keeps going"
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	note.add_theme_font_size_override("font_size", 13)

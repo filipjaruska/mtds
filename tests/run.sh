@@ -2,8 +2,8 @@
 # Runs the headless test suites. Shared by the git hooks and CI.
 #
 #   sh tests/run.sh quick      import + compile + unit + lobby navigation   (~8 s)
-#   sh tests/run.sh full       quick + smoke match + Esc menu + network test (~60 s)
-#   sh tests/run.sh unit smoke ...   individual steps: import compile unit nav smoke pause net
+#   sh tests/run.sh full       quick + smoke match + Esc menu + tutorial + network test (~70 s)
+#   sh tests/run.sh unit smoke ...   individual steps: import compile unit nav smoke pause tutorial net
 #
 # Godot binary, first match wins:
 #   $GODOT, `git config hooks.godot`, `godot` on PATH.
@@ -107,9 +107,10 @@ run() {
 		nav) step nav script 60 res://tests/lobby_nav.gd ;;
 		smoke) step smoke script 120 res://tests/smoke_match.gd ;;
 		pause) step pause script 60 res://tests/pause_menu.gd ;;
+		tutorial) step tutorial script 60 res://tests/tutorial_launch.gd ;;
 		net) run_net ;;
 		quick) run import && run compile && run unit && run nav ;;
-		full) run quick && run smoke && run pause && run net ;;
+		full) run quick && run smoke && run pause && run tutorial && run net ;;
 		*) echo "tests/run.sh: unknown step '$1'" >&2; return 2 ;;
 	esac
 }

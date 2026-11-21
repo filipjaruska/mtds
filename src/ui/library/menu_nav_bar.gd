@@ -5,7 +5,6 @@ enum NavItem { CUSTOMIZE, TUTORIAL, PLAY, OPTIONS, PROFILE }
 
 const SCENES: Dictionary = {
 	NavItem.CUSTOMIZE: "res://src/ui/menus/main.tscn",
-	NavItem.TUTORIAL: "uid://ce1oauidq2qpa",
 	NavItem.PLAY: "res://src/ui/menus/game_browser.tscn",
 	NavItem.OPTIONS: "uid://b6j40ehxmqs5w",
 	NavItem.PROFILE: "res://src/ui/menus/profile.tscn",
@@ -54,6 +53,9 @@ func _navigate(item: NavItem) -> void:
 			lobby.close_menu_overlay()
 		elif SCENES.has(item):
 			lobby.open_menu_overlay(SCENES[item])
+		return
+	if item == NavItem.TUTORIAL:
+		TutorialLauncher.launch(get_tree()) # straight into the tutorial map, no hosting
 		return
 	if not SCENES.has(item):
 		return
