@@ -23,6 +23,14 @@ git config hooks.godot "/path/to/godot"
 git config alias.test '!sh tests/run.sh'
 ```
 
+mac with homebrew ex:
+
+```sh
+git config core.hooksPath .githooks
+git config hooks.godot "/opt/homebrew/bin/godot"
+git config alias.test '!sh tests/run.sh'
+```
+
 To test:
 
 ```sh
