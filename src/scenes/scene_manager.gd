@@ -112,7 +112,9 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var warnings := PackedStringArray()
 	if playerScene == null:
 		warnings.append("Player Scene is empty: set it to res://src/entities/player/player.tscn.")
-	var needed := spawn_points_needed if spawn_points_needed > 0 else RULES.max_players
+	# In the editor GameRules' script is not running; read the value as plain data.
+	var max_players = RULES.get("max_players")
+	var needed := spawn_points_needed if spawn_points_needed > 0 else (int(max_players) if max_players != null else 8)
 	var names := {}
 	for node in find_children("*", "", true, false):
 		if node.is_in_group("PlayerSpawnLocation") or node is SpawnPoint:

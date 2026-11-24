@@ -58,7 +58,13 @@ func _draw() -> void:
 		return
 	var color := Color(1.0, 0.6, 0.15) if weapon_def else Color.RED
 	draw_arc(Vector2.ZERO, 30.0, 0.0, TAU, 32, color, 3.0)
-	var label := weapon_def.get_display_name() if weapon_def else "no weapon"
+	# Properties only: in the editor the WeaponDef script is not running, so its
+	# functions can't be called here.
+	var label := "no weapon"
+	if weapon_def:
+		label = str(weapon_def.get("display_name"))
+		if label.is_empty():
+			label = str(weapon_def.get("id")).capitalize()
 	draw_string(ThemeDB.fallback_font, Vector2(-80, -38), label, HORIZONTAL_ALIGNMENT_CENTER, 160.0, 18, color)
 
 func _get_configuration_warnings() -> PackedStringArray:
