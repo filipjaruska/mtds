@@ -285,14 +285,16 @@ func _check_ready_state() -> void:
 ## Shows another menu tab on top of the lobby (or, from the Esc menu, on top of
 ## the match). The lobby node stays alive and keeps handling RPCs; it is only
 ## hidden. The tab sits on its own CanvasLayer so a match camera can't move it.
-func open_menu_overlay(scene_path: String) -> void:
+func open_menu_overlay(scene_path: String) -> Node:
 	close_menu_overlay()
 	var layer := CanvasLayer.new()
 	layer.layer = 95
-	layer.add_child(load(scene_path).instantiate())
+	var menu: Node = load(scene_path).instantiate()
+	layer.add_child(menu)
 	_menu_overlay = layer
 	get_tree().root.add_child(_menu_overlay)
 	hide()
+	return menu
 
 func has_menu_overlay() -> bool:
 	return is_instance_valid(_menu_overlay)

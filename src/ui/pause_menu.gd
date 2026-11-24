@@ -44,10 +44,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	get_viewport().set_input_as_handled()
 	if lobby.has_menu_overlay():
-		# Esc in Options: back to this menu.
-		lobby.close_menu_overlay()
-		_panel.visible = true
-		_resume.grab_focus()
+		_back_from_options() # Esc in Options: back to this menu
 		return
 	_set_open(not _open)
 
@@ -55,7 +52,7 @@ func _process(_delta: float) -> void:
 	if _open and not _in_match():
 		_set_open(false)
 	if _open and not lobby.has_menu_overlay() and not _panel.visible:
-		_panel.visible = true # Options closed through its own tab bar
+		_panel.visible = true # Options was closed some other way
 	if _leave_armed_until > 0 and Time.get_ticks_msec() > _leave_armed_until:
 		_disarm_leave()
 
@@ -81,7 +78,12 @@ func _on_resume() -> void:
 
 func _on_options() -> void:
 	_panel.visible = false
-	lobby.open_menu_overlay(OPTIONS_SCENE)
+	lobby.open_menu_overlay(OPTIONS_SCENE).show_in_match(_back_from_options)
+
+func _back_from_options() -> void:
+	lobby.close_menu_overlay()
+	_panel.visible = true
+	_resume.grab_focus()
 
 func _on_end_match() -> void:
 	_set_open(false)

@@ -41,12 +41,23 @@ const KEYBIND_ROWS: Dictionary = {
 @onready var resolution: OptionButton = %Resolution
 @onready var fullscreen: CheckButton = %Fullscreen
 @onready var _keybinds_list: VBoxContainer = %KeybindsList
+@onready var _nav_bar: Control = %MenuNavBar
+@onready var _match_header: Control = %MatchHeader
+@onready var _back_button: Button = %BackButton
 
 var _binding_labels: Dictionary = {} # action -> Label
 var _listening_action: String = ""
 var _listening_label: Label = null
 var _rebind_armed: bool = false
 
+
+## Opened from the Esc menu during a match: only the options, with a Back
+## button (Esc works too) instead of the menu tab bar.
+func show_in_match(on_back: Callable) -> void:
+	_nav_bar.visible = false
+	_match_header.visible = true
+	_back_button.pressed.connect(on_back)
+	_back_button.grab_focus()
 
 func _ready() -> void:
 	set_process_input(false)

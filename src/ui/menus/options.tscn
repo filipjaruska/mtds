@@ -30,8 +30,35 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MenuNavBar" parent="." instance=ExtResource("3_navbar")]
+unique_name_in_owner = true
 layout_mode = 1
 active_item = 3
+
+[node name="MatchHeader" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 12.0
+offset_right = -16.0
+offset_bottom = 56.0
+grow_horizontal = 2
+theme_override_constants/separation = 20
+
+[node name="BackButton" type="Button" parent="MatchHeader"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+text = "Back"
+
+[node name="Title" type="Label" parent="MatchHeader"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Options"
+vertical_alignment = 1
+uppercase = true
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
