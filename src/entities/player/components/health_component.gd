@@ -154,9 +154,9 @@ func _sync_health(hp: float, max_hp: float, change: float) -> void:
 	max_health = max_hp
 	_broadcast_health_change()
 	if change < 0.0:
-		EventManager.emit_event(EventManager.Events.PLAYER_DAMAGED, [get_parent(), -change, hp])
+		EventManager.player_damaged.emit(get_parent(), -change, hp)
 	elif change > 0.0:
-		EventManager.emit_event(EventManager.Events.PLAYER_HEALED, [get_parent(), change, hp])
+		EventManager.player_healed.emit(get_parent(), change, hp)
 
 @rpc("any_peer", "call_local", "reliable")
 func _on_died() -> void:
@@ -171,7 +171,7 @@ func _on_died() -> void:
 		var weapon_holder = player.get_node_or_null("PlayerController/WeaponHolder")
 		if weapon_holder:
 			weapon_holder.reset_on_death()
-	EventManager.emit_event(EventManager.Events.PLAYER_DIED, [player])
+	EventManager.player_died.emit(player)
 
 @rpc("any_peer", "call_local", "reliable")
 func _on_respawned(spawn_position: Vector2, hp: float, max_hp: float) -> void:
@@ -184,7 +184,7 @@ func _on_respawned(spawn_position: Vector2, hp: float, max_hp: float) -> void:
 	player.global_position = spawn_position
 	player.visible = true
 	_broadcast_health_change()
-	EventManager.emit_event(EventManager.Events.PLAYER_RESPAWNED, [player])
+	EventManager.player_respawned.emit(player)
 
 # --- Helpers ------------------------------------------------------------------
 
@@ -198,4 +198,4 @@ func _broadcast_health_change() -> void:
 	if health_bar and is_instance_valid(health_bar):
 		health_bar.max_value = max_health
 		health_bar.value = current_health
-	EventManager.emit_event(EventManager.Events.UI_HEALTH_UPDATED, [get_parent(), int(current_health), int(max_health)])
+	EventManager.health_changed.emit(get_parent(), int(current_health), int(max_health))

@@ -26,10 +26,10 @@ var active: Array = []
 var _shuffle_selected_slot: int = -1
 
 func _ready() -> void:
-	EventManager.register(EventManager.Events.WEAPON_FIRED, _on_weapon_fired)
+	EventManager.weapon_fired.connect(_on_weapon_fired)
 
 func _exit_tree() -> void:
-	EventManager.unregister(EventManager.Events.WEAPON_FIRED, _on_weapon_fired)
+	if EventManager.weapon_fired.is_connected(_on_weapon_fired): EventManager.weapon_fired.disconnect(_on_weapon_fired)
 
 func _process(_delta: float) -> void:
 	if not is_multiplayer_authority():
@@ -93,7 +93,7 @@ func add_to_inventory(def_id: StringName, hole: int = -1) -> bool:
 		return false
 	inventory = PowerupRules.with_slot(inventory, slot, def_id, 1, hole)
 	inventory_updated.emit(get_inventory_display_data())
-	EventManager.emit_event(EventManager.Events.POWERUP_COLLECTED, [player_node, def, slot])
+	EventManager.powerup_collected.emit(player_node, def, slot)
 	return true
 
 func use_powerup_at_slot(slot_index: int) -> void:
@@ -110,7 +110,7 @@ func use_powerup_at_slot(slot_index: int) -> void:
 	_shuffle_selected_slot = -1
 	inventory_updated.emit(get_inventory_display_data())
 	_sync_activate.rpc(def.id, stacks)
-	EventManager.emit_event(EventManager.Events.POWERUP_USED, [player_node, def, slot_index])
+	EventManager.powerup_used.emit(player_node, def, slot_index)
 
 func expire(def_id: StringName) -> void:
 	if is_multiplayer_authority() and not PowerupRules.find(active, def_id).is_empty():
@@ -194,7 +194,7 @@ func _handle_shuffle_slot_pressed(slot_index: int) -> void:
 	_shuffle_selected_slot = -1
 	if merged != inventory:
 		inventory = merged
-		EventManager.emit_event(EventManager.Events.POWERUP_COLLECTED, [player_node, def, slot_index])
+		EventManager.powerup_collected.emit(player_node, def, slot_index)
 	inventory_updated.emit(get_inventory_display_data())
 
 # --- Owner -> everyone ---------------------------------------------------------
@@ -213,7 +213,7 @@ func _sync_expired(def_id: StringName) -> void:
 		return
 	active = PowerupRules.without(active, def_id)
 	active_changed.emit(active)
-	EventManager.emit_event(EventManager.Events.POWERUP_EXPIRED, [player_node, PowerupDefs.get_def(def_id)])
+	EventManager.powerup_expired.emit(player_node, PowerupDefs.get_def(def_id))
 
 @rpc("authority", "call_local", "reliable")
 func _sync_clear_active() -> void:

@@ -85,7 +85,7 @@ func _host_game() -> void:
 
 func _on_connected_to_server() -> void:
 	_connection_timer.stop()
-	EventManager.emit_event(EventManager.Events.CONNECTION_SUCCEEDED)
+	EventManager.connected_to_host.emit()
 	var player_name := player_name_input.text.strip_edges()
 	if player_name.is_empty():
 		player_name = "Player %d" % multiplayer.get_unique_id()
@@ -101,7 +101,7 @@ func _on_connection_timeout() -> void:
 
 func _fail(message: String) -> void:
 	multiplayer.multiplayer_peer = null
-	EventManager.emit_event(EventManager.Events.CONNECTION_FAILED)
+	EventManager.connection_failed.emit()
 	_set_ui_enabled(true)
 	_show_status(message, true)
 

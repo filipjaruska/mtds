@@ -162,13 +162,13 @@ func _broadcast_settings() -> void:
 	sync_lobby_settings.rpc(GameManager.get_game_type(), GameManager.get_card_rules(), GameManager.get_map())
 
 func _on_player_connected(id: int) -> void:
-	EventManager.emit_event(EventManager.Events.PLAYER_CONNECTED, [id])
+	EventManager.player_connected.emit(id)
 	_update_player_list()
 	_check_ready_state()
 
 func _on_player_disconnected(id: int) -> void:
 	# GameManager removes the player in its PLAYER_DISCONNECTED handler.
-	EventManager.emit_event(EventManager.Events.PLAYER_DISCONNECTED, [id, GameManager.get_player(id)])
+	EventManager.player_disconnected.emit(id, GameManager.get_player(id))
 	player_ready_states.erase(id)
 	_update_player_list()
 	_check_ready_state()

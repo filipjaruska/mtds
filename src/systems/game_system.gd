@@ -59,17 +59,10 @@ func _ready() -> void:
 	add_child(_match_timer)
 	
 	set_process(false)
-	# EventManager is an autoload too; give it a frame if it isn't set up yet.
-	if EventManager._signal_dict.is_empty():
-		await get_tree().process_frame
-		if EventManager._signal_dict.is_empty():
-			push_error("GameManager: EventManager failed to initialize!")
-			return
-	
-	EventManager.register(EventManager.Events.PLAYER_CONNECTED, _on_player_connected)
-	EventManager.register(EventManager.Events.PLAYER_DISCONNECTED, _on_player_disconnected)
-	EventManager.register(EventManager.Events.CONNECTION_SUCCEEDED, _on_connection_succeeded)
-	EventManager.register(EventManager.Events.CONNECTION_FAILED, _on_connection_failed)
+	EventManager.player_connected.connect(_on_player_connected)
+	EventManager.player_disconnected.connect(_on_player_disconnected)
+	EventManager.connected_to_host.connect(_on_connection_succeeded)
+	EventManager.connection_failed.connect(_on_connection_failed)
 
 func get_match_time_remaining() -> float:
 	return match_time_remaining
@@ -155,7 +148,7 @@ func set_game_state(new_state: GameState) -> void:
 		var old_state = current_state
 		current_state = new_state
 
-		EventManager.emit_event(EventManager.Events.GAME_STATE_CHANGED, [old_state, new_state])
+		EventManager.game_state_changed.emit(old_state, new_state)
 
 func get_game_state() -> GameState:
 	return current_state

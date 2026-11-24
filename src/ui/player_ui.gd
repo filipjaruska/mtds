@@ -34,13 +34,13 @@ func _process(_delta: float):
 
 func _ready():
 	_player_node = get_parent().get_parent().get_parent()
-	EventManager.register(EventManager.Events.UI_HEALTH_UPDATED, _on_health_updated)
-	EventManager.register(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)
-	EventManager.register(EventManager.Events.UI_WEAPON_SLOTS_UPDATED, _on_weapon_slots_updated)
-	EventManager.register(EventManager.Events.POWERUP_COLLECTED, _on_powerup_collected)
-	EventManager.register(EventManager.Events.POWERUP_USED, _on_powerup_used)
-	EventManager.register(EventManager.Events.POWERUP_EXPIRED, _on_powerup_expired)
-	EventManager.register(EventManager.Events.PLAYER_DIED, _on_player_died)
+	EventManager.health_changed.connect(_on_health_updated)
+	EventManager.ammo_changed.connect(_on_ammo_updated)
+	EventManager.weapon_slots_changed.connect(_on_weapon_slots_updated)
+	EventManager.powerup_collected.connect(_on_powerup_collected)
+	EventManager.powerup_used.connect(_on_powerup_used)
+	EventManager.powerup_expired.connect(_on_powerup_expired)
+	EventManager.player_died.connect(_on_player_died)
 
 func _ensure_scoreboard() -> void:
 	if _scoreboard != null and is_instance_valid(_scoreboard):
@@ -163,10 +163,10 @@ func _exit_tree():
 	if _scoreboard and is_instance_valid(_scoreboard):
 		_scoreboard.queue_free()
 		_scoreboard = null
-	EventManager.unregister(EventManager.Events.UI_HEALTH_UPDATED, _on_health_updated)
-	EventManager.unregister(EventManager.Events.UI_AMMO_UPDATED, _on_ammo_updated)
-	EventManager.unregister(EventManager.Events.UI_WEAPON_SLOTS_UPDATED, _on_weapon_slots_updated)
-	EventManager.unregister(EventManager.Events.POWERUP_COLLECTED, _on_powerup_collected)
-	EventManager.unregister(EventManager.Events.POWERUP_USED, _on_powerup_used)
-	EventManager.unregister(EventManager.Events.POWERUP_EXPIRED, _on_powerup_expired)
-	EventManager.unregister(EventManager.Events.PLAYER_DIED, _on_player_died)
+	if EventManager.health_changed.is_connected(_on_health_updated): EventManager.health_changed.disconnect(_on_health_updated)
+	if EventManager.ammo_changed.is_connected(_on_ammo_updated): EventManager.ammo_changed.disconnect(_on_ammo_updated)
+	if EventManager.weapon_slots_changed.is_connected(_on_weapon_slots_updated): EventManager.weapon_slots_changed.disconnect(_on_weapon_slots_updated)
+	if EventManager.powerup_collected.is_connected(_on_powerup_collected): EventManager.powerup_collected.disconnect(_on_powerup_collected)
+	if EventManager.powerup_used.is_connected(_on_powerup_used): EventManager.powerup_used.disconnect(_on_powerup_used)
+	if EventManager.powerup_expired.is_connected(_on_powerup_expired): EventManager.powerup_expired.disconnect(_on_powerup_expired)
+	if EventManager.player_died.is_connected(_on_player_died): EventManager.player_died.disconnect(_on_player_died)

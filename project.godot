@@ -23,9 +23,9 @@ config/icon="res://src/assets/icon.svg"
 
 [autoload]
 
+EventManager="*res://src/systems/event_system.gd"
 GameManager="*res://src/systems/game_system.gd"
 InputManager="*res://src/systems/input_system.gd"
-EventManager="*res://src/systems/event_system.gd"
 GameSettings="*res://src/systems/game_settings.gd"
 ChatManager="*res://src/systems/chat_system.gd"
 

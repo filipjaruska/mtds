@@ -75,7 +75,7 @@ func _equip(next: Dictionary) -> void:
 		return
 	_commit(next, true)
 	var def := WeaponDefs.get_def(LoadoutRules.active(loadout).def)
-	EventManager.emit_event(EventManager.Events.WEAPON_SWITCHED, [player, loadout.active, def])
+	EventManager.weapon_switched.emit(player, loadout.active, def)
 
 ## Advances reloads and bursts of the hands currently in use.
 func _tick_hands(now: int) -> void:
@@ -157,9 +157,9 @@ func _apply_result(hand: StringName, result: Dictionary, stats: Dictionary) -> v
 	if not result.shots.is_empty():
 		_fire_shots(hand, result.shots, stats)
 	if result.events.has(&"reload_started"):
-		EventManager.emit_event(EventManager.Events.WEAPON_RELOADED, [player, true, float(stats.reload_time)])
+		EventManager.weapon_reloaded.emit(player, true, float(stats.reload_time))
 	if result.events.has(&"reloaded"):
-		EventManager.emit_event(EventManager.Events.WEAPON_RELOADED, [player, false, 0.0])
+		EventManager.weapon_reloaded.emit(player, false, 0.0)
 	_emit_hud()
 
 func _fire_shots(hand: StringName, offsets: Array[float], stats: Dictionary) -> void:
@@ -176,7 +176,7 @@ func _fire_shots(hand: StringName, offsets: Array[float], stats: Dictionary) -> 
 	if combat:
 		combat.fire(player, origin, rotations, state.def, stats.max_range)
 	player_controller.apply_fire_slow(stats.move_speed_mult, stats.slow_duration)
-	EventManager.emit_event(EventManager.Events.WEAPON_FIRED, [player, int(state.ammo), int(stats.mag_size)])
+	EventManager.weapon_fired.emit(player, int(state.ammo), int(stats.mag_size))
 
 func _end_dual_wield() -> void:
 	_commit(LoadoutRules.disable_dual(loadout), true)
@@ -238,7 +238,7 @@ func _emit_hud() -> void:
 		return
 	var primary := LoadoutRules.active(loadout)
 	if primary.is_empty():
-		EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [player, 0, 0, -1, -1])
+		EventManager.ammo_changed.emit(player, 0, 0, -1, -1)
 	else:
 		var primary_def := WeaponDefs.get_def(primary.def)
 		if primary_def.melee:
@@ -246,13 +246,13 @@ func _emit_hud() -> void:
 			var most: int = primary_def.durability if primary_def.durability > 0 else -1
 			var left: int = int(primary.ammo) if most > 0 else -1
 			var off_left: int = int(loadout.offhand.ammo) if most > 0 and LoadoutRules.is_dual(loadout) else -1
-			EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [player, left, most, off_left, most if off_left >= 0 else -1])
+			EventManager.ammo_changed.emit(player, left, most, off_left, most if off_left >= 0 else -1)
 			_emit_slots()
 			return
 		var mag: int = WeaponDefs.get_def(primary.def).mag_size
 		var off_ammo: int = loadout.offhand.ammo if LoadoutRules.is_dual(loadout) else -1
 		var off_mag: int = mag if LoadoutRules.is_dual(loadout) else -1
-		EventManager.emit_event(EventManager.Events.UI_AMMO_UPDATED, [player, int(primary.ammo), mag, off_ammo, off_mag])
+		EventManager.ammo_changed.emit(player, int(primary.ammo), mag, off_ammo, off_mag)
 	_emit_slots()
 
 func _emit_slots() -> void:
@@ -260,7 +260,7 @@ func _emit_slots() -> void:
 	for i in range(LoadoutRules.MAX_SLOTS):
 		var def := WeaponDefs.get_def(loadout.slots[i].def) if i < loadout.slots.size() else null
 		names.append(def.get_display_name() if def else "")
-	EventManager.emit_event(EventManager.Events.UI_WEAPON_SLOTS_UPDATED, [player, names, int(loadout.active)])
+	EventManager.weapon_slots_changed.emit(player, names, int(loadout.active))
 
 # --- Views ------------------------------------------------------------------
 
@@ -357,7 +357,7 @@ func _drop_on_ground(def_ids: Array[StringName]) -> void:
 	for def_id in def_ids:
 		if map and map.has_method("request_weapon_drop"):
 			map.request_weapon_drop.rpc_id(1, def_id, player.global_position)
-		EventManager.emit_event(EventManager.Events.WEAPON_DROPPED, [player, WeaponDefs.get_def(def_id)])
+		EventManager.weapon_dropped.emit(player, WeaponDefs.get_def(def_id))
 
 # --- Network ----------------------------------------------------------------
 
@@ -374,7 +374,7 @@ func grant_weapon(def_id: StringName) -> void:
 		return
 	_drop_on_ground(result.dropped)
 	_commit(result.loadout, true)
-	EventManager.emit_event(EventManager.Events.WEAPON_PICKED_UP, [player, def])
+	EventManager.weapon_picked_up.emit(player, def)
 
 ## Host -> owner: a melee swing landed. A breakable blade loses a use and
 ## shatters at zero (it is gone, not dropped). With two blades the off-hand one
@@ -403,7 +403,7 @@ func melee_hit_landed(def_id: StringName) -> void:
 		remaining = LoadoutRules.with_weapon(WeaponDefs.default_def()) # never empty-handed
 	_commit(remaining, true)
 	var now_held := LoadoutRules.active(loadout)
-	EventManager.emit_event(EventManager.Events.WEAPON_SWITCHED, [player, loadout.active, WeaponDefs.get_def(now_held.def) if not now_held.is_empty() else null])
+	EventManager.weapon_switched.emit(player, loadout.active, WeaponDefs.get_def(now_held.def) if not now_held.is_empty() else null)
 
 @rpc("authority", "call_local", "reliable")
 func _play_break_fx(at: Vector2, rotation_value: float) -> void:
@@ -419,7 +419,7 @@ func refill_magazines() -> void:
 		var state := LoadoutRules.hand_state(refilled, hand)
 		refilled = LoadoutRules.with_hand_state(refilled, hand, WeaponRules.refill(state, _stats_for(state)))
 	_commit(refilled, true)
-	EventManager.emit_event(EventManager.Events.WEAPON_RELOADED, [player, false, 0.0])
+	EventManager.weapon_reloaded.emit(player, false, 0.0)
 
 @rpc("authority", "call_remote", "reliable")
 func _receive_loadout(data: Dictionary) -> void:

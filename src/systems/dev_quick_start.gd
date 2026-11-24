@@ -62,7 +62,7 @@ func _join() -> void:
 	multiplayer.connected_to_server.connect(func() -> void:
 		GameManager.local_player_name = "Dev %d" % multiplayer.get_unique_id()
 		print("[dev] joined the dev host as %s" % GameManager.local_player_name)
-		EventManager.emit_event(EventManager.Events.CONNECTION_SUCCEEDED)
+		EventManager.connected_to_host.emit()
 		get_tree().change_scene_to_file(LOBBY_SCENE), CONNECT_ONE_SHOT)
 
 ## Host: (re)start the debug match with everyone who has joined so far.
