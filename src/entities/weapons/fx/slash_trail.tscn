@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_wlter"]
+blend_mode = 1
+
+[sub_resource type="Curve" id="Curve_6orsq"]
+_data = [Vector2(0, 0.1), 0.0, 0.0, 0, 0, Vector2(0.75, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.3), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Gradient" id="Gradient_o3kis"]
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.9)
+
+[node name="SlashTrail" type="Line2D" unique_id=1728408896]
+z_index = 6
+z_as_relative = false
+material = SubResource("CanvasItemMaterial_wlter")
+points = PackedVector2Array(44.995136, -53.62311, 52.291756, -46.535713, 58.484146, -38.46563, 63.441544, -29.583279, 67.059265, -20.076227, 69.26092, -10.14523, 70, 0, 69.26092, 10.14523, 67.059265, 20.076227, 63.441544, 29.583279, 58.484146, 38.46563, 52.291756, 46.535713, 44.995136, 53.62311)
+width = 9.0
+width_curve = SubResource("Curve_6orsq")
+gradient = SubResource("Gradient_o3kis")

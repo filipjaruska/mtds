@@ -2,14 +2,18 @@ extends Node2D
 class_name PowerupPickup
 ## A powerup card lying on the map. Like weapon pickups, the host decides who
 ## gets it: the first valid request wins, later ones are ignored.
+## Its look is powerup_pickup.tscn: the card (Sprite2D), a rarity-coloured
+## copy behind it (GlowEffect) and the pickup prompt (Label).
 
 const PICKUP_RANGE := 80.0
 
 @export var powerup_def: PowerupDef
 
-var label: Label
-var sprite: Sprite2D
-var glow_effect: Sprite2D
+const SCENE := "res://src/entities/powerups/powerup_pickup.tscn"
+
+@onready var label: Label = $Label
+@onready var sprite: Sprite2D = $Sprite2D
+@onready var glow_effect: Sprite2D = $GlowEffect
 
 var _local_player_inside: Node = null
 var _taken := false
@@ -17,6 +21,8 @@ var _taken := false
 const CARD_SCALE := 0.35
 
 func _ready() -> void:
+	$Area2D.body_entered.connect(_on_body_entered)
+	$Area2D.body_exited.connect(_on_body_exited)
 	_apply_visuals()
 	# The card floats and tilts a little; the glow behind it breathes.
 	if sprite:
@@ -128,41 +134,9 @@ func _on_body_exited(body: Node) -> void:
 		label.visible = false
 	create_tween().tween_property(self, "scale", Vector2(1.0, 1.0), 0.2)
 
-## Builds a pickup node tree in code (there is no .tscn for pickups).
+## A card pickup at `spawn_position` (from powerup_pickup.tscn).
 static func create_pickup(def: PowerupDef, spawn_position: Vector2) -> PowerupPickup:
-	var pickup := PowerupPickup.new()
+	var pickup: PowerupPickup = load(SCENE).instantiate()
 	pickup.position = spawn_position
 	pickup.powerup_def = def
-	pickup.z_index = 0
-	pickup.z_as_relative = false
-
-	var area := Area2D.new()
-	area.name = "Area2D"
-	var collision := CollisionShape2D.new()
-	var circle := CircleShape2D.new()
-	circle.radius = 30.0
-	collision.shape = circle
-	collision.debug_color = Color(1, 0, 0, 0.3)
-	area.add_child(collision)
-	area.body_entered.connect(pickup._on_body_entered)
-	area.body_exited.connect(pickup._on_body_exited)
-	pickup.add_child(area)
-
-	pickup.label = Label.new()
-	pickup.label.name = "Label"
-	pickup.label.visible = false
-	pickup.label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	pickup.label.theme_type_variation = &"PromptTag"
-	pickup.label.size = Vector2(150, 0)
-	pickup.label.position = Vector2(-75, -82) # above the card
-	pickup.add_child(pickup.label)
-
-	pickup.sprite = Sprite2D.new()
-	pickup.sprite.name = "Sprite2D"
-	pickup.add_child(pickup.sprite)
-
-	pickup.glow_effect = Sprite2D.new()
-	pickup.glow_effect.name = "GlowEffect"
-	pickup.glow_effect.z_index = -1
-	pickup.add_child(pickup.glow_effect)
 	return pickup

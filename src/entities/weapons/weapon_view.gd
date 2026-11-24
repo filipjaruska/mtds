@@ -5,6 +5,8 @@ class_name WeaponView
 ## Stats live in a WeaponDef (res://src/entities/weapons/defs/).
 
 const MUZZLE_FLASH_SCENE := preload("res://src/entities/weapons/muzzle_flash.tscn")
+const SLASH_TRAIL_SCENE := preload("res://src/entities/weapons/fx/slash_trail.tscn")
+const CASING_SCENE := preload("res://src/entities/weapons/fx/casing.tscn")
 
 @export var muzzle: Marker2D
 @export var sprite: Sprite2D
@@ -17,7 +19,8 @@ const MUZZLE_FLASH_SCENE := preload("res://src/entities/weapons/muzzle_flash.tsc
 ## Radius of the slash trail around the player.
 @export var slash_radius: float = 70.0
 @export_group("Shell casing")
-## Ejected to the side of the gun on every shot; size (0, 0) = none.
+## Ejected to the side of the gun on every shot (fx/casing.tscn, stretched to
+## this size and tinted this colour); size (0, 0) = none.
 @export var casing_size: Vector2 = Vector2(5, 2)
 @export var casing_color: Color = Color(0.85, 0.66, 0.25)
 ## Where it leaves the gun, in this node's local space (behind the muzzle).
@@ -56,28 +59,14 @@ func _slash_trail(half: float) -> void:
 	var holder := get_parent() as Node2D
 	var center: Vector2 = holder.get_parent().global_position if holder and holder.get_parent() is Node2D else global_position
 	var aim := holder.global_rotation if holder else global_rotation
-	var trail := Line2D.new()
+	# The look (width, colour fade, taper) is fx/slash_trail.tscn; the arc is set here.
+	var trail: Line2D = SLASH_TRAIL_SCENE.instantiate()
 	trail.top_level = true
-	trail.z_as_relative = false
-	trail.z_index = 6
-	trail.width = 9.0
 	var points := PackedVector2Array()
 	for i in range(13):
 		var a := aim - half + 2.0 * half * i / 12.0
 		points.append(center + Vector2.RIGHT.rotated(a) * slash_radius)
 	trail.points = points
-	var fade := Gradient.new()
-	fade.set_color(0, Color(1, 1, 1, 0.0))
-	fade.set_color(1, Color(1, 1, 1, 0.9))
-	trail.gradient = fade
-	var taper := Curve.new()
-	taper.add_point(Vector2(0.0, 0.1))
-	taper.add_point(Vector2(0.75, 1.0))
-	taper.add_point(Vector2(1.0, 0.3))
-	trail.width_curve = taper
-	var additive := CanvasItemMaterial.new()
-	additive.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	trail.material = additive
 	add_child(trail)
 	var tween := trail.create_tween().set_parallel()
 	tween.tween_property(trail, "modulate:a", 0.0, 0.22).set_delay(0.06)
@@ -88,13 +77,10 @@ func _slash_trail(half: float) -> void:
 func _eject_casing() -> void:
 	if casing_size == Vector2.ZERO:
 		return
-	var casing := Polygon2D.new()
-	var half := casing_size * 0.5
-	casing.polygon = PackedVector2Array([-half, Vector2(half.x, -half.y), half, Vector2(-half.x, half.y)])
-	casing.color = casing_color
+	var casing: Node2D = CASING_SCENE.instantiate()
+	casing.scale = casing_size
+	casing.modulate = casing_color
 	casing.top_level = true
-	casing.z_as_relative = false
-	casing.z_index = 1
 	casing.position = to_global(casing_port)
 	casing.rotation = global_rotation
 	add_child(casing)

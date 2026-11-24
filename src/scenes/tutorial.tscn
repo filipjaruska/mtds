@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://src/scenes/tutorial_map.gd" id="1_xn0vq"]
 [ext_resource type="PackedScene" path="res://src/entities/player/player.tscn" id="2_rquni"]
 [ext_resource type="TileSet" path="res://src/assets/maps/tutorial/tiles.tres" id="3_uhttd"]
-[ext_resource type="Script" path="res://src/entities/training_target.gd" id="4_4kbl0"]
+[ext_resource type="PackedScene" path="res://src/entities/training_target.tscn" id="training_target"]
 [ext_resource type="PackedScene" path="res://src/entities/weapons/weapon_spawner.tscn" id="5_gl65t"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/shotgun.tres" id="6_squ5h"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/m4.tres" id="7_erutq"]
@@ -126,45 +126,35 @@ horizontal_alignment = 1
 
 [node name="Targets" type="Node2D" parent="." unique_id=876619973]
 
-[node name="Target1" type="StaticBody2D" parent="Targets" unique_id=1642987305]
+[node name="Target1" parent="Targets" unique_id=1642987305 instance=ExtResource("training_target")]
 position = Vector2(1824, 288)
-script = ExtResource("4_4kbl0")
 
-[node name="Target2" type="StaticBody2D" parent="Targets" unique_id=786565996]
+[node name="Target2" parent="Targets" unique_id=786565996 instance=ExtResource("training_target")]
 position = Vector2(1824, 416)
-script = ExtResource("4_4kbl0")
 
-[node name="Target3" type="StaticBody2D" parent="Targets" unique_id=2113335174]
+[node name="Target3" parent="Targets" unique_id=2113335174 instance=ExtResource("training_target")]
 position = Vector2(1824, 544)
-script = ExtResource("4_4kbl0")
 
-[node name="Target4" type="StaticBody2D" parent="Targets" unique_id=524640957]
+[node name="Target4" parent="Targets" unique_id=524640957 instance=ExtResource("training_target")]
 position = Vector2(4064, 352)
-script = ExtResource("4_4kbl0")
 
-[node name="Target5" type="StaticBody2D" parent="Targets" unique_id=272629998]
+[node name="Target5" parent="Targets" unique_id=272629998 instance=ExtResource("training_target")]
 position = Vector2(4064, 480)
-script = ExtResource("4_4kbl0")
 
-[node name="Target6" type="StaticBody2D" parent="Targets" unique_id=1310300291]
+[node name="Target6" parent="Targets" unique_id=1310300291 instance=ExtResource("training_target")]
 position = Vector2(5216, 352)
-script = ExtResource("4_4kbl0")
 
-[node name="Target7" type="StaticBody2D" parent="Targets" unique_id=1169848465]
+[node name="Target7" parent="Targets" unique_id=1169848465 instance=ExtResource("training_target")]
 position = Vector2(5216, 480)
-script = ExtResource("4_4kbl0")
 
-[node name="Target8" type="StaticBody2D" parent="Targets" unique_id=1592559889]
+[node name="Target8" parent="Targets" unique_id=1592559889 instance=ExtResource("training_target")]
 position = Vector2(7264, 288)
-script = ExtResource("4_4kbl0")
 
-[node name="Target9" type="StaticBody2D" parent="Targets" unique_id=1521158394]
+[node name="Target9" parent="Targets" unique_id=1521158394 instance=ExtResource("training_target")]
 position = Vector2(7264, 416)
-script = ExtResource("4_4kbl0")
 
-[node name="Target10" type="StaticBody2D" parent="Targets" unique_id=1694360653]
+[node name="Target10" parent="Targets" unique_id=1694360653 instance=ExtResource("training_target")]
 position = Vector2(7264, 544)
-script = ExtResource("4_4kbl0")
 
 [node name="WeaponDrops" type="Node2D" parent="." unique_id=1142625832]
 

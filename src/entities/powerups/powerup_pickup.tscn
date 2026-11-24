@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/entities/powerups/powerup_pickup.gd" id="1_pickup"]
+[ext_resource type="Theme" path="res://src/ui/theme/main_theme.tres" id="main_theme"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_pickup"]
+radius = 30.0
+
+[node name="PowerupPickup" type="Node2D"]
+z_as_relative = false
+script = ExtResource("1_pickup")
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_pickup")
+debug_color = Color(1, 0, 0, 0.3)
+
+[node name="GlowEffect" type="Sprite2D" parent="."]
+z_index = -1
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="Label" type="Label" parent="."]
+visible = false
+offset_left = -75.0
+offset_top = -82.0
+offset_right = 75.0
+offset_bottom = -59.0
+theme = ExtResource("main_theme")
+theme_type_variation = &"PromptTag"
+text = "[E] Card"
+horizontal_alignment = 1

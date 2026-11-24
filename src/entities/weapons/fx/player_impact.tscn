@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/entities/weapons/fx/one_shot_effect.gd" id="1_44bfe"]
+
+[sub_resource type="Gradient" id="Gradient_itroh"]
+colors = PackedColorArray(0.85, 0.08, 0.08, 1, 0.45, 0, 0, 0)
+
+[node name="PlayerImpact" type="Node2D" unique_id=208965179]
+z_index = 4
+script = ExtResource("1_44bfe")
+
+[node name="Blood" type="CPUParticles2D" parent="." unique_id=514419521]
+amount = 10
+lifetime = 0.3
+one_shot = true
+explosiveness = 1.0
+spread = 35.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 80.0
+initial_velocity_max = 220.0
+damping_min = 160.0
+damping_max = 440.0
+scale_amount_min = 1.5
+scale_amount_max = 2.5
+color_ramp = SubResource("Gradient_itroh")

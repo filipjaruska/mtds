@@ -4,6 +4,8 @@ class_name TrainingTarget
 ## (shots and players stop at it); every hit shows the damage dealt, and when
 ## its HP runs out it pops and comes back. Like everything else the host
 ## decides the hits (CombatServer calls take_hit) and every peer sees them.
+## Its look is training_target.tscn ("Rings" is what flashes and pops); place
+## it on a map by instancing that scene. HP and respawn time: game_rules.tres.
 
 const RADIUS := 22.0
 const RULES: GameRules = preload("res://src/game_rules.tres") # tuning numbers, edit in the inspector
@@ -11,29 +13,12 @@ var MAX_HP: float = RULES.target_hp
 var RESPAWN_SECONDS: float = RULES.target_respawn_seconds
 
 var hp := MAX_HP
-var _rings: Node2D
+@onready var _rings: Node2D = $Rings
 
 func _ready() -> void:
 	collision_layer = CombatServer.WALL_LAYER
 	collision_mask = 0
 	add_to_group("training_target")
-	var shape := CircleShape2D.new()
-	shape.radius = RADIUS
-	var collision := CollisionShape2D.new()
-	collision.shape = shape
-	add_child(collision)
-	# A bullseye: red and white rings.
-	_rings = Node2D.new()
-	add_child(_rings)
-	for i in range(4):
-		var ring := Polygon2D.new()
-		var r := RADIUS * (1.0 - i * 0.24)
-		var points := PackedVector2Array()
-		for k in range(24):
-			points.append(Vector2.RIGHT.rotated(TAU * k / 24.0) * r)
-		ring.polygon = points
-		ring.color = Color(0.85, 0.15, 0.15) if i % 2 == 0 else Color(0.95, 0.93, 0.9)
-		_rings.add_child(ring)
 
 ## Host only: a shot or swing hit this target.
 func take_hit(amount: float) -> void:

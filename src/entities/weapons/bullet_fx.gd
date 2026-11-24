@@ -2,17 +2,19 @@ extends Node2D
 class_name BulletFx
 ## The visible bullet. Purely cosmetic: hits are decided instantly by
 ## CombatServer's raycast; this only flies from the muzzle to the raycast's end
-## point and plays an impact there. A glowing slug with a tapered trail, then:
+## point and plays an impact there (ImpactFx):
 ##   WALL    sparks bouncing back, a dust puff and a bullet hole that fades
 ##   PLAYER  a red splash along the shot
 ##   SHIELD  a bright blue ricochet
 ##   NONE    out of range: the bullet just fades
+## Its look is fx/bullet.tscn: a "Slug" (the bullet itself, pointing along +x)
+## and a "Trail" line behind it. Edit that scene to change it.
 
 enum Impact { NONE, WALL, PLAYER, SHIELD }
 
+const SCENE_PATH := "res://src/entities/weapons/fx/bullet.tscn"
 const DEFAULT_SPEED := 2600.0 # px/s; each weapon sets its own (WeaponDef.bullet_speed)
 const TRAIL_LENGTH := 70.0
-const HOLE_SECONDS := 5.0
 
 var _from: Vector2
 var _to: Vector2
@@ -22,14 +24,14 @@ var _travelled := 0.0
 var _impact := Impact.NONE
 var _speed := DEFAULT_SPEED
 var _arrived := false
-var _trail: Line2D
-var _slug: Node2D
+
+@onready var _trail: Line2D = $Trail
+@onready var _slug: Node2D = $Slug
 
 static func spawn(parent: Node, from: Vector2, to: Vector2, impact: int, speed: float = DEFAULT_SPEED) -> BulletFx:
-	var fx := BulletFx.new()
+	var fx: BulletFx = load(SCENE_PATH).instantiate()
 	fx._speed = maxf(speed, 1.0)
 	fx.top_level = true
-	fx.z_index = 5
 	fx._from = from
 	fx._to = to
 	fx._impact = impact
@@ -39,37 +41,7 @@ static func spawn(parent: Node, from: Vector2, to: Vector2, impact: int, speed: 
 func _ready() -> void:
 	_distance = _from.distance_to(_to)
 	_dir = (_to - _from).normalized() if _distance > 0.0 else Vector2.RIGHT
-	var additive := CanvasItemMaterial.new()
-	additive.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-
-	_trail = Line2D.new()
-	_trail.width = 4.0
-	_trail.material = additive
-	_trail.begin_cap_mode = Line2D.LINE_CAP_ROUND
-	_trail.end_cap_mode = Line2D.LINE_CAP_ROUND
-	var fade := Gradient.new()
-	fade.set_color(0, Color(1.0, 0.45, 0.1, 0.0))
-	fade.set_color(1, Color(1.0, 0.85, 0.45, 0.9))
-	_trail.gradient = fade
-	var taper := Curve.new()
-	taper.add_point(Vector2(0.0, 0.15))
-	taper.add_point(Vector2(1.0, 1.0))
-	_trail.width_curve = taper
-	add_child(_trail)
-
-	# The slug: an orange glow around a white-hot core, pointing along the shot.
-	_slug = Node2D.new()
 	_slug.rotation = _dir.angle()
-	var glow := Polygon2D.new()
-	glow.polygon = _capsule(9.0, 3.5)
-	glow.color = Color(1.0, 0.6, 0.2, 0.45)
-	glow.material = additive
-	_slug.add_child(glow)
-	var core := Polygon2D.new()
-	core.polygon = _capsule(6.0, 1.6)
-	core.color = Color(1.0, 0.97, 0.85)
-	_slug.add_child(core)
-	add_child(_slug)
 	_update(0.0)
 
 func _process(delta: float) -> void:
@@ -96,13 +68,3 @@ func _arrive() -> void:
 		_trail.points = PackedVector2Array([_trail.points[0].lerp(_to, t), _to]), 0.0, 1.0, 0.08)
 	tween.tween_property(self, "modulate:a", 0.0, 0.12)
 	tween.chain().tween_callback(queue_free)
-
-static func _capsule(half_length: float, radius: float) -> PackedVector2Array:
-	var points := PackedVector2Array()
-	for i in range(7):
-		var a := -PI / 2.0 + PI * i / 6.0
-		points.append(Vector2(half_length - radius, 0) + Vector2(cos(a), sin(a)) * radius)
-	for i in range(7):
-		var a := PI / 2.0 + PI * i / 6.0
-		points.append(Vector2(-half_length + radius, 0) + Vector2(cos(a), sin(a)) * radius)
-	return points

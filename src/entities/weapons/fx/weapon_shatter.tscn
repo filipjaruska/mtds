@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/entities/weapons/fx/one_shot_effect.gd" id="1_iid0r"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_ckr1k"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_gdc62"]
+colors = PackedColorArray(0.82, 0.85, 0.9, 1, 0.82, 0.85, 0.9, 0)
+
+[node name="WeaponShatter" type="Node2D" unique_id=956888933]
+z_index = 4
+script = ExtResource("1_iid0r")
+
+[node name="Flash" type="Polygon2D" parent="." unique_id=1392132300]
+z_index = 1
+material = SubResource("CanvasItemMaterial_ckr1k")
+color = Color(1, 1, 1, 0.9)
+polygon = PackedVector2Array(9, 0, 3.4641016, 2, 4.5, 7.7942286, 2.4492127e-16, 4, -4.5, 7.7942286, -3.4641016, 2, -9, 1.1021457e-15, -3.4641016, -2, -4.5, -7.7942286, -7.347638e-16, -4, 4.5, -7.7942286, 3.4641016, -2)
+
+[node name="Shards" type="CPUParticles2D" parent="." unique_id=1448321456]
+amount = 7
+one_shot = true
+explosiveness = 1.0
+spread = 70.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 60.0
+initial_velocity_max = 160.0
+angular_velocity_min = -720.0
+angular_velocity_max = 720.0
+damping_min = 120.0
+damping_max = 320.0
+scale_amount_min = 1.8
+scale_amount_max = 3.0
+color_ramp = SubResource("Gradient_gdc62")

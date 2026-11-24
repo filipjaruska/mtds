@@ -1,0 +1,50 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/entities/weapons/fx/one_shot_effect.gd" id="1_aqpvy"]
+
+[sub_resource type="Gradient" id="Gradient_3kdqs"]
+colors = PackedColorArray(1, 0.8, 0.35, 1, 1, 0.35, 0.05, 0)
+
+[sub_resource type="Gradient" id="Gradient_us2fa"]
+colors = PackedColorArray(0.6, 0.55, 0.5, 0.6, 0.5, 0.45, 0.4, 0)
+
+[node name="WallImpact" type="Node2D" unique_id=1125068895]
+z_index = 4
+script = ExtResource("1_aqpvy")
+
+[node name="Sparks" type="CPUParticles2D" parent="." unique_id=1110525318]
+amount = 12
+lifetime = 0.25
+one_shot = true
+explosiveness = 1.0
+direction = Vector2(-1, 0)
+spread = 55.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 140.0
+initial_velocity_max = 300.0
+damping_min = 280.0
+damping_max = 600.0
+scale_amount_min = 0.96
+scale_amount_max = 1.6
+color_ramp = SubResource("Gradient_3kdqs")
+
+[node name="Dust" type="CPUParticles2D" parent="." unique_id=1365454990]
+amount = 6
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+direction = Vector2(-1, 0)
+spread = 80.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 20.0
+initial_velocity_max = 60.0
+damping_min = 40.0
+damping_max = 120.0
+scale_amount_min = 2.4
+scale_amount_max = 4.0
+color_ramp = SubResource("Gradient_us2fa")
+
+[node name="Decal" type="Polygon2D" parent="." unique_id=881379127]
+z_index = -3
+color = Color(0.05, 0.04, 0.04, 0.85)
+polygon = PackedVector2Array(2.6, 0, 2.192031, 2.192031, 1.3470671e-16, 2.2, -2.1213202, 2.1213202, -2.4, 2.9390553e-16, -2.0506096, -2.0506096, -3.8575098e-16, -2.1, 1.9798989, -1.9798989)

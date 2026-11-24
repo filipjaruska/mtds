@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/entities/weapons/fx/one_shot_effect.gd" id="1_ikhsk"]
+
+[sub_resource type="Gradient" id="Gradient_yiewh"]
+colors = PackedColorArray(0.75, 0.9, 1, 1, 0.3, 0.55, 1, 0)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_4tjw6"]
+blend_mode = 1
+
+[node name="ShieldImpact" type="Node2D" unique_id=1921275001]
+z_index = 4
+script = ExtResource("1_ikhsk")
+
+[node name="Sparks" type="CPUParticles2D" parent="." unique_id=1861497990]
+amount = 14
+lifetime = 0.22
+one_shot = true
+explosiveness = 1.0
+direction = Vector2(-1, 0)
+spread = 70.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 180.0
+initial_velocity_max = 360.0
+damping_min = 360.0
+damping_max = 720.0
+scale_amount_min = 0.96
+scale_amount_max = 1.6
+color_ramp = SubResource("Gradient_yiewh")
+
+[node name="Flash" type="Polygon2D" parent="." unique_id=1628350402]
+z_index = 1
+material = SubResource("CanvasItemMaterial_4tjw6")
+color = Color(0.6, 0.8, 1, 0.8)
+polygon = PackedVector2Array(9, 0, 3.4641016, 2, 4.5, 7.7942286, 2.4492127e-16, 4, -4.5, 7.7942286, -3.4641016, 2, -9, 1.1021457e-15, -3.4641016, -2, -4.5, -7.7942286, -7.347638e-16, -4, 4.5, -7.7942286, 3.4641016, -2)

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://src/scenes/debug_map.gd" id="1_eglss"]
 [ext_resource type="PackedScene" path="res://src/entities/player/player.tscn" id="2_828io"]
 [ext_resource type="TileSet" path="res://src/assets/maps/debug/tiles.tres" id="3_fjwj1"]
-[ext_resource type="Script" path="res://src/entities/training_target.gd" id="4_giquw"]
+[ext_resource type="PackedScene" path="res://src/entities/training_target.tscn" id="training_target"]
 [ext_resource type="Script" path="res://src/scenes/spawn_point.gd" id="spawn_point"]
 
 [node name="Debug" type="Node2D" unique_id=1144231477]
@@ -57,18 +57,14 @@ position = Vector2(992, 800)
 
 [node name="Targets" type="Node2D" parent="." unique_id=357565943]
 
-[node name="Target1" type="StaticBody2D" parent="Targets" unique_id=1561115420]
+[node name="Target1" parent="Targets" unique_id=1561115420 instance=ExtResource("training_target")]
 position = Vector2(1760, 480)
-script = ExtResource("4_giquw")
 
-[node name="Target2" type="StaticBody2D" parent="Targets" unique_id=1062611626]
+[node name="Target2" parent="Targets" unique_id=1062611626 instance=ExtResource("training_target")]
 position = Vector2(1760, 672)
-script = ExtResource("4_giquw")
 
-[node name="Target3" type="StaticBody2D" parent="Targets" unique_id=654956505]
+[node name="Target3" parent="Targets" unique_id=654956505 instance=ExtResource("training_target")]
 position = Vector2(160, 288)
-script = ExtResource("4_giquw")
 
-[node name="Target4" type="StaticBody2D" parent="Targets" unique_id=1614975652]
+[node name="Target4" parent="Targets" unique_id=1614975652 instance=ExtResource("training_target")]
 position = Vector2(160, 864)
-script = ExtResource("4_giquw")

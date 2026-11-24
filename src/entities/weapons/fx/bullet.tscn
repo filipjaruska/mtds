@@ -1,0 +1,37 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/entities/weapons/bullet_fx.gd" id="1_bgg6a"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_hky4e"]
+blend_mode = 1
+
+[sub_resource type="Curve" id="Curve_ksdjk"]
+_data = [Vector2(0, 0.15), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_oky36"]
+colors = PackedColorArray(1, 0.45, 0.1, 0, 1, 0.85, 0.45, 0.9)
+
+[node name="Bullet" type="Node2D" unique_id=1387740198]
+z_index = 5
+script = ExtResource("1_bgg6a")
+
+[node name="Trail" type="Line2D" parent="." unique_id=1033077489]
+material = SubResource("CanvasItemMaterial_hky4e")
+points = PackedVector2Array(-70, 0, 0, 0)
+width = 4.0
+width_curve = SubResource("Curve_ksdjk")
+gradient = SubResource("Gradient_oky36")
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Slug" type="Node2D" parent="." unique_id=495459040]
+
+[node name="Glow" type="Polygon2D" parent="Slug" unique_id=627857367]
+material = SubResource("CanvasItemMaterial_hky4e")
+color = Color(1, 0.6, 0.2, 0.45)
+polygon = PackedVector2Array(5.5, -3.5, 7.25, -3.0310888, 8.531089, -1.75, 9, 0, 8.531089, 1.75, 7.25, 3.0310888, 5.5, 3.5, -5.5, 3.5, -7.25, 3.0310888, -8.531089, 1.75, -9, 4.2861222e-16, -8.531089, -1.75, -7.25, -3.0310888, -5.5, -3.5)
+
+[node name="Core" type="Polygon2D" parent="Slug" unique_id=1651398486]
+color = Color(1, 0.97, 0.85, 1)
+polygon = PackedVector2Array(4.4, -1.6, 5.2000003, -1.3856406, 5.7856407, -0.8, 6, 0, 5.7856407, 0.8, 5.2000003, 1.3856406, 4.4, 1.6, -4.4, 1.6, -5.2000003, 1.3856406, -5.7856407, 0.8, -6, 1.9593702e-16, -5.7856407, -0.8, -5.2000003, -1.3856406, -4.4, -1.6)
