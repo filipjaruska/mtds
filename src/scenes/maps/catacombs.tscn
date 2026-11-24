@@ -13,6 +13,7 @@
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/mp5.tres" id="11_mp5"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/katana.tres" id="12_katana"]
 [ext_resource type="PackedScene" path="res://src/entities/powerups/powerup_spawner.tscn" id="9_vg5cl"]
+[ext_resource type="Script" path="res://src/scenes/spawn_point.gd" id="spawn_point"]
 
 [node name="Catacombs" type="Node2D" unique_id=62682039]
 script = ExtResource("1_ed704")
@@ -125,28 +126,36 @@ texture = ExtResource("6_en74m")
 
 [node name="SpawnLocations" type="Node2D" parent="." unique_id=684530918]
 
-[node name="0" type="Node2D" parent="SpawnLocations" unique_id=1794089317 groups=["PlayerSpawnLocation"]]
+[node name="0" type="Marker2D" parent="SpawnLocations" unique_id=1794089317 groups=["PlayerSpawnLocation"]]
+script = ExtResource("spawn_point")
 position = Vector2(288, 480)
 
-[node name="1" type="Node2D" parent="SpawnLocations" unique_id=1762638050 groups=["PlayerSpawnLocation"]]
+[node name="1" type="Marker2D" parent="SpawnLocations" unique_id=1762638050 groups=["PlayerSpawnLocation"]]
+script = ExtResource("spawn_point")
 position = Vector2(3616, 2592)
 
-[node name="2" type="Node2D" parent="SpawnLocations" unique_id=905461275 groups=["PlayerSpawnLocation"]]
+[node name="2" type="Marker2D" parent="SpawnLocations" unique_id=905461275 groups=["PlayerSpawnLocation"]]
+script = ExtResource("spawn_point")
 position = Vector2(3616, 224)
 
-[node name="3" type="Node2D" parent="SpawnLocations" unique_id=944559915 groups=["PlayerSpawnLocation"]]
+[node name="3" type="Marker2D" parent="SpawnLocations" unique_id=944559915 groups=["PlayerSpawnLocation"]]
+script = ExtResource("spawn_point")
 position = Vector2(224, 2592)
 
-[node name="4" type="Node2D" parent="SpawnLocations" unique_id=1317293870 groups=["PlayerSpawnLocation"]]
+[node name="4" type="Marker2D" parent="SpawnLocations" unique_id=1317293870 groups=["PlayerSpawnLocation"]]
+script = ExtResource("spawn_point")
 position = Vector2(224, 992)
 
-[node name="5" type="Node2D" parent="SpawnLocations" unique_id=95446959 groups=["PlayerSpawnLocation"]]
+[node name="5" type="Marker2D" parent="SpawnLocations" unique_id=95446959 groups=["PlayerSpawnLocation"]]
+script = ExtResource("spawn_point")
 position = Vector2(2656, 1632)
 
-[node name="6" type="Node2D" parent="SpawnLocations" unique_id=2032038599 groups=["PlayerSpawnLocation"]]
+[node name="6" type="Marker2D" parent="SpawnLocations" unique_id=2032038599 groups=["PlayerSpawnLocation"]]
+script = ExtResource("spawn_point")
 position = Vector2(1184, 288)
 
-[node name="7" type="Node2D" parent="SpawnLocations" unique_id=1504307692 groups=["PlayerSpawnLocation"]]
+[node name="7" type="Marker2D" parent="SpawnLocations" unique_id=1504307692 groups=["PlayerSpawnLocation"]]
+script = ExtResource("spawn_point")
 position = Vector2(2592, 2208)
 
 [node name="WeaponDrops" type="Node2D" parent="." unique_id=1172919185]

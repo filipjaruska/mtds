@@ -15,10 +15,12 @@
 [ext_resource type="Resource" path="res://src/entities/powerups/defs/damage_boost.tres" id="13_8gqd2"]
 [ext_resource type="Resource" path="res://src/entities/powerups/defs/faster_dash.tres" id="14_rq6xg"]
 [ext_resource type="Resource" path="res://src/entities/powerups/defs/health_boost.tres" id="15_bqqoq"]
+[ext_resource type="Script" path="res://src/scenes/spawn_point.gd" id="spawn_point"]
 
 [node name="Tutorial" type="Node2D" unique_id=668816745]
 script = ExtResource("1_xn0vq")
 playerScene = ExtResource("2_rquni")
+spawn_points_needed = 1
 
 [node name="Floor" type="TileMapLayer" parent="." unique_id=837490043]
 z_index = -10
@@ -31,7 +33,8 @@ tile_set = ExtResource("3_uhttd")
 
 [node name="SpawnLocations" type="Node2D" parent="." unique_id=1457242814]
 
-[node name="0" type="Node2D" parent="SpawnLocations" unique_id=1948496662 groups=["PlayerSpawnLocation"]]
+[node name="0" type="Marker2D" parent="SpawnLocations" unique_id=1948496662 groups=["PlayerSpawnLocation"]]
+script = ExtResource("spawn_point")
 position = Vector2(288, 416)
 
 [node name="Signs" type="Node2D" parent="." unique_id=755966821]

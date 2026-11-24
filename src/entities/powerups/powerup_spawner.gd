@@ -1,25 +1,38 @@
+@tool
 extends Node2D
 class_name PowerupSpawner
-## Host-driven powerup spawner. Leave `powerup_def` empty to spawn random cards.
+## Puts cards on the map (the host decides; every peer shows them). Cards
+## appear at random spots inside the area, which is drawn in the editor only.
 
+## The card to spawn. Leave empty for a random card each time.
 @export var powerup_def: PowerupDef
+## Seconds between new cards.
 @export var spawn_frequency: float = 15.0
+## No new cards while this many are lying in the area.
 @export var max_powerups: int = 5
 @export_group("Spawn Area")
-@export var use_spawn_area: bool = true
-@export var spawn_area_size: Vector2 = Vector2(800, 600)
+## Off: every card appears exactly at this node.
+@export var use_spawn_area: bool = true:
+	set(value):
+		use_spawn_area = value
+		queue_redraw()
+@export var spawn_area_size: Vector2 = Vector2(800, 600):
+	set(value):
+		spawn_area_size = value
+		queue_redraw()
 
 var spawn_timer: Timer
 var current_powerups: int = 0
 var spawn_counter: int = 0
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
 	if multiplayer.is_server():
 		spawn_timer = Timer.new()
 		add_child(spawn_timer)
 		spawn_timer.timeout.connect(_spawn_powerup)
 		spawn_timer.start(spawn_frequency)
-	queue_redraw()
 
 func _spawn_powerup() -> void:
 	if current_powerups >= max_powerups:
@@ -54,7 +67,7 @@ func _get_spawn_position() -> Vector2:
 	return global_position
 
 func _draw() -> void:
-	if not use_spawn_area or not Engine.is_editor_hint() and not OS.is_debug_build():
+	if not Engine.is_editor_hint() or not use_spawn_area:
 		return
 	var half_size := spawn_area_size / 2
 	draw_rect(Rect2(-half_size, spawn_area_size), Color(0, 1, 0, 0.2), true)

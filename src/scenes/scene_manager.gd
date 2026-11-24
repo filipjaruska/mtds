@@ -1,16 +1,37 @@
+@tool
 extends Node2D
+class_name GameMap
 ## Root of a playable map: spawns the players and owns map-level network
 ## objects such as dropped weapon pickups.
+##
+## Making a map: duplicate res://src/scenes/map_template.tscn into
+## res://src/scenes/maps/ (every scene there is listed in the lobby). A map needs
+##   - spawn points (SpawnPoint nodes) named 0, 1, 2 ... one per player;
+##     in team matches Red spawns on even numbers and Blue on odd ones
+##   - walls painted with a tile set whose physics layer is on layer 3
+##     "walls", so shots and players stop at them
+##   - weapon spots (WeaponSpawner) and card areas (PowerupSpawner), optional
+## The scene tree shows a warning on this node while something is missing.
+
+const RULES: GameRules = preload("res://src/game_rules.tres")
 
 const WEAPON_PICKUP_SCENE := preload("res://src/entities/weapons/weapon_pickup.tscn")
 ## How far from the dropping player a drop may land (guards against bogus requests).
 const MAX_DROP_DISTANCE := 200.0
 
 @export var playerScene: PackedScene
+## Spawn points this map must have. 0 = the max players in game_rules.tres.
+@export_range(0, 8) var spawn_points_needed: int = 0
 
 var _dropped_pickup_count: int = 0
 
 func _ready():
+	if Engine.is_editor_hint():
+		# Re-check the map whenever something in it changes.
+		get_tree().node_added.connect(_on_editor_tree_changed)
+		get_tree().node_removed.connect(_on_editor_tree_changed)
+		get_tree().node_renamed.connect(_on_editor_tree_changed)
+		return
 	var combat := CombatServer.new()
 	combat.name = "Combat"
 	add_child(combat)
@@ -80,3 +101,36 @@ func _spawn_weapon_pickup(def_id: StringName, pos: Vector2, node_name: String) -
 	pickup.position = pos
 	pickup.setup(def)
 	add_child(pickup)
+
+# --- Editor checks ----------------------------------------------------------------
+
+func _on_editor_tree_changed(node: Node) -> void:
+	if is_ancestor_of(node):
+		update_configuration_warnings.call_deferred()
+
+func _get_configuration_warnings() -> PackedStringArray:
+	var warnings := PackedStringArray()
+	if playerScene == null:
+		warnings.append("Player Scene is empty: set it to res://src/entities/player/player.tscn.")
+	var needed := spawn_points_needed if spawn_points_needed > 0 else RULES.max_players
+	var names := {}
+	for node in find_children("*", "", true, false):
+		if node.is_in_group("PlayerSpawnLocation") or node is SpawnPoint:
+			names[String(node.name)] = true
+	var missing: Array[String] = []
+	for i in range(needed):
+		if not names.has(str(i)):
+			missing.append(str(i))
+	if not missing.is_empty():
+		warnings.append("Needs %d spawn points named 0 to %d (SpawnPoint nodes). Missing: %s." % [needed, needed - 1, ", ".join(missing)])
+	var has_walls := false
+	for layer in find_children("*", "TileMapLayer", true, false):
+		var tiles: TileSet = layer.tile_set
+		if tiles == null:
+			continue
+		for i in range(tiles.get_physics_layers_count()):
+			if tiles.get_physics_layer_collision_layer(i) & CombatServer.WALL_LAYER:
+				has_walls = true
+	if not has_walls:
+		warnings.append("No walls: paint walls with a tile set whose physics layer is on layer 3 \"walls\" (like src/assets/maps/catacombs/tiles.tres), or shots and players pass through.")
+	return warnings
