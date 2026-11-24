@@ -4,7 +4,8 @@ class_name HealthComponent
 ## regeneration and decides deaths/respawns; every peer (including the host)
 ## receives the result through the _sync/_on_* RPCs below.
 
-const RESPAWN_DELAY := 1.0
+const RULES: GameRules = preload("res://src/game_rules.tres") # tuning numbers, edit in the inspector
+var RESPAWN_DELAY: float = RULES.respawn_seconds
 
 @onready var heal_timer: Timer = $HealthRegenTimer
 @onready var health_bar = $"../PlayerHealthBar"

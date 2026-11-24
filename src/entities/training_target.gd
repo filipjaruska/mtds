@@ -6,8 +6,9 @@ class_name TrainingTarget
 ## decides the hits (CombatServer calls take_hit) and every peer sees them.
 
 const RADIUS := 22.0
-const MAX_HP := 100.0
-const RESPAWN_SECONDS := 1.5
+const RULES: GameRules = preload("res://src/game_rules.tres") # tuning numbers, edit in the inspector
+var MAX_HP: float = RULES.target_hp
+var RESPAWN_SECONDS: float = RULES.target_respawn_seconds
 
 var hp := MAX_HP
 var _rings: Node2D

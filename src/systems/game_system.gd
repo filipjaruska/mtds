@@ -22,8 +22,9 @@ const CARD_RULES_STANDARD := PowerupRules.RULES_STANDARD
 const CARD_RULES_SHUFFLE := PowerupRules.RULES_SHUFFLE
 const CARD_RULES_POKER := PowerupRules.RULES_POKER
 
+const RULES: GameRules = preload("res://src/game_rules.tres") # tuning numbers, edit in the inspector
 ## Players per match, host included. Maps need this many spawn points.
-const MAX_PLAYERS := 8
+var MAX_PLAYERS: int = RULES.max_players
 
 var current_state: GameState = GameState.MENU
 var game_settings: Dictionary = {
@@ -31,7 +32,7 @@ var game_settings: Dictionary = {
 	"game_type": GAME_TYPE_DEATHMATCH,
 	"card_rules": CARD_RULES_STANDARD,
 	"map": "", # res:// path of the selected map scene
-	"match_duration_seconds": 300.0
+	"match_duration_seconds": RULES.match_seconds
 }
 
 var match_time_remaining: float = 0.0
@@ -112,7 +113,7 @@ func are_teammates(a: int, b: int) -> bool:
 	return TeamRules.is_friendly(players, a, b, is_team_mode())
 
 func get_match_duration() -> float:
-	return float(game_settings.get("match_duration_seconds", 300.0))
+	return float(game_settings.get("match_duration_seconds", RULES.match_seconds))
 
 ## Seconds since the current poker minute began (for the board's timer bar).
 func get_poker_seconds_into_round() -> float:
@@ -179,7 +180,7 @@ func start_match() -> void:
 	reset_match_stats()
 	if multiplayer.is_server():
 		_prepare_match_mode_state()
-	var duration: float = float(game_settings.get("match_duration_seconds", 300.0))
+	var duration: float = float(game_settings.get("match_duration_seconds", RULES.match_seconds))
 	match_time_remaining = duration
 	set_game_state(GameState.PLAYING)
 	set_process(true)
@@ -308,7 +309,7 @@ func return_to_menu() -> void:
 	_stop_match(false)
 	if tutorial_mode:
 		tutorial_mode = false
-		game_settings["match_duration_seconds"] = 300.0
+		game_settings["match_duration_seconds"] = RULES.match_seconds
 	set_game_state(GameState.MENU)
 	players.clear()
 

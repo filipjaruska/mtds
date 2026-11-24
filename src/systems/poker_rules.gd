@@ -14,10 +14,12 @@ const RANKS := ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"
 const SUITS := ["♠", "♥", "♦", "♣"]
 const SUIT_NAMES := ["spades", "hearts", "diamonds", "clubs"]
 
+const RULES: GameRules = preload("res://src/game_rules.tres") # tuning numbers, edit in the inspector
+
 const BOARD_SIZE := 4
-## Seconds between board cards; the board starts over every minute.
-const REVEAL_INTERVAL := 15.0
-const ROUND_SECONDS := 60.0
+## Seconds between board cards, and how often the board starts over.
+static var REVEAL_INTERVAL: float = RULES.poker_reveal_seconds
+static var ROUND_SECONDS: float = RULES.poker_round_seconds
 
 enum Hand { HIGH_CARD, PAIR, TWO_PAIR, THREE_OF_A_KIND, STRAIGHT, FLUSH, FULL_HOUSE, FOUR_OF_A_KIND, STRAIGHT_FLUSH }
 

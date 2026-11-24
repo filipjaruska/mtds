@@ -7,8 +7,9 @@ class_name WeaponHolder
 ## Other peers only mirror the loadout they receive and play effects.
 ## No gameplay decisions are made here; they live in the rules.
 
-const SWITCH_COOLDOWN_MSEC := 300
-const DROP_COOLDOWN_MSEC := 1000
+const RULES: GameRules = preload("res://src/game_rules.tres") # tuning numbers, edit in the inspector
+var SWITCH_COOLDOWN_MSEC: int = int(RULES.switch_cooldown_seconds * 1000.0)
+var DROP_COOLDOWN_MSEC: int = int(RULES.drop_cooldown_seconds * 1000.0)
 const DUAL_WIELD_VERTICAL_SPACING := 18.0
 
 @onready var player: Node2D = $"../.."

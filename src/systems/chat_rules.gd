@@ -4,17 +4,19 @@ class_name ChatRules
 ## typewriter timing, the per-player message queue and the top bar's layout.
 ## Nothing here touches nodes or the network.
 
-const MAX_LENGTH := 80
+const RULES: GameRules = preload("res://src/game_rules.tres") # tuning numbers, edit in the inspector
+
+static var MAX_LENGTH: int = RULES.chat_max_length
 ## Host spam guard: at most this many messages per window, per player.
-const RATE_COUNT := 3
-const RATE_WINDOW_MSEC := 4000
+static var RATE_COUNT: int = RULES.chat_rate_count
+static var RATE_WINDOW_MSEC: int = int(RULES.chat_rate_window_seconds * 1000.0)
 ## Typewriter speed and how long a revealed message stays up.
-const CHARS_PER_SECOND := 32.0
-const HOLD_BASE := 3.0
-const HOLD_PER_CHAR := 0.04
-const FADE_SECONDS := 0.4
+static var CHARS_PER_SECOND: float = RULES.chat_chars_per_second
+static var HOLD_BASE: float = RULES.chat_hold_seconds
+static var HOLD_PER_CHAR: float = RULES.chat_hold_per_char
+static var FADE_SECONDS: float = RULES.chat_fade_seconds
 ## Messages waiting behind the one being shown.
-const MAX_QUEUED := 3
+static var MAX_QUEUED: int = RULES.chat_max_queued
 
 ## Printable single-line text, whitespace collapsed, at most MAX_LENGTH
 ## characters; "" when nothing is left.
