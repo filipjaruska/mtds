@@ -120,7 +120,8 @@ text = "Name"
 vertical_alignment = 1
 theme_type_variation = &"MutedLabel"
 
-[node name="LineEdit" type="LineEdit" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer/HBoxContainer"]
+[node name="NameInput" type="LineEdit" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer/HBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -138,6 +139,7 @@ theme_type_variation = &"HeaderLabel"
 uppercase = true
 
 [node name="MapDropdown" type="OptionButton" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/MapSelectionContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 
@@ -152,10 +154,12 @@ theme_type_variation = &"HeaderLabel"
 uppercase = true
 
 [node name="GametypeDropdown" type="OptionButton" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 
-[node name="Description" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer"]
+[node name="GametypeDescription" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 3
 text = "Everyone for themselves."
@@ -172,10 +176,12 @@ theme_type_variation = &"HeaderLabel"
 uppercase = true
 
 [node name="CardRulesDropdown" type="OptionButton" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/CardRulesContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 
-[node name="Description" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/CardRulesContainer"]
+[node name="CardRulesDescription" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/CardRulesContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 3
 text = "Each card gives one stack."
@@ -187,18 +193,21 @@ size_flags_vertical = 8
 theme_override_constants/separation = 10
 
 [node name="StartButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Start Game"
 theme_type_variation = &"AccentButton"
 
 [node name="ReadyButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Ready"
 theme_type_variation = &"AccentButton"
 
 [node name="SwitchTeamButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer"]
+unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2

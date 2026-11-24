@@ -1,8 +1,8 @@
 extends Control
 
-@onready var _preview: TextureRect = $MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PreviewPanel/Padding/VBox/Preview
-@onready var _color_picker: ColorPicker = $MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PickerPanel/Padding/VBox/ColorPicker
-@onready var _reset_button: Button = $MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PickerPanel/Padding/VBox/ResetButton
+@onready var _preview: TextureRect = %Preview
+@onready var _color_picker: ColorPicker = %ColorPicker
+@onready var _reset_button: Button = %ResetButton
 
 
 func _ready() -> void:

@@ -8,7 +8,7 @@ const SAMPLE_MATCHES := [
 	{"result": "Victory", "mode": "deathmatch+shuffle", "kills": 10, "deaths": 5, "date": "2026-07-08"},
 ]
 
-@onready var _match_list: ItemList = $MarginContainer/ContentPanel/VBoxContainer/MatchHistoryPanel/Padding/MatchList
+@onready var _match_list: ItemList = %MatchList
 
 
 func _ready() -> void:

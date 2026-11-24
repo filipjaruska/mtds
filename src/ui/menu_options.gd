@@ -36,11 +36,11 @@ const KEYBIND_ROWS: Dictionary = {
 	"Scoreboard": "scoreboard",
 }
 
-@onready var _tab_container: TabContainer = $MarginContainer/ContentPanel/TabContainer
-@onready var skip_splash: CheckButton = $MarginContainer/ContentPanel/TabContainer/GameSettings/VBoxContainer/SkipSplash
-@onready var resolution: OptionButton = $MarginContainer/ContentPanel/TabContainer/Graphics/VBoxContainer/ResolutionRow/Resolution
-@onready var fullscreen: CheckButton = $MarginContainer/ContentPanel/TabContainer/Graphics/VBoxContainer/Fullscreen
-@onready var _keybinds_list: VBoxContainer = $MarginContainer/ContentPanel/TabContainer/Keybinds/ScrollContainer/VBoxContainer
+@onready var _tab_container: TabContainer = %TabContainer
+@onready var skip_splash: CheckButton = %SkipSplash
+@onready var resolution: OptionButton = %Resolution
+@onready var fullscreen: CheckButton = %Fullscreen
+@onready var _keybinds_list: VBoxContainer = %KeybindsList
 
 var _binding_labels: Dictionary = {} # action -> Label
 var _listening_action: String = ""

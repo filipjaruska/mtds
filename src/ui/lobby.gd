@@ -28,16 +28,16 @@ const CARD_RULES := [
 		"Every card you pick up comes with a playing card. Play it with the 4 cards under the clock (one more every 15 s, new ones each minute): the better the poker hand, the stronger the card, up to x4."],
 ]
 
-@onready var player_name_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/PlayerInfoContainer/HBoxContainer/LineEdit
-@onready var start_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/StartButton
-@onready var ready_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/ReadyButton
+@onready var player_name_input: LineEdit = %NameInput
+@onready var start_button: Button = %StartButton
+@onready var ready_button: Button = %ReadyButton
 @onready var player_rows: VBoxContainer = %PlayerRows
-@onready var map_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/MapSelectionContainer/MapDropdown
-@onready var game_type_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/GametypeDropdown
-@onready var game_type_description: Label = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/GametypeContainer/Description
-@onready var card_rules_dropdown: OptionButton = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/CardRulesContainer/CardRulesDropdown
-@onready var card_rules_description: Label = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/CardRulesContainer/Description
-@onready var switch_team_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/Content/ButtonsContainer/SwitchTeamButton
+@onready var map_dropdown: OptionButton = %MapDropdown
+@onready var game_type_dropdown: OptionButton = %GametypeDropdown
+@onready var game_type_description: Label = %GametypeDescription
+@onready var card_rules_dropdown: OptionButton = %CardRulesDropdown
+@onready var card_rules_description: Label = %CardRulesDescription
+@onready var switch_team_button: Button = %SwitchTeamButton
 
 func _enter_tree() -> void:
 	# Before children are ready, so the nav bar already sees an active lobby.

@@ -94,6 +94,7 @@ horizontal_alignment = 1
 theme_type_variation = &"MutedLabel"
 
 [node name="Preview" type="TextureRect" parent="MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PreviewPanel/Padding/VBox"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 120)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -123,6 +124,7 @@ text = "Player Color"
 theme_type_variation = &"MutedLabel"
 
 [node name="ColorPicker" type="ColorPicker" parent="MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PickerPanel/Padding/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 0
 edit_alpha = false
@@ -134,6 +136,7 @@ presets_visible = false
 picker_shape = 1
 
 [node name="ResetButton" type="Button" parent="MarginContainer/ContentPanel/ScrollContainer/HBoxContainer/PickerPanel/Padding/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Reset to White"
 
