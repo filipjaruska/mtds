@@ -6,7 +6,6 @@ signal continue_pressed
 
 const AUTO_CONTINUE_SECONDS: float = 12.0
 const PODIUM_CARD := preload("res://src/ui/library/podium_card.tscn")
-const OUTCOME_COLORS := {"win": UiPalette.ACCENT, "loss": UiPalette.TEXT, "draw": UiPalette.TEXT, "none": UiPalette.TEXT}
 
 @onready var continue_button: Button = %ContinueButton
 @onready var timer_label: Label = %TimerLabel
@@ -29,7 +28,7 @@ func setup(results: Array) -> void:
 	var head := ResultsFormat.headline(results, team_mode, my_id)
 	_eyebrow.text = "Match over  ·  %s" % ("Team deathmatch" if team_mode else "Deathmatch")
 	_title.text = head.title
-	_title.add_theme_color_override("font_color", OUTCOME_COLORS.get(head.outcome, UiPalette.TEXT))
+	_title.add_theme_color_override("font_color", UiPalette.ACCENT if head.outcome == "win" else UiPalette.TEXT)
 	_subtitle.text = head.subtitle
 	_fill_podium(results, team_mode, my_id)
 	_table.show_results(results, team_mode, my_id)

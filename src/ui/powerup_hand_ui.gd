@@ -166,11 +166,8 @@ func _fly_ghost(texture: Texture2D, from_slot: int, to_slot: int) -> void:
 func _burst_text(text: String, at: Vector2, color: Color) -> void:
 	var label := Label.new()
 	label.text = text
-	label.add_theme_font_size_override("font_size", 34)
+	label.theme_type_variation = &"BurstText"
 	label.add_theme_color_override("font_color", color)
-	label.add_theme_constant_override("outline_size", 8)
-	label.add_theme_font_override("font", UiPalette.HEADING_FONT_BOLD)
-	label.add_theme_color_override("font_outline_color", UiPalette.OUTLINE)
 	label.size = Vector2(260, 44)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.pivot_offset = label.size * 0.5

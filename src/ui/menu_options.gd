@@ -1,10 +1,5 @@
 extends Control
 
-const LABEL_COLOR := UiPalette.TEXT
-const BINDING_COLOR := UiPalette.TEXT_DIM
-const BINDING_HOVER_COLOR := UiPalette.TEXT
-const LISTENING_COLOR := UiPalette.ACCENT
-
 ## Window sizes. Every size shows the same part of the map (see ViewRules);
 ## a bigger window is only sharper. Sizes larger than the screen are hidden.
 const RESOLUTION: Dictionary = {
@@ -173,13 +168,13 @@ func _on_binding_gui_input(event: InputEvent, action: String, binding: Label) ->
 func _on_binding_mouse_entered(binding: Label) -> void:
 	if _listening_label == binding:
 		return
-	binding.add_theme_color_override("font_color", BINDING_HOVER_COLOR)
+	binding.add_theme_color_override("font_color", UiPalette.TEXT)
 
 
 func _on_binding_mouse_exited(binding: Label) -> void:
 	if _listening_label == binding:
 		return
-	binding.add_theme_color_override("font_color", BINDING_COLOR)
+	binding.add_theme_color_override("font_color", UiPalette.TEXT_DIM)
 
 
 func _start_rebind(action: String, binding: Label) -> void:
@@ -192,7 +187,7 @@ func _start_rebind(action: String, binding: Label) -> void:
 	_listening_label = binding
 	_rebind_armed = false
 	binding.text = "Press key... (Esc to cancel)"
-	binding.add_theme_color_override("font_color", LISTENING_COLOR)
+	binding.add_theme_color_override("font_color", UiPalette.ACCENT)
 	set_process_input(true)
 	call_deferred("_arm_rebind")
 
@@ -229,14 +224,14 @@ func _refresh_all_binding_labels() -> void:
 	for action: String in _binding_labels:
 		var binding: Label = _binding_labels[action]
 		binding.text = GameSettings.get_action_binding_text(action)
-		binding.add_theme_color_override("font_color", BINDING_COLOR)
+		binding.add_theme_color_override("font_color", UiPalette.TEXT_DIM)
 
 
 func _refresh_binding_label_for_node(binding: Label) -> void:
 	for action: String in _binding_labels:
 		if _binding_labels[action] == binding:
 			binding.text = GameSettings.get_action_binding_text(action)
-			binding.add_theme_color_override("font_color", BINDING_COLOR)
+			binding.add_theme_color_override("font_color", UiPalette.TEXT_DIM)
 			return
 
 
@@ -257,13 +252,13 @@ func _style_binding_rows(root: Node) -> void:
 			continue
 
 		row.custom_minimum_size.y = 36
-		action.add_theme_color_override("font_color", LABEL_COLOR)
+		action.add_theme_color_override("font_color", UiPalette.TEXT)
 		action.add_theme_font_size_override("font_size", 15)
-		binding.add_theme_color_override("font_color", BINDING_COLOR)
+		binding.add_theme_color_override("font_color", UiPalette.TEXT_DIM)
 		binding.add_theme_font_size_override("font_size", 14)
 
 
 func _style_control(control: Control) -> void:
 	if control is CheckButton or control is OptionButton:
-		control.add_theme_color_override("font_color", LABEL_COLOR)
+		control.add_theme_color_override("font_color", UiPalette.TEXT)
 		control.add_theme_font_size_override("font_size", 15)
