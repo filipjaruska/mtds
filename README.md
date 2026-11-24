@@ -15,13 +15,15 @@ Clone:
 git clone https://github.com/filipjaruska/mtds.git
 ```
 
-then:
+then, once per clone (needs Godot 4.7.2 .NET installed; on Windows run it in Git Bash):
 
 ```sh
-git config core.hooksPath .githooks
-git config hooks.godot "/path/to/godot"
-git config alias.test '!sh tests/run.sh'
+sh tools/setup.sh                   # finds Godot by itself
+sh tools/setup.sh /path/to/godot    # or point it at Godot
 ```
+
+It turns on the git hooks, adds `git test`, remembers where Godot is and
+imports the project.
 
 To test:
 

@@ -6,8 +6,8 @@
 #   sh tests/run.sh unit smoke ...   individual steps: import compile unit nav smoke pause tutorial net
 #
 # Godot binary, first match wins:
-#   $GODOT, `git config hooks.godot`, `godot` on PATH.
-# Set it once per clone with:  git config hooks.godot "/path/to/godot"
+#   $GODOT, `git config hooks.godot` (set by tools/setup.sh), then a search
+#   of the usual install places (tools/find_godot.sh).
 
 set -u
 cd "$(dirname "$0")/.." || exit 1
@@ -17,12 +17,13 @@ if [ -z "$GODOT_BIN" ]; then
 	GODOT_BIN=$(git config --get hooks.godot 2>/dev/null || true)
 fi
 if [ -z "$GODOT_BIN" ]; then
-	GODOT_BIN=godot
+	. tools/find_godot.sh
+	find_godot
+	GODOT_BIN=$GODOT_FOUND
 fi
-if [ ! -f "$GODOT_BIN" ] && ! command -v "$GODOT_BIN" >/dev/null 2>&1; then
+if [ -z "$GODOT_BIN" ] || { [ ! -f "$GODOT_BIN" ] && ! command -v "$GODOT_BIN" >/dev/null 2>&1; }; then
 	echo "tests/run.sh: Godot not found ('$GODOT_BIN')." >&2
-	echo "Point it at your Godot binary once per clone:" >&2
-	echo "  git config hooks.godot \"/path/to/godot\"   (or set the GODOT environment variable)" >&2
+	echo "Run the one-time setup:  sh tools/setup.sh /path/to/godot" >&2
 	exit 1
 fi
 

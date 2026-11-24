@@ -117,7 +117,8 @@ text = "Name"
 vertical_alignment = 1
 theme_type_variation = &"MutedLabel"
 
-[node name="LineEdit" type="LineEdit" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer/HBoxContainer"]
+[node name="NameInput" type="LineEdit" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer/HBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -179,11 +180,13 @@ theme_type_variation = &"HeaderLabel"
 uppercase = true
 
 [node name="RefreshButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding/GameListContainer/HeaderContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 40)
 layout_mode = 2
 text = "Refresh"
 
 [node name="GameList" type="ItemList" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding/GameListContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 size_flags_vertical = 3
@@ -221,6 +224,7 @@ vertical_alignment = 1
 theme_type_variation = &"MutedLabel"
 
 [node name="AddressInput" type="LineEdit" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/HBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -235,6 +239,7 @@ vertical_alignment = 1
 theme_type_variation = &"MutedLabel"
 
 [node name="PortInput" type="LineEdit" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/HBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(110, 38)
 layout_mode = 2
 text = "8080"
@@ -245,14 +250,23 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="JoinButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/ButtonContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Join Game"
 
 [node name="HostButton" type="Button" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/ButtonContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Host Game"
 theme_type_variation = &"AccentButton"
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Connecting to 127.0.0.1:8080..."
+autowrap_mode = 3

@@ -1,176 +1,136 @@
 extends Control
+## The Play screen: host a game, or join one by address. A line under the
+## buttons says what is happening ("Connecting...", or why it failed).
+## The server list is a placeholder until there is a real one (see GAMES).
 
-var address: String = "0.0.0.0"
-@export var port: int = 8080
+## Listed games. Placeholder: replace with a real server list.
+const GAMES := [
+	{"name": "Local Server", "address": "localhost", "port": 8080},
+]
+
+@export var default_port: int = 8080
+## Seconds to wait for the host before giving up (ENet's own timeout is ~30 s).
 @export var connection_timeout: float = 5.0
-var peer: ENetMultiplayerPeer
-var connection_timer: Timer
 
-@onready var player_name_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/LeftPanel/Padding/PlayerInfoContainer/HBoxContainer/LineEdit
-@onready var address_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/HBoxContainer/AddressInput
-@onready var port_input: LineEdit = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/HBoxContainer/PortInput
+var peer: ENetMultiplayerPeer
+var _connection_timer: Timer
+
+@onready var player_name_input: LineEdit = %NameInput
+@onready var address_input: LineEdit = %AddressInput
+@onready var port_input: LineEdit = %PortInput
+@onready var join_button: Button = %JoinButton
+@onready var host_button: Button = %HostButton
+@onready var game_list: ItemList = %GameList
+@onready var refresh_button: Button = %RefreshButton
+@onready var status_label: Label = %StatusLabel
 @onready var nav_bar: MenuNavBar = $MenuNavBar
-@onready var join_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/ButtonContainer/JoinButton
-@onready var host_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/ServerConnectPanel/Padding/ServerConnectContainer/ButtonContainer/HostButton
-@onready var game_list: ItemList = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding/GameListContainer/GameList
-@onready var refresh_button: Button = $MarginContainer/ContentPanel/VBoxContainer/HBoxContainer/RightPanel/GameListPanel/Padding/GameListContainer/HeaderContainer/RefreshButton
 
 func _ready() -> void:
-	connection_timer = Timer.new()
-	connection_timer.one_shot = true
-	connection_timer.timeout.connect(_on_connection_timeout)
-	add_child(connection_timer)
-	
+	_connection_timer = Timer.new()
+	_connection_timer.one_shot = true
+	_connection_timer.timeout.connect(_on_connection_timeout)
+	add_child(_connection_timer)
+
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
 	multiplayer.connection_failed.connect(_on_connection_failed)
-	
-	join_button.pressed.connect(_on_join_pressed)
-	host_button.pressed.connect(_on_host_pressed)
-	refresh_button.pressed.connect(_on_refresh_pressed)
+
+	join_button.pressed.connect(_join_game)
+	host_button.pressed.connect(_host_game)
+	refresh_button.pressed.connect(_populate_game_list)
 	game_list.item_activated.connect(_on_game_selected)
-	
+
+	_show_status("")
 	_populate_game_list()
 
-func _on_connected_to_server() -> void:
-	if connection_timer and connection_timer.time_left > 0:
-		connection_timer.stop()
-	
-	EventManager.emit_event(EventManager.Events.CONNECTION_SUCCEEDED)
-	
-	var player_name = player_name_input.text.strip_edges()
+func _join_game() -> void:
+	var address := address_input.text.strip_edges()
+	if address.to_lower() == "localhost":
+		address = "127.0.0.1"
+	if address.is_empty():
+		_show_status("Enter the host's address first.", true)
+		return
+	if player_name_input.text.strip_edges().is_empty():
+		_show_status("Enter a name first.", true)
+		return
+	var port := _port()
+	peer = ENetMultiplayerPeer.new()
+	var error := peer.create_client(address, port)
+	if error != OK:
+		_fail("Couldn't start connecting to %s:%d (%s)." % [address, port, error_string(error)])
+		return
+	peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
+	multiplayer.set_multiplayer_peer(peer)
+	_set_ui_enabled(false)
+	_show_status("Connecting to %s:%d..." % [address, port])
+	_connection_timer.start(connection_timeout)
+
+func _host_game() -> void:
+	var player_name := player_name_input.text.strip_edges()
 	if player_name.is_empty():
-		player_name = "Player " + str(multiplayer.get_unique_id())
-	
+		_show_status("Enter a name first.", true)
+		return
+	var port := _port()
+	peer = ENetMultiplayerPeer.new()
+	# ENet counts clients only; the host is the remaining player.
+	var error := peer.create_server(port, GameManager.MAX_PLAYERS - 1)
+	if error != OK:
+		var reason := "the port is probably in use" if error == ERR_CANT_CREATE else error_string(error)
+		_show_status("Couldn't host on port %d: %s." % [port, reason], true)
+		return
+	if peer.get_host():
+		peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
+	multiplayer.set_multiplayer_peer(peer)
 	GameManager.local_player_name = player_name
-	
+	get_tree().change_scene_to_file("res://src/ui/menus/lobby.tscn")
+
+func _on_connected_to_server() -> void:
+	_connection_timer.stop()
+	EventManager.emit_event(EventManager.Events.CONNECTION_SUCCEEDED)
+	var player_name := player_name_input.text.strip_edges()
+	if player_name.is_empty():
+		player_name = "Player %d" % multiplayer.get_unique_id()
+	GameManager.local_player_name = player_name
 	get_tree().change_scene_to_file("res://src/ui/menus/lobby.tscn")
 
 func _on_connection_failed() -> void:
-	if connection_timer and connection_timer.time_left > 0:
-		connection_timer.stop()
-	
-	EventManager.emit_event(EventManager.Events.CONNECTION_FAILED)
-	
+	_connection_timer.stop()
+	_fail("Couldn't reach the host. Check the address and port, and that the game is hosted.")
+
+func _on_connection_timeout() -> void:
+	_fail("No answer from the host after %d s." % int(connection_timeout))
+
+func _fail(message: String) -> void:
 	multiplayer.multiplayer_peer = null
-	_enable_ui()
-
-func _on_connection_timeout() -> void: # Takes too long, so I handle it manually with that timer.
-	multiplayer.multiplayer_peer = null
-	
 	EventManager.emit_event(EventManager.Events.CONNECTION_FAILED)
-	_enable_ui()
+	_set_ui_enabled(true)
+	_show_status(message, true)
 
-func _on_join_pressed() -> void:
-	_join_game()
+func _show_status(message: String, is_error: bool = false) -> void:
+	status_label.text = message
+	status_label.visible = message != ""
+	status_label.add_theme_color_override("font_color", UiPalette.BAD.lightened(0.25) if is_error else UiPalette.TEXT_DIM)
 
-func _on_host_pressed() -> void:
-	_host_game()
+func _port() -> int:
+	var text := port_input.text.strip_edges()
+	return text.to_int() if text.is_valid_int() else default_port
 
-func _on_refresh_pressed() -> void:
-	_populate_game_list()
-
-
-func _on_game_selected(index: int) -> void:
-	var game_info = _get_game_info(index)
-	if game_info:
-		address_input.text = game_info.address
-		port_input.text = str(game_info.port)
-
-func _join_game() -> void:
-	peer = ENetMultiplayerPeer.new()
-	
-	address = address_input.text.strip_edges()
-	if address.to_lower() == "localhost":
-		address = "127.0.0.1"
-	
-	var port_text = port_input.text.strip_edges()
-	if port_text.is_empty():
-		port = 8080
-	else:
-		port = port_text.to_int()
-	
-	if address.is_empty():
-		return
-	
-	if player_name_input.text.strip_edges().is_empty():
-		return
-	
-	var error = peer.create_client(address, port)
-	
-	if error != OK:
-		print("Failed to create client with error: ", error)
-		EventManager.emit_event(EventManager.Events.CONNECTION_FAILED)
-		_enable_ui()
-		return
-	
-	peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
-	multiplayer.set_multiplayer_peer(peer)
-	_disable_ui()
-	
-	connection_timer.start(connection_timeout)
-	
-
-func _host_game() -> void:
-	var player_name = player_name_input.text.strip_edges()
-	if player_name.is_empty():
-		return
-	
-	var port_text = port_input.text.strip_edges()
-	if port_text.is_empty():
-		port = 8080
-	else:
-		port = port_text.to_int()
-	
-	peer = ENetMultiplayerPeer.new()
-	# ENet counts clients only; the host is the remaining player.
-	var error = peer.create_server(port, GameManager.MAX_PLAYERS - 1)
-	
-	if error != OK:
-		print("Failed to create server with error: ", error)
-		return
-	
-	if peer.get_host():
-		peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
-	
-	multiplayer.set_multiplayer_peer(peer)
-	
-	GameManager.local_player_name = player_name
-	get_tree().change_scene_to_file("res://src/ui/menus/lobby.tscn")
-
-func _disable_ui() -> void:
-	player_name_input.editable = false
-	address_input.editable = false
-	port_input.editable = false
-	join_button.disabled = true
-	host_button.disabled = true
-	refresh_button.disabled = true
-	nav_bar.set_navigation_enabled(false)
-	game_list.set_deferred("disabled", true)
-
-func _enable_ui() -> void:
-	player_name_input.editable = true
-	address_input.editable = true
-	port_input.editable = true
-	join_button.disabled = false
-	host_button.disabled = false
-	refresh_button.disabled = false
-	nav_bar.set_navigation_enabled(true)
-	game_list.set_deferred("disabled", false)
+func _set_ui_enabled(enabled: bool) -> void:
+	player_name_input.editable = enabled
+	address_input.editable = enabled
+	port_input.editable = enabled
+	join_button.disabled = not enabled
+	host_button.disabled = not enabled
+	refresh_button.disabled = not enabled
+	nav_bar.set_navigation_enabled(enabled)
+	game_list.set_deferred("disabled", not enabled)
 
 func _populate_game_list() -> void:
 	game_list.clear()
-	var example_games = [ # TODO: fetch from somewhere
-		{"name": "Local Server", "address": "localhost", "port": 8080, "players": "0"},
-	]
-	
-	for game in example_games:
-		game_list.add_item("%s - %s" % [game.name, "%s/%d" % [game.players, GameManager.MAX_PLAYERS]])
+	for game in GAMES:
+		game_list.add_item("%s - %s:%d" % [game.name, game.address, game.port])
 
-func _get_game_info(index: int) -> Dictionary:
-	var example_games = [ # TODO: replace with real data, at some point
-		{"name": "Local Server", "address": "localhost", "port": 8080, "players": "0"},
-	]
-	
-	if index >= 0 and index < example_games.size():
-		return example_games[index]
-	return {}
+func _on_game_selected(index: int) -> void:
+	if index < 0 or index >= GAMES.size():
+		return
+	address_input.text = GAMES[index].address
+	port_input.text = str(GAMES[index].port)
