@@ -15,17 +15,19 @@ class_name WeaponDef
 ## Maximum deviation of a shot from the aim direction, to either side.
 @export_range(0.0, 45.0, 0.1, "suffix:°") var spread_degrees: float = 0.0
 @export_range(1, 20) var pellets: int = 1
-## How pellets are distributed inside the spread: &"random" or &"even".
-@export var fire_pattern: StringName = &"random"
+## How pellets are spread: random, or evenly fanned (a new pattern also needs
+## a case in WeaponRules.shot_offsets).
+@export_enum("random", "even") var fire_pattern: String = "random"
 
 @export_group("Damage")
 @export var damage: float = 10.0
 @export_range(0.0, 1.0, 0.05) var armor_penetration: float = 0.0
 @export_range(50.0, 2000.0, 10.0, "suffix:px") var max_range: float = 500.0
-## Which band max_range must fall in, relative to what players can see
-## (ViewRules.range_band): &"close", &"standard", &"marksman" or &"melee".
-## tests/test_view_rules.gd fails when a weapon's range leaves its band.
-@export var range_class: StringName = &"standard"
+## Which band max_range must fall in, relative to what players can see:
+## close (within the normal view), standard (up to the zoomed-out view),
+## marksman (just past it) or melee. See ViewRules.range_band; the tests fail
+## when a weapon's range leaves its band.
+@export_enum("close", "standard", "marksman", "melee") var range_class: String = "standard"
 ## How fast the visible bullet flies. Damage lands when it arrives (the host
 ## delays it by the travel time), so what you see is what hits.
 @export_range(500.0, 10000.0, 100.0, "suffix:px/s") var bullet_speed: float = 2600.0
