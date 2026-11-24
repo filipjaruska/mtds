@@ -5,7 +5,9 @@ class_name GameRules
 ## They are read when the game starts, so restart the game after a change.
 ##
 ## Weapon and card numbers are not here: they live in each weapon and card file
-## (src/entities/weapons/defs, src/entities/powerups/defs).
+## (src/entities/weapons/defs, src/entities/powerups/defs). Neither are the
+## camera zoom levels and how far ahead it looks: every weapon's range is
+## measured against those, so they stay fixed in ViewRules.
 
 @export_group("Match")
 ## Length of a match.
@@ -15,6 +17,31 @@ class_name GameRules
 @export_range(2, 8) var max_players: int = 8
 ## Time between dying and coming back.
 @export_range(0.0, 10.0, 0.1, "suffix:s") var respawn_seconds: float = 1.0
+
+@export_group("Player")
+@export_range(50.0, 500.0, 5.0, "suffix:px/s") var walk_speed: float = 200.0
+@export_range(25.0, 250.0, 5.0, "suffix:px/s") var crouch_speed: float = 100.0
+@export_range(200.0, 1500.0, 25.0, "suffix:px/s") var dash_speed: float = 800.0
+## How long a dash lasts.
+@export_range(0.05, 1.0, 0.05, "suffix:s") var dash_seconds: float = 0.3
+## Time between dashes (cards can shorten it).
+@export_range(0.5, 10.0, 0.1, "suffix:s") var dash_cooldown_seconds: float = 3.5
+## Health without cards.
+@export_range(10.0, 1000.0, 5.0, "suffix:HP") var max_health: float = 100.0
+## Health starts coming back this long after the last hit...
+@export_range(0.0, 30.0, 0.5, "suffix:s") var regen_delay_seconds: float = 5.0
+## ...this share of max health per tick (0 = no regeneration)...
+@export_range(0.0, 1.0, 0.01) var regen_per_tick: float = 0.1
+## ...one tick every this many seconds.
+@export_range(0.1, 5.0, 0.1, "suffix:s") var regen_tick_seconds: float = 1.0
+
+@export_group("Camera")
+## How quickly the camera follows your aim. Higher = snappier.
+@export_range(1.0, 20.0, 0.5) var camera_follow_speed: float = 5.0
+## How quickly it zooms out and back in (Ctrl).
+@export_range(0.5, 10.0, 0.1) var camera_zoom_speed: float = 2.0
+## With the cursor this close to the player the camera stays centred.
+@export_range(0.0, 500.0, 10.0, "suffix:px") var camera_center_radius: float = 200.0
 
 @export_group("Weapons")
 ## Minimum time between weapon switches.

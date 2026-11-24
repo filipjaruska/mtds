@@ -8,13 +8,13 @@ class_name PlayerController
 @onready var dash_cooldown_indicator = get_parent().get_node("%DashCooldownBar")
 @onready var health: HealthComponent = get_parent().get_node("HealthComponent")
 
-# Set from the player root's inspector values (PlayerTool).
-var normal_speed: float = 200.0
-var dash_speed: float = 800.0
-var crouch_speed: float = 100.0
-var base_dash_cooldown: float = 3500.0
-var dash_cooldown: float = 3500.0
-var dash_duration: float = 0.3
+const RULES: GameRules = preload("res://src/game_rules.tres") # tuning numbers, edit in the inspector
+var normal_speed: float = RULES.walk_speed
+var dash_speed: float = RULES.dash_speed
+var crouch_speed: float = RULES.crouch_speed
+var base_dash_cooldown: float = RULES.dash_cooldown_seconds * 1000.0 # msec
+var dash_cooldown: float = base_dash_cooldown # msec, after card bonuses
+var dash_duration: float = RULES.dash_seconds
 var _dash_cooldown_reduction: float = 0.0
 
 enum PlayerState {
@@ -192,10 +192,6 @@ func _update_fire_slow() -> void:
 	if not is_equal_approx(factor, slowness_factor):
 		slowness_factor = factor
 		_recompute_current_speed()
-
-func set_base_dash_cooldown(value: float) -> void:
-	base_dash_cooldown = value
-	_recompute_dash_cooldown()
 
 func _recompute_dash_cooldown() -> void:
 	dash_cooldown = base_dash_cooldown * (1.0 - _dash_cooldown_reduction)

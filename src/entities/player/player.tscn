@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://qgub06sgnvml"]
 
-[ext_resource type="Script" uid="uid://drtw2we68sgym" path="res://src/entities/player/player_tool.gd" id="1_new"]
+[ext_resource type="Script" uid="uid://drtw2we68sgym" path="res://src/entities/player/player.gd" id="1_new"]
 [ext_resource type="Script" uid="uid://d3ln8ymurgub" path="res://src/entities/player/components/player_controller.gd" id="2_new"]
 [ext_resource type="Script" uid="uid://d3d5g7q27qywk" path="res://src/entities/player/components/camera_component.gd" id="3_new"]
 [ext_resource type="Texture2D" uid="uid://drgp18whtsyeg" path="res://src/assets/icon.svg" id="4_krkth"]
@@ -39,21 +39,6 @@ properties/2/replication_mode = 1
 [node name="Player" type="CharacterBody2D" groups=["Player"]]
 collision_mask = 5
 script = ExtResource("1_new")
-player_name = "Player"
-player_id = 0
-movement_normal_speed = 200.0
-movement_crouch_speed = 100.0
-movement_dash_speed = 800.0
-dash_duration = 0.3
-dash_cooldown = 3500.0
-camera_lookahead_distance = 175.0
-camera_offset_disable_threshold = 200.0
-camera_transition_speed = 5.0
-camera_zoom_out_factor = 0.7
-camera_zoom_transition_speed = 2.0
-health_max_health = 100.0
-health_physical_resist = 0.0
-health_resist_penetration = 0.0
 
 [node name="PlayerSprite" type="Sprite2D" parent="."]
 scale = Vector2(0.40176, 0.374369)

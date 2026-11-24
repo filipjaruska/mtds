@@ -11,13 +11,11 @@ var RESPAWN_DELAY: float = RULES.respawn_seconds
 @onready var health_bar = $"../PlayerHealthBar"
 @onready var powerup_manager: PowerupManager = get_node_or_null("../PowerupManager")
 
-## Base maximum health (set from the player's inspector values).
-@export var MAX_HEALTH: float = 100.0
-@export var physical_resist: float = 0.0 # fraction, 0.15 = 15% less damage
-@export var resist_penetration: float = 0.0 # 0.0 to 1.0
-@export var regen_delay_after_damage: float = 5.0
-@export_range(0.0, 1.0, 0.01) var regen_percent_per_tick: float = 0.10
-@export var regen_tick_interval: float = 1.0
+## Maximum health without cards.
+var MAX_HEALTH: float = RULES.max_health
+var regen_delay_after_damage: float = RULES.regen_delay_seconds
+var regen_percent_per_tick: float = RULES.regen_per_tick
+var regen_tick_interval: float = RULES.regen_tick_seconds
 
 var max_health: float
 var current_health: float
@@ -34,11 +32,6 @@ func _ready() -> void:
 	if powerup_manager:
 		powerup_manager.active_changed.connect(_on_powerups_changed)
 	call_deferred("_broadcast_health_change")
-
-## Called by the player root with its configured max health.
-func set_base_max_health(value: float) -> void:
-	MAX_HEALTH = value
-	_recompute_max_health()
 
 ## The host derives max health from the player's active powerups.
 func _on_powerups_changed(_active: Array) -> void:
@@ -73,7 +66,7 @@ func _recompute_max_health() -> void:
 func apply_damage(amount: float, penetration: float, attacker_id: int) -> void:
 	if not _is_host() or is_dead or Time.get_ticks_msec() < invulnerable_until:
 		return
-	var final_damage := DamageRules.final_damage(amount, penetration, physical_resist + _damage_resistance())
+	var final_damage := DamageRules.final_damage(amount, penetration, _damage_resistance())
 	if final_damage <= 0.0:
 		return
 	var result := DamageRules.apply(current_health, final_damage)

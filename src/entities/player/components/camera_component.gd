@@ -4,12 +4,13 @@ class_name CameraComponent
 @onready var camera2d: Camera2D = $PlayerCamera
 @onready var ui_canvas: CanvasLayer = $PlayerCamera/PlayerUI
 
-# Set from the player root's inspector values (PlayerTool).
+const RULES: GameRules = preload("res://src/game_rules.tres") # tuning numbers, edit in the inspector
+# Zoom and lookahead are fixed by ViewRules (weapon ranges depend on them).
 var lookahead_distance: float = ViewRules.LOOKAHEAD
-var offset_disable_threshold: float = 200.0
-var transition_speed: float = 5.0
 var zoom_out_factor: float = ViewRules.CTRL_ZOOM
-var zoom_transition_speed: float = 2.0
+var offset_disable_threshold: float = RULES.camera_center_radius
+var transition_speed: float = RULES.camera_follow_speed
+var zoom_transition_speed: float = RULES.camera_zoom_speed
 
 var player_root: CharacterBody2D
 
