@@ -14,6 +14,7 @@ const SUITES := [
 	"res://tests/test_chat_rules.gd",
 	"res://tests/test_view_rules.gd",
 	"res://tests/test_results_format.gd",
+	"res://tests/test_maps.gd",
 ]
 
 func _init() -> void:

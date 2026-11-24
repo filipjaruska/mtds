@@ -123,14 +123,21 @@ func _get_configuration_warnings() -> PackedStringArray:
 			missing.append(str(i))
 	if not missing.is_empty():
 		warnings.append("Needs %d spawn points named 0 to %d (SpawnPoint nodes). Missing: %s." % [needed, needed - 1, ", ".join(missing)])
-	var has_walls := false
-	for layer in find_children("*", "TileMapLayer", true, false):
-		var tiles: TileSet = layer.tile_set
+	if not _has_walls():
+		warnings.append("No walls: paint walls with a tile set whose physics layer is on layer 3 \"walls\" (like src/assets/maps/catacombs/tiles.tres), or shots and players pass through.")
+	return warnings
+
+## Some painted tile is solid on the "walls" physics layer.
+func _has_walls() -> bool:
+	for layer: TileMapLayer in find_children("*", "TileMapLayer", true, false):
+		var tiles := layer.tile_set
 		if tiles == null:
 			continue
 		for i in range(tiles.get_physics_layers_count()):
-			if tiles.get_physics_layer_collision_layer(i) & CombatServer.WALL_LAYER:
-				has_walls = true
-	if not has_walls:
-		warnings.append("No walls: paint walls with a tile set whose physics layer is on layer 3 \"walls\" (like src/assets/maps/catacombs/tiles.tres), or shots and players pass through.")
-	return warnings
+			if not tiles.get_physics_layer_collision_layer(i) & CombatServer.WALL_LAYER:
+				continue
+			for cell in layer.get_used_cells():
+				var data := layer.get_cell_tile_data(cell)
+				if data and data.get_collision_polygons_count(i) > 0:
+					return true
+	return false
