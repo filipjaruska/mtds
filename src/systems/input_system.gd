@@ -46,9 +46,7 @@ func _set_device(device: InputDevice) -> void:
 	current_device = device
 	input_device_changed.emit("gamepad" if device == InputDevice.GAMEPAD else "keyboard_mouse")
 
-## Get the movement vector from input with proper analog magnitude and deadzone handling
-##
-## @return Vector2 representing the movement direction and magnitude
+## Movement input: full length on keys, analog length on a stick (with deadzone).
 func get_movement_vector() -> Vector2:
 	if _muted():
 		return Vector2.ZERO
@@ -126,23 +124,15 @@ func get_powerup_slot_use_index() -> int:
 		return 3
 	return -1
 
-## Get the global mouse position in world coordinates
-##
-## @return Vector2 representing the mouse position in world space
 func get_global_mouse_position() -> Vector2:
 	var viewport = get_viewport()
 	if viewport:
 		var camera = viewport.get_camera_2d()
 		if camera:
 			return camera.get_global_mouse_position()
-	return get_viewport().get_mouse_position() # Fallback to viewport position (for #TODO: cutscenes/animations?)
+	return get_viewport().get_mouse_position() # no camera (menus)
 
-## Get the aim direction based on current input device
-##
-## For keyboard/mouse: direction from player to mouse cursor
-## For gamepad: right stick direction with deadzone handling
-## @param player_position The current player position for mouse aiming
-## @return Vector2 representing the normalized aim direction
+## Aim direction: towards the mouse cursor, or the right stick on a gamepad.
 func get_aim_direction(player_position: Vector2) -> Vector2:
 	if current_device == InputDevice.KEYBOARD_MOUSE:
 		var mouse_pos = get_global_mouse_position()

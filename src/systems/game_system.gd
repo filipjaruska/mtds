@@ -1,8 +1,8 @@
 extends Node
-## Central game state manager that handles player data, game state, and core game logic.
+## GameManager (autoload): who is in the session, what state it is in
+## (menu, lobby, match...), the lobby settings, the match clock and match stats.
 
-## Dictionary containing all connected players with their data
-## Key: player_id (int), Value: Dictionary with player information
+## peer id -> {id, name, color, team}
 var players: Dictionary = {}
 
 var local_player_name: String = ""
@@ -58,7 +58,7 @@ func _ready() -> void:
 	add_child(_match_timer)
 	
 	set_process(false)
-	# Ensure EventManager is ready before registering events
+	# EventManager is an autoload too; give it a frame if it isn't set up yet.
 	if EventManager._signal_dict.is_empty():
 		await get_tree().process_frame
 		if EventManager._signal_dict.is_empty():
@@ -70,7 +70,6 @@ func _ready() -> void:
 	EventManager.register(EventManager.Events.CONNECTION_SUCCEEDED, _on_connection_succeeded)
 	EventManager.register(EventManager.Events.CONNECTION_FAILED, _on_connection_failed)
 
-## match time remaining as a float
 func get_match_time_remaining() -> float:
 	return match_time_remaining
 
@@ -128,17 +127,9 @@ func poker_deal_hole() -> int:
 	_poker_deck = result.deck
 	return result.card
 
-## Add a new player to the game
-##
-## @param player_id 	The unique identifier for the player
-## @param player_data 	Dictionary containing player information (name, etc.)
 func add_player(player_id: int, player_data: Dictionary) -> void:
 	players[player_id] = player_data
 
-## Remove a player from the game
-##
-## @param player_id The unique identifier for the player to remove
-## @return Dictionary containing the removed player's data, or empty dict if not found
 func remove_player(player_id: int) -> Dictionary:
 	if players.has(player_id):
 		var player_data = players[player_id]
@@ -146,74 +137,40 @@ func remove_player(player_id: int) -> Dictionary:
 		return player_data
 	return {}
 
-## Get player data by ID
-##
-## @param player_id The unique identifier for the player
-## @return Dictionary containing player data, or empty dict if not found
 func get_player(player_id: int) -> Dictionary:
 	return players.get(player_id, {})
 
-## Get all connected players
-##
-## @return Array of player data dictionaries
 func get_all_players() -> Array:
 	return players.values()
 
-## Get the number of connected players
-##
-## @return The current player count
 func get_player_count() -> int:
 	return players.size()
 
-## Check if the game is full
-##
-## @return True if at max capacity, false otherwise
 func is_game_full() -> bool:
 	return players.size() >= int(game_settings.get("max_players", MAX_PLAYERS))
 
-## Set the current game state
-##
-## @param new_state The new game state to set
 func set_game_state(new_state: GameState) -> void:
 	if current_state != new_state:
 		var old_state = current_state
 		current_state = new_state
 
-		# Emit state change event
 		EventManager.emit_event(EventManager.Events.GAME_STATE_CHANGED, [old_state, new_state])
 
-## Get the current game state
-##
-## @return The current GameState
 func get_game_state() -> GameState:
 	return current_state
 
-## Get the current game state as a string
-##
-## @return The current GameState as a string name
 func get_game_state_name() -> String:
 	return GameState.keys()[current_state]
 
-## Check if the game is in a specific state
-##
-## @param state The GameState to check against
-## @return True if the current state matches the provided state
 func is_state(state: GameState) -> bool:
 	return current_state == state
 
-## Check if the game is in lobby (waiting for players)
-##
-## @return True if the game is in LOBBY state
 func is_in_lobby() -> bool:
 	return current_state == GameState.LOBBY
 
-## Check if currently connecting to a game
-##
-## @return True if the game is in CONNECTING state
 func is_connecting() -> bool:
 	return current_state == GameState.CONNECTING
 
-## Start the game (transition to PLAYING state)
 func start_game() -> void:
 	start_match()
 
@@ -236,7 +193,6 @@ func start_match() -> void:
 	sync_match_timer.rpc(duration)
 	_match_timer.start(duration)
 
-## End the game (transition to GAME_OVER state)
 func end_game() -> void:
 	_stop_match_timer()
 	set_game_state(GameState.GAME_OVER)
@@ -343,34 +299,26 @@ func sync_match_stats(stats: Dictionary) -> void:
 			"damage_dealt": float(entry.get("damage_dealt", 0.0)),
 		}
 
-## Disconnect from current game (transition to DISCONNECTED state)
 func disconnect_from_game() -> void:
 	_stop_match(false)
 	set_game_state(GameState.DISCONNECTED)
-	# Clear all players when disconnecting
 	players.clear()
 
-## Return to menu (transition to MENU state)
 func return_to_menu() -> void:
 	_stop_match(false)
 	if tutorial_mode:
 		tutorial_mode = false
 		game_settings["match_duration_seconds"] = 300.0
 	set_game_state(GameState.MENU)
-	# Clear game data when returning to menu
 	players.clear()
 
-## Event handlers
-func _on_player_connected(player_id: int) -> void:
-	
-	# If we're in menu and this is the first connection, go to lobby
+func _on_player_connected(_player_id: int) -> void:
 	if current_state == GameState.MENU and get_player_count() == 0:
 		set_game_state(GameState.LOBBY)
 
 func _on_player_disconnected(player_id: int, _player_data: Dictionary) -> void:
 	remove_player(player_id)
 	
-	# If we're in lobby and no players left, return to menu
 	if current_state == GameState.LOBBY and get_player_count() == 0:
 		set_game_state(GameState.MENU)
 

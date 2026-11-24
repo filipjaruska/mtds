@@ -1,9 +1,7 @@
 extends Node
-## Provides a publish/subscribe pattern for loosely coupled communication between
-## different parts of the game. Components can emit events (publish) and other
-## components can listen for events (subscribe).
-##
-## For more information see the docs: res://docs/docs/event-manager.md
+## EventManager (autoload): game-wide events. Anything can emit one of the
+## Events below; anything can register a function to run when it happens.
+## Each event lists the values it carries; _event_contracts checks them.
 
 var _signal_dict = {}
 var _event_contracts = {}
@@ -44,7 +42,6 @@ enum Events {
 	POWERUP_EXPIRED, # [player_node, PowerupDef]
 }
 
-## Initialize all events on ready
 func _ready() -> void:
 	for event_name in Events.keys():
 		var event_id = Events[event_name]
@@ -76,13 +73,8 @@ func _initialize_event_contracts() -> void:
 		Events.POWERUP_EXPIRED: [TYPE_OBJECT, TYPE_OBJECT]
 	}
 
-## Register a callback to an event
-## 
-## Subscribes an object's method to be called when the specified event is emitted.
-## @param event  The event type from the Events enum
-## @param target The object that will receive the callback
-## @param method The method name to call on the target object
-## @param binds  Optional array of additional parameters to pass to the callback
+## Runs `target_or_callable` every time `event` is emitted. Nodes are
+## unregistered automatically when they leave the tree.
 func register(event: int, target_or_callable: Variant, method: String = "", binds: Array = []) -> void:
 	if not _signal_dict.has(event):
 		push_error("Trying to register non-existent event: " + str(event))
@@ -110,29 +102,21 @@ func register(event: int, target_or_callable: Variant, method: String = "", bind
 		push_error("Register requires either a Callable or target Object.")
 		return
 
-	# Check if this connection already exists
 	for connection in _signal_dict[event]:
 		if connection.callable == event_callable:
 			return
 	
-	# Store connection info
 	_signal_dict[event].append({
 		"callable": event_callable,
 		"target": target,
 		"method": method_name
 	})
 	
-	# Connect to target's tree_exiting signal to auto-unregister
 	if target is Node:
 		var on_exit := _on_target_tree_exiting.bind(event, target, method_name)
 		if not target.tree_exiting.is_connected(on_exit):
 			target.tree_exiting.connect(on_exit)
 
-## Unregister a callback from an event
-##
-## @param event The event type from the Events enum
-## @param target The object that was receiving the callback
-## @param method The method name that was being called
 func unregister(event: int, target_or_callable: Variant, method: String = "") -> void:
 	if not _signal_dict.has(event):
 		push_error("Trying to unregister from non-existent event: " + str(event))
@@ -164,20 +148,9 @@ func unregister(event: int, target_or_callable: Variant, method: String = "") ->
 			if connections[i].target == target and connections[i].method == method_name:
 				connections.remove_at(i)
 
-## Clean up when a connected object is freed
-## 
-## @private
-## @param event The event type from the Events enum
-## @param target The target object that is being freed
-## @param method The method that was registered
 func _on_target_tree_exiting(event: int, target: Object, method: String) -> void:
 	unregister(event, target, method)
 
-## Emit an event with optional arguments
-##
-## Triggers all callbacks registered to the specified event.
-## @param event The event type from the Events enum
-## @param args Optional array of arguments to pass to the callbacks
 func emit_event(event: int, args: Array = []) -> void:
 	if not _signal_dict.has(event):
 		push_error("Trying to emit non-existent event: " + str(event))
@@ -186,7 +159,6 @@ func emit_event(event: int, args: Array = []) -> void:
 	if not _validate_event_args(event, args):
 		return
 	
-	# Call all registered callbacks
 	for connection in _signal_dict[event]:
 		if connection.target == null or is_instance_valid(connection.target):
 			connection.callable.callv(args)
@@ -249,11 +221,7 @@ func _format_payload(args: Array) -> String:
 		preview.append("%s:%s" % [type_string(typeof(value)), str(value)])
 	return "[" + ", ".join(preview) + "]"
 
-## Helper method to get event names for debugging
-##
-## Converts an event integer to its string name.
-## @param event The event type from the Events enum
-## @return The string name of the event or "UNKNOWN_EVENT" if not found
+## For error messages: the enum name of an event.
 func get_event_name(event: int) -> String:
 	for key in Events.keys():
 		if Events[key] == event:

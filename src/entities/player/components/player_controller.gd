@@ -8,7 +8,7 @@ class_name PlayerController
 @onready var dash_cooldown_indicator = get_parent().get_node("%DashCooldownBar")
 @onready var health: HealthComponent = get_parent().get_node("HealthComponent")
 
-# default settings
+# Set from the player root's inspector values (PlayerTool).
 var normal_speed: float = 200.0
 var dash_speed: float = 800.0
 var crouch_speed: float = 100.0
@@ -45,7 +45,7 @@ func _ready():
 			_recompute_dash_cooldown()
 		)
 	_recompute_current_speed()
-	# TODO: defers cool, ensures all components are ready
+	# Deferred: the sibling components must be ready first.
 	call_deferred("_setup_multiplayer_authority")
 
 func _recompute_current_speed():
