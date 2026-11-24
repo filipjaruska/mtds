@@ -130,7 +130,7 @@ func _update_row_progress(display: Control, entry: Dictionary) -> void:
 ## A thin bar under the Steel Skin row showing what is left of the shield.
 func _update_shield_bar(display: Control, card: PowerupDef, row_width: float) -> void:
 	var bar: ColorRect = display.get_node("ShieldBar")
-	bar.visible = card.ability == &"riot_shield" and shield_fraction >= 0.0
+	bar.visible = card.ability is RiotShieldAbility and shield_fraction >= 0.0
 	if not bar.visible:
 		return
 	bar.position = Vector2(BAR_LEFT - 5.0, ROW_MIN_SIZE.y - 8.0)

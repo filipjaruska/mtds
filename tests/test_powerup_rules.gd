@@ -11,6 +11,12 @@ func _def(id: StringName, overrides: Dictionary = {}) -> PowerupDef:
 		def.set(key, overrides[key])
 	return def
 
+func _mods(values: Dictionary) -> CardModifiers:
+	var mods := CardModifiers.new()
+	for key in values:
+		mods.set(key, values[key])
+	return mods
+
 func test_stack_scale() -> void:
 	var def := _def(&"x")
 	check_eq(PowerupRules.stack_scale(def, 1), 1.0)
@@ -51,8 +57,8 @@ func test_expiry_by_time_and_uses() -> void:
 
 func test_modifiers_sum_and_disappear_without_drift() -> void:
 	# Regression: apply/remove with +=/-= used to leave values behind.
-	var armor := _def(&"armor", {"modifiers": {"damage_resist": 0.15}, "stack_multiplier": 1.5})
-	var dmg := _def(&"dmg", {"modifiers": {"damage_mult": 0.2}})
+	var armor := _def(&"armor", {"modifiers": _mods({"damage_resist": 0.15}), "stack_multiplier": 1.5})
+	var dmg := _def(&"dmg", {"modifiers": _mods({"damage_mult": 0.2})})
 	var active := PowerupRules.activate([], armor, 2, PowerupRules.RULES_SHUFFLE, 0)
 	active = PowerupRules.activate(active, dmg, 1, PowerupRules.RULES_STANDARD, 0)
 	# Defs are looked up through the registry, so register these test defs.
@@ -66,10 +72,10 @@ func test_modifiers_sum_and_disappear_without_drift() -> void:
 	PowerupDefs._by_id.erase(&"dmg")
 
 func test_dual_and_burst_params_tighten_with_stacks() -> void:
-	var dual := _def(&"dual", {"ability_params": {"spread": 0.15, "spread_reduction_per_stack": 0.15}})
+	var dual := _def(&"dual", {"ability": DualWieldAbility.new()}) # 0.15, -15% per stack
 	check_eq(PowerupRules.dual_spread(dual, 1), 0.15)
 	check_eq(PowerupRules.dual_spread(dual, 3), 0.15 * 0.7)
-	var burst := _def(&"burst", {"ability_params": {"spread_degrees": 12.0, "spread_multiplier": 4.0, "shots_per_second": 18.0, "spread_reduction_per_stack": 0.2, "min_spread_degrees": 8.0}})
+	var burst := _def(&"burst", {"ability": BurstAbility.new()}) # 12 deg x4, -20% per stack, min 8
 	check_eq(PowerupRules.burst_params(burst, 1).spread_degrees, 48.0)
 	check_eq(PowerupRules.burst_params(burst, 4).spread_degrees, 48.0 * 0.4)
 
@@ -88,7 +94,7 @@ func test_real_defs_load() -> void:
 	check_eq(PowerupDefs.ids().size(), 7, "all seven powerups registered")
 	for id in PowerupDefs.ids():
 		check(not PowerupDefs.get_def(id).get_display_name().is_empty(), "%s has a name" % id)
-	check_eq(PowerupDefs.get_def(&"dual_wield").ability, &"dual_wield")
+	check_eq(PowerupDefs.get_def(&"dual_wield").ability_kind(), &"dual_wield")
 	check(WeaponDefs.has(&"pistol") and WeaponDefs.has(&"shotgun"), "weapon defs registered")
 
 # --- Card abilities (these use the real defs in src/entities/powerups/defs) ---

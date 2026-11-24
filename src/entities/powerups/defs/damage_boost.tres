@@ -2,6 +2,17 @@
 
 [ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
 [ext_resource type="Texture2D" uid="uid://b37xe4gtl7f8n" path="res://src/assets/cards/damage_boost (tmp).png" id="2_card"]
+[ext_resource type="Script" path="res://src/entities/powerups/card_modifiers.gd" id="3_mods"]
+[ext_resource type="Script" path="res://src/entities/powerups/abilities/piercing_ability.gd" id="4_ability"]
+
+[sub_resource type="Resource" id="Resource_mods"]
+script = ExtResource("3_mods")
+damage_mult = 0.2
+
+[sub_resource type="Resource" id="Resource_ability"]
+script = ExtResource("4_ability")
+pierce = 1
+pierce_per_stack = 1
 
 [resource]
 script = ExtResource("1_def")
@@ -17,11 +28,5 @@ consume_use_on_fire = false
 max_stack_count = 4
 stack_multiplier = 2.0
 stack_bonus_per_card = 0.1
-modifiers = {
-"damage_mult": 0.2
-}
-ability = &"piercing"
-ability_params = {
-"pierce": 1,
-"pierce_per_stack": 1
-}
+modifiers = SubResource("Resource_mods")
+ability = SubResource("Resource_ability")

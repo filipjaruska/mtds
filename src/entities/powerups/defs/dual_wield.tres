@@ -2,6 +2,12 @@
 
 [ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
 [ext_resource type="Texture2D" uid="uid://bf0oblurg8mlo" path="res://src/assets/cards/dual_wield (tmp).png" id="2_card"]
+[ext_resource type="Script" path="res://src/entities/powerups/abilities/dual_wield_ability.gd" id="4_ability"]
+
+[sub_resource type="Resource" id="Resource_ability"]
+script = ExtResource("4_ability")
+spread = 0.15
+spread_reduction_per_stack = 0.15
 
 [resource]
 script = ExtResource("1_def")
@@ -17,9 +23,4 @@ consume_use_on_fire = false
 max_stack_count = 4
 stack_multiplier = 1.0
 stack_bonus_per_card = 0.0
-modifiers = {}
-ability = &"dual_wield"
-ability_params = {
-"spread": 0.15,
-"spread_reduction_per_stack": 0.15
-}
+ability = SubResource("Resource_ability")

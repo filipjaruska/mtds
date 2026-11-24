@@ -2,6 +2,15 @@
 
 [ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
 [ext_resource type="Texture2D" uid="uid://b0o2aacwgf5xs" path="res://src/assets/cards/burst (tmp).png" id="2_card"]
+[ext_resource type="Script" path="res://src/entities/powerups/abilities/burst_ability.gd" id="4_ability"]
+
+[sub_resource type="Resource" id="Resource_ability"]
+script = ExtResource("4_ability")
+spread_degrees = 12.0
+spread_multiplier = 4.0
+shots_per_second = 18.0
+spread_reduction_per_stack = 0.2
+min_spread_degrees = 8.0
 
 [resource]
 script = ExtResource("1_def")
@@ -17,12 +26,4 @@ consume_use_on_fire = false
 max_stack_count = 4
 stack_multiplier = 1.0
 stack_bonus_per_card = 0.0
-modifiers = {}
-ability = &"burst"
-ability_params = {
-"spread_degrees": 12.0,
-"spread_multiplier": 4.0,
-"shots_per_second": 18.0,
-"spread_reduction_per_stack": 0.2,
-"min_spread_degrees": 8.0
-}
+ability = SubResource("Resource_ability")

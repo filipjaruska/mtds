@@ -96,7 +96,7 @@ func _try_last_stand() -> bool:
 	if entry.is_empty():
 		return false
 	var def := PowerupDefs.get_def(entry.def)
-	invulnerable_until = Time.get_ticks_msec() + int(float(def.ability_params.get("invulnerable_seconds", 1.0)) * 1000.0)
+	invulnerable_until = Time.get_ticks_msec() + int((def.ability as LastStandAbility).invulnerable_seconds * 1000.0)
 	powerup_manager.host_consume_use(entry.def)
 	var effects := get_parent().get_node_or_null("CardEffects")
 	if effects:

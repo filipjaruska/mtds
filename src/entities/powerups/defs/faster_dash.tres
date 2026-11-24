@@ -2,6 +2,17 @@
 
 [ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
 [ext_resource type="Texture2D" uid="uid://cc5wlexef0d8c" path="res://src/assets/cards/faster_dash (tmp).png" id="2_card"]
+[ext_resource type="Script" path="res://src/entities/powerups/card_modifiers.gd" id="3_mods"]
+[ext_resource type="Script" path="res://src/entities/powerups/abilities/shoulder_charge_ability.gd" id="4_ability"]
+
+[sub_resource type="Resource" id="Resource_mods"]
+script = ExtResource("3_mods")
+dash_cooldown_reduction = 0.25
+
+[sub_resource type="Resource" id="Resource_ability"]
+script = ExtResource("4_ability")
+damage = 25.0
+knockback = 650.0
 
 [resource]
 script = ExtResource("1_def")
@@ -17,11 +28,5 @@ consume_use_on_fire = false
 max_stack_count = 4
 stack_multiplier = 2.0
 stack_bonus_per_card = 0.05
-modifiers = {
-"dash_cooldown_reduction": 0.25
-}
-ability = &"shoulder_charge"
-ability_params = {
-"damage": 25.0,
-"knockback": 650.0
-}
+modifiers = SubResource("Resource_mods")
+ability = SubResource("Resource_ability")

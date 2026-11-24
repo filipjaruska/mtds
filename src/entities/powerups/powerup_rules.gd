@@ -100,50 +100,51 @@ static func modifiers(active: Array) -> Dictionary:
 		if def == null:
 			continue
 		var scale := stack_scale(def, entry.stacks)
-		for key in def.modifiers:
-			out[key] = out.get(key, 0.0) + float(def.modifiers[key]) * scale
+		var values := def.modifier_values()
+		for key in values:
+			out[key] = out.get(key, 0.0) + float(values[key]) * scale
 	return out
 
 static func entry_with_ability(active: Array, ability: StringName) -> Dictionary:
 	for entry in active:
 		var def := PowerupDefs.get_def(entry.def)
-		if def and def.ability == ability:
+		if def and def.ability_kind() == ability:
 			return entry
 	return {}
 
 ## Spread multiplier while dual wielding; more stacks tighten it.
 static func dual_spread(def: PowerupDef, stacks: int) -> float:
-	var p := def.ability_params
-	var reduction: float = p.get("spread_reduction_per_stack", 0.0) * maxi(stacks - 1, 0)
-	return float(p.get("spread", 0.0)) * maxf(1.0 - reduction, 0.0)
+	var a := def.ability as DualWieldAbility
+	var reduction := a.spread_reduction_per_stack * maxi(stacks - 1, 0)
+	return a.spread * maxf(1.0 - reduction, 0.0)
 
 ## {spread_degrees, shots_per_second} for a burst; more stacks tighten it.
 static func burst_params(def: PowerupDef, stacks: int) -> Dictionary:
-	var p := def.ability_params
-	var base: float = p.get("spread_degrees", 12.0) * p.get("spread_multiplier", 1.0)
-	var reduction: float = p.get("spread_reduction_per_stack", 0.0) * maxi(stacks - 1, 0)
+	var a := def.ability as BurstAbility
+	var base := a.spread_degrees * a.spread_multiplier
+	var reduction := a.spread_reduction_per_stack * maxi(stacks - 1, 0)
 	return {
-		"spread_degrees": maxf(base * (1.0 - reduction), p.get("min_spread_degrees", 0.0)),
-		"shots_per_second": float(p.get("shots_per_second", 18.0)),
+		"spread_degrees": maxf(base * (1.0 - reduction), a.min_spread_degrees),
+		"shots_per_second": a.shots_per_second,
 	}
 
 # --- Card abilities -------------------------------------------------------------
 
 ## Riot Shield: {hp, width, distance}. More stacks: more HP (stack scale) and wider.
 static func shield_params(def: PowerupDef, stacks: int) -> Dictionary:
-	var p := def.ability_params
+	var a := def.ability as RiotShieldAbility
 	return {
-		"hp": float(p.get("hp", 150.0)) * stack_scale(def, stacks),
-		"width": float(p.get("width", 72.0)) + float(p.get("width_per_stack", 0.0)) * maxi(stacks - 1, 0),
-		"distance": float(p.get("distance", 52.0)),
+		"hp": a.hp * stack_scale(def, stacks),
+		"width": a.width + a.width_per_stack * maxi(stacks - 1, 0),
+		"distance": a.distance,
 	}
 
 ## Shoulder Charge: {damage, knockback}. Damage scales with stacks.
 static func charge_params(def: PowerupDef, stacks: int) -> Dictionary:
-	var p := def.ability_params
+	var a := def.ability as ShoulderChargeAbility
 	return {
-		"damage": float(p.get("damage", 25.0)) * stack_scale(def, stacks),
-		"knockback": float(p.get("knockback", 650.0)),
+		"damage": a.damage * stack_scale(def, stacks),
+		"knockback": a.knockback,
 	}
 
 ## Piercing Rounds: extra players a shot passes through (0 = stops at the first).
@@ -151,8 +152,8 @@ static func pierce(active: Array) -> int:
 	var entry := entry_with_ability(active, &"piercing")
 	if entry.is_empty():
 		return 0
-	var p := PowerupDefs.get_def(entry.def).ability_params
-	return int(p.get("pierce", 1)) + int(p.get("pierce_per_stack", 1)) * maxi(entry.stacks - 1, 0)
+	var a := PowerupDefs.get_def(entry.def).ability as PiercingAbility
+	return a.pierce + a.pierce_per_stack * maxi(entry.stacks - 1, 0)
 
 ## The Last Stand entry that can still save its owner, or {}.
 static func last_stand_entry(active: Array) -> Dictionary:

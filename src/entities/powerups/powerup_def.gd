@@ -2,17 +2,9 @@ extends Resource
 class_name PowerupDef
 ## A powerup card as plain data.
 ##
-## Most powerups are just stat modifiers: put the stat key and its base value in
-## `modifiers` and the systems that own those stats pick it up (see
-## PowerupRules.modifiers). Known keys:
-##   damage_mult              +0.2  => +20% weapon damage        (WeaponHolder)
-##   reload_mult              +0.3  => reloads 30% faster        (WeaponHolder)
-##   damage_resist            0.15  => 15% less damage taken     (HealthComponent)
-##   max_health_mult          0.25  => +25% max health           (HealthComponent)
-##   dash_cooldown_reduction  0.25  => 25% shorter dash cooldown (PlayerController)
-##
-## Powerups that change behaviour instead set `ability` (&"burst", &"dual_wield")
-## with their tuning in `ability_params`.
+## A card's effect is stat bonuses (Effect > Modifiers, see CardModifiers)
+## and/or an ability (Effect > Ability: pick one of the CardAbility types, e.g.
+## RiotShieldAbility, and set its fields).
 ##
 ## To add a powerup: duplicate a file in res://src/entities/powerups/defs/ and
 ## give it a new `id`. It is registered automatically (see PowerupDefs).
@@ -40,12 +32,21 @@ class_name PowerupDef
 @export var stack_bonus_per_card: float = 0.1
 
 @export_group("Effect")
-@export var modifiers: Dictionary = {}
-@export var ability: StringName = &""
-@export var ability_params: Dictionary = {}
+## Stat bonuses while the card is active.
+@export var modifiers: CardModifiers
+## What the card does besides stats (optional).
+@export var ability: CardAbility
 
 func get_display_name() -> String:
 	return display_name if not display_name.is_empty() else String(id).capitalize()
 
 func get_type_description() -> String:
 	return description
+
+## The stat bonuses by name, e.g. {"damage_resist": 0.15}.
+func modifier_values() -> Dictionary:
+	return modifiers.to_dict() if modifiers else {}
+
+## The ability's name (&"riot_shield", ...), or &"" for none.
+func ability_kind() -> StringName:
+	return ability.get_kind() if ability else &""

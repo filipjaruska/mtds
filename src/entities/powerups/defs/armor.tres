@@ -2,6 +2,19 @@
 
 [ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
 [ext_resource type="Texture2D" uid="uid://bqrd5cd6i5ajs" path="res://src/assets/cards/armor (tmp).png" id="2_card"]
+[ext_resource type="Script" path="res://src/entities/powerups/card_modifiers.gd" id="3_mods"]
+[ext_resource type="Script" path="res://src/entities/powerups/abilities/riot_shield_ability.gd" id="4_ability"]
+
+[sub_resource type="Resource" id="Resource_mods"]
+script = ExtResource("3_mods")
+damage_resist = 0.15
+
+[sub_resource type="Resource" id="Resource_ability"]
+script = ExtResource("4_ability")
+hp = 150.0
+width = 72.0
+width_per_stack = 16.0
+distance = 52.0
 
 [resource]
 script = ExtResource("1_def")
@@ -17,13 +30,5 @@ consume_use_on_fire = false
 max_stack_count = 4
 stack_multiplier = 1.5
 stack_bonus_per_card = 0.1
-modifiers = {
-"damage_resist": 0.15
-}
-ability = &"riot_shield"
-ability_params = {
-"hp": 150.0,
-"width": 72.0,
-"width_per_stack": 16.0,
-"distance": 52.0
-}
+modifiers = SubResource("Resource_mods")
+ability = SubResource("Resource_ability")
