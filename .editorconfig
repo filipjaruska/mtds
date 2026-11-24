@@ -1,0 +1,8 @@
+# Every editor writes Unix line endings (LF), on Windows and macOS alike, so a
+# save never turns a whole file into a diff. .gitattributes enforces the same
+# in git itself.
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
