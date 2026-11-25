@@ -70,3 +70,17 @@ class_name GameRules
 @export_group("Practice targets")
 @export_range(1.0, 1000.0, 1.0) var target_hp: float = 100.0
 @export_range(0.0, 10.0, 0.1, "suffix:s") var target_respawn_seconds: float = 1.5
+
+@export_group("Shady Fella")
+## How fast he walks (players run at about 300).
+@export_range(20.0, 400.0, 5.0, "suffix:px/s") var shady_speed: float = 130.0
+## Cards he offers.
+@export_range(1, 6) var shady_offer_size: int = 3
+## How close a player must be to trade with him.
+@export_range(40.0, 300.0, 5.0, "suffix:px") var shady_reach: float = 120.0
+## How long a player may take to choose before the trade closes.
+@export_range(2.0, 30.0, 0.5, "suffix:s") var shady_choose_seconds: float = 8.0
+## How long he runs after being shot before he is gone.
+@export_range(0.5, 15.0, 0.5, "suffix:s") var shady_flee_seconds: float = 3.0
+## How long he stays when nobody shoots him or takes his last card.
+@export_range(10.0, 600.0, 5.0, "suffix:s") var shady_stay_seconds: float = 90.0

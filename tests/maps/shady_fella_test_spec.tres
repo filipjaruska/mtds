@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EventSpec" format=3]
+
+[ext_resource type="Script" path="res://src/systems/events/event_spec.gd" id="1_spec"]
+[ext_resource type="PackedScene" path="res://src/entities/npcs/shady_fella/shady_fella.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_spec")
+scene = ExtResource("2_scene")
+display_name = "Shady Fella"
+first_after_min = 1800.0
+first_after_max = 1800.0
+every_min = 1800.0
+every_max = 1800.0
+lasts_seconds = 90.0

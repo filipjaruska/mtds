@@ -7,10 +7,12 @@
 [ext_resource type="PackedScene" path="res://src/entities/powerups/powerup_spawner.tscn" id="5_spawner"]
 [ext_resource type="Resource" path="res://src/entities/powerups/defs/dual_wield.tres" id="6_dual"]
 [ext_resource type="Resource" path="res://src/entities/powerups/defs/burst.tres" id="7_burst"]
+[ext_resource type="Resource" path="res://tests/maps/shady_fella_test_spec.tres" id="8_shady"]
 
 [node name="TestArena" type="Node2D"]
 script = ExtResource("1_map")
 playerScene = ExtResource("2_player")
+events = Array[Resource]([ExtResource("8_shady")])
 
 [node name="SpawnLocations" type="Node2D" parent="."]
 

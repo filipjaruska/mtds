@@ -1,10 +1,10 @@
-[gd_resource type="TileSet" format=3]
+[gd_resource type="TileSet" format=3 uid="uid://bgcwaexuhpvli"]
 
-[ext_resource type="Texture2D" path="res://src/assets/maps/debug/tile_floor_room (tmp).png" id="1_eqqgw"]
-[ext_resource type="Texture2D" path="res://src/assets/maps/debug/tile_floor_corridor (tmp).png" id="2_dr2si"]
-[ext_resource type="Texture2D" path="res://src/assets/maps/debug/tile_wall (tmp).png" id="3_odjt3"]
-[ext_resource type="Texture2D" path="res://src/assets/maps/debug/tile_pillar (tmp).png" id="4_qwlyu"]
-[ext_resource type="Texture2D" path="res://src/assets/maps/debug/tile_sarcophagus (tmp).png" id="5_bm74c"]
+[ext_resource type="Texture2D" uid="uid://cb1bt5jpt2tjn" path="res://src/assets/maps/debug/tile_floor_room (tmp).png" id="1_eqqgw"]
+[ext_resource type="Texture2D" uid="uid://hud66yf7wlp2" path="res://src/assets/maps/debug/tile_floor_corridor (tmp).png" id="2_dr2si"]
+[ext_resource type="Texture2D" uid="uid://codc8so5sh8yc" path="res://src/assets/maps/debug/tile_wall (tmp).png" id="3_odjt3"]
+[ext_resource type="Texture2D" uid="uid://baa43t8wy234y" path="res://src/assets/maps/debug/tile_pillar (tmp).png" id="4_qwlyu"]
+[ext_resource type="Texture2D" uid="uid://cmxtmixm5unuk" path="res://src/assets/maps/debug/tile_sarcophagus (tmp).png" id="5_bm74c"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yk6cy"]
 texture = ExtResource("1_eqqgw")

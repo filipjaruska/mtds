@@ -15,6 +15,7 @@ const SUITES := [
 	"res://tests/test_view_rules.gd",
 	"res://tests/test_results_format.gd",
 	"res://tests/test_layout_planner.gd",
+	"res://tests/test_shady_fella_rules.gd",
 	"res://tests/test_maps.gd",
 ]
 

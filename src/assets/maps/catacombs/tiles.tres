@@ -1,10 +1,10 @@
-[gd_resource type="TileSet" format=3]
+[gd_resource type="TileSet" format=3 uid="uid://dsata2k7jwybs"]
 
-[ext_resource type="Texture2D" path="res://src/assets/maps/catacombs/tile_floor_room (tmp).png" id="1_eqqgw"]
-[ext_resource type="Texture2D" path="res://src/assets/maps/catacombs/tile_floor_corridor (tmp).png" id="2_dr2si"]
-[ext_resource type="Texture2D" path="res://src/assets/maps/catacombs/tile_wall (tmp).png" id="3_odjt3"]
-[ext_resource type="Texture2D" path="res://src/assets/maps/catacombs/tile_pillar (tmp).png" id="4_qwlyu"]
-[ext_resource type="Texture2D" path="res://src/assets/maps/catacombs/tile_sarcophagus (tmp).png" id="5_bm74c"]
+[ext_resource type="Texture2D" uid="uid://wkbgnhdac6x7" path="res://src/assets/maps/catacombs/tile_floor_room (tmp).png" id="1_eqqgw"]
+[ext_resource type="Texture2D" uid="uid://cm4al0k45q5va" path="res://src/assets/maps/catacombs/tile_floor_corridor (tmp).png" id="2_dr2si"]
+[ext_resource type="Texture2D" uid="uid://c0yjj7uxorocx" path="res://src/assets/maps/catacombs/tile_wall (tmp).png" id="3_odjt3"]
+[ext_resource type="Texture2D" uid="uid://osygru1p654f" path="res://src/assets/maps/catacombs/tile_pillar (tmp).png" id="4_qwlyu"]
+[ext_resource type="Texture2D" uid="uid://cimhrmqx7sp2i" path="res://src/assets/maps/catacombs/tile_sarcophagus (tmp).png" id="5_bm74c"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yk6cy"]
 texture = ExtResource("1_eqqgw")

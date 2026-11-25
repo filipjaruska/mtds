@@ -122,7 +122,19 @@ func _run_host() -> void:
 	check(not from_client.is_empty() and from_client[0][1] == "hello host", "chat text intact: %s" % [from_client])
 	check(from_client.size() == 3, "spam cut to the rate limit (got %d)" % from_client.size())
 
-	await seconds(2.0) # let the client finish its checks
+	# Shady Fella: the host starts him, the client trades (see _run_client),
+	# then the host shoots him.
+	var director = _map().get_node("Events")
+	director.start_now(0)
+	check(await wait_until(func(): return director.has_node("Event_1"), 2.0), "Shady Fella started on the host")
+	var fella_event = director.get_node_or_null("Event_1")
+	if fella_event:
+		check(await wait_until(func(): return fella_event.offer.size() == 2, 15.0), "the client took one of his 3 cards")
+		check(await wait_until(func(): return client_pm.hand_ids.size() == 1, 4.0), "the host knows the client holds it: %s" % [client_pm.hand_ids])
+		fella_event.fella.take_hit(10.0, 1)
+		check(fella_event.state == ShadyFellaRules.State.FLEEING, "shot: he runs")
+
+	await seconds(6.0) # let the client finish its checks
 	finish()
 
 func _run_client() -> void:
@@ -185,4 +197,24 @@ func _run_client() -> void:
 
 	check(await wait_until(func(): return host.has_node("PlayerController/RiotShield"), 8.0), "client sees the host's riot shield")
 	check(await wait_until(func(): return not host.has_node("PlayerController/RiotShield"), 8.0), "client sees the shield shatter")
+
+	# Shady Fella: walk up to him, open the trade, take his first card.
+	var director = _map().get_node("Events")
+	check(await wait_until(func(): return director.has_node("Event_1"), 15.0), "client sees Shady Fella")
+	var fella_event = director.get_node_or_null("Event_1")
+	if fella_event:
+		var fella: Node2D = fella_event.fella
+		check(await wait_until(func(): return fella_event.offer.size() == 3 and fella.position != Vector2.ZERO, 3.0), "his place and cards reached the client")
+		me.global_position = fella.global_position + Vector2(60, 0)
+		await seconds(0.5) # the host sees me arrive
+		var input_manager = root.get_node("InputManager")
+		fella_event.request_open.rpc_id(1)
+		check(await wait_until(func(): return input_manager.choosing_card, 3.0), "the trade opened on the client")
+		var first: StringName = fella_event.offer[0]
+		fella_event.request_pick.rpc_id(1, 0)
+		check(await wait_until(func(): return my_pm.inventory[0].def == first, 3.0), "client got %s: %s" % [first, my_pm.inventory])
+		check(await wait_until(func(): return not input_manager.choosing_card, 3.0), "the trade closed")
+		check(await wait_until(func(): return fella_event.state == ShadyFellaRules.State.FLEEING, 8.0), "client sees him run when shot")
+		check(_map().get_children().any(func(c): return String(c.name).begins_with("DroppedCard_")), "client sees the card he dropped")
+		check(await wait_until(func(): return not is_instance_valid(fella_event), 6.0), "client sees him go")
 	finish()

@@ -1,8 +1,8 @@
-[gd_resource type="Theme" format=3]
+[gd_resource type="Theme" format=3 uid="uid://ebvnu7nbl7jo"]
 
-[ext_resource type="FontFile" path="res://src/assets/fonts/ChakraPetch-SemiBold (tmp).ttf" id="1_1t80s"]
-[ext_resource type="FontFile" path="res://src/assets/fonts/ChakraPetch-Medium (tmp).ttf" id="2_1t80s"]
-[ext_resource type="FontFile" path="res://src/assets/fonts/ChakraPetch-Bold (tmp).ttf" id="3_nwx0p"]
+[ext_resource type="FontFile" uid="uid://bmi56envun4eg" path="res://src/assets/fonts/ChakraPetch-SemiBold (tmp).ttf" id="1_1t80s"]
+[ext_resource type="FontFile" uid="uid://dmhrxp02mlko4" path="res://src/assets/fonts/ChakraPetch-Medium (tmp).ttf" id="2_1t80s"]
+[ext_resource type="FontFile" uid="uid://c16ujeb2kbwtx" path="res://src/assets/fonts/ChakraPetch-Bold (tmp).ttf" id="3_nwx0p"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1t80s"]
 content_margin_left = 10.0

@@ -16,6 +16,9 @@ enum InputDevice {
 var current_device: InputDevice = InputDevice.KEYBOARD_MOUSE
 ## Set by PauseMenu while the in-match Esc menu is open.
 var menu_open := false
+## A card choice is open (Shady Fella): the trigger and the card keys belong to
+## it, but the player can still move.
+var choosing_card := false
 var last_movement_input := Vector2.ZERO
 var last_aim_direction := Vector2.RIGHT
 
@@ -79,7 +82,7 @@ func is_dash_pressed() -> bool:
 	return not _muted() and Input.is_action_just_pressed("dash")
 
 func is_shoot_pressed() -> bool:
-	return not _muted() and Input.is_action_pressed("shoot")
+	return not _muted() and not choosing_card and Input.is_action_pressed("shoot")
 
 func is_reload_pressed() -> bool:
 	return not _muted() and Input.is_action_just_pressed("reload")
@@ -112,7 +115,7 @@ func is_scoreboard_held() -> bool:
 	return not _muted() and Input.is_action_pressed("scoreboard")
 
 func get_powerup_slot_use_index() -> int:
-	if _muted():
+	if _muted() or choosing_card:
 		return -1
 	if Input.is_action_just_pressed("powerup_slot_1"):
 		return 0

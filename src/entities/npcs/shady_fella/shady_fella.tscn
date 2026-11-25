@@ -1,0 +1,54 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/entities/npcs/shady_fella/shady_fella_event.gd" id="1_event"]
+[ext_resource type="Script" path="res://src/entities/npcs/shady_fella/shady_fella_body.gd" id="2_body"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 22.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_reach"]
+radius = 120.0
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fella"]
+properties/0/path = NodePath("Fella:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+
+[node name="ShadyFella" type="Node2D"]
+script = ExtResource("1_event")
+
+[node name="Fella" type="CharacterBody2D" parent="."]
+collision_layer = 16
+collision_mask = 4
+script = ExtResource("2_body")
+
+[node name="Shape" type="CollisionShape2D" parent="Fella"]
+shape = SubResource("CircleShape2D_body")
+
+[node name="Name" type="Label" parent="Fella"]
+offset_left = -90.0
+offset_top = 26.0
+offset_right = 90.0
+offset_bottom = 46.0
+text = "Shady Fella"
+horizontal_alignment = 1
+
+[node name="Prompt" type="Label" parent="Fella"]
+offset_left = -90.0
+offset_top = 48.0
+offset_right = 90.0
+offset_bottom = 72.0
+theme_type_variation = &"PromptTag"
+text = "[E] Trade"
+horizontal_alignment = 1
+
+[node name="Reach" type="Area2D" parent="Fella"]
+collision_layer = 0
+collision_mask = 1
+monitorable = false
+
+[node name="Shape" type="CollisionShape2D" parent="Fella/Reach"]
+shape = SubResource("CircleShape2D_reach")
+
+[node name="Sync" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_fella")

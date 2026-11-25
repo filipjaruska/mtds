@@ -15,6 +15,7 @@
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/katana.tres" id="12_katana"]
 [ext_resource type="Script" path="res://src/scenes/layout/room_link.gd" id="17_46fcp"]
 [ext_resource type="Script" path="res://src/scenes/spawn_point.gd" id="spawn_point"]
+[ext_resource type="Resource" path="res://src/entities/npcs/shady_fella/shady_fella_spec.tres" id="shady_fella"]
 
 [sub_resource type="Resource" id="Resource_xbxl2"]
 script = ExtResource("3_vg5cl")
@@ -24,6 +25,7 @@ tile_set = ExtResource("3_e3lsi")
 script = ExtResource("1_ed704")
 playerScene = ExtResource("2_kb018")
 layout_rules = SubResource("Resource_xbxl2")
+events = Array[Resource]([ExtResource("shady_fella")])
 
 [node name="Rooms" type="Node2D" parent="." unique_id=351502302]
 

@@ -1,27 +1,19 @@
-[gd_resource type="Resource" script_class="WeaponDef" format=3]
+[gd_resource type="Resource" script_class="WeaponDef" format=3 uid="uid://k2ipqfhrhy6c"]
 
-[ext_resource type="Script" path="res://src/entities/weapons/weapon_def.gd" id="1_def"]
+[ext_resource type="Script" uid="uid://bm634rd026621" path="res://src/entities/weapons/weapon_def.gd" id="1_def"]
 [ext_resource type="PackedScene" path="res://src/entities/weapons/katana.tscn" id="2_view"]
 
 [resource]
 script = ExtResource("1_def")
 id = &"katana"
 display_name = "Katana"
-one_location = true
 fire_rate = 1.6667
-spread_degrees = 0.0
-pellets = 1
-fire_pattern = "random"
 damage = 100.0
-armor_penetration = 0.0
 max_range = 100.0
 range_class = "melee"
-bullet_speed = 2600.0
 mag_size = 1
 reload_time = 0.1
-move_speed_mult = 1.0
-slow_duration = 0.0
 melee = true
-arc_degrees = 100.0
 durability = 1
+one_location = true
 view_scene = ExtResource("2_view")

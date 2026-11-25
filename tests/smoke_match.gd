@@ -83,6 +83,7 @@ func _run() -> void:
 	check(map.has_node("DroppedWeapon_2"), "death dropped the shotgun")
 	await _powerups(map, player, holder)
 	await _event_blocks(map, player, holder)
+	await _shady_fella(map, player)
 
 	print("SMOKE: %d failures" % _failures.size())
 	quit(1 if not _failures.is_empty() else 0)
@@ -197,3 +198,44 @@ func _event_blocks(map: Node, player: Node2D, holder) -> void:
 	await tap("shoot")
 	check(LoadoutRules.active(holder.loadout).ammo == 15, "shooting again once the zone is off")
 	zone.queue_free()
+
+## Shady Fella: trade with him, one card each, shoot him and he drops a card and runs.
+func _shady_fella(map: Node, player: Node2D) -> void:
+	var pm = player.get_node("PowerupManager")
+	var input_manager = root.get_node("InputManager")
+	pm.take_all_cards.rpc_id(1)
+	var director = map.get_node("Events") # untyped: the script loads before the autoloads
+	director.start_now(0)
+	await frames(3)
+	var event = director.get_node_or_null("Event_1")
+	check(event != null, "Shady Fella appeared")
+	if event == null:
+		return
+	check(event.offer.size() == 3, "he offers 3 cards: %s" % [event.offer])
+	var fella: Node2D = event.fella
+	player.global_position = fella.global_position + Vector2(70, 0)
+	await frames(5)
+	await tap("interact")
+	await frames(3)
+	check(input_manager.choosing_card, "the trade opened")
+	check(event.state == ShadyFellaRules.State.BUSY, "he waits while you choose")
+	var first: StringName = event.offer[0]
+	await tap("powerup_slot_1")
+	await frames(4)
+	check(pm.inventory[0].def == first, "got the card I picked: %s, hand %s" % [first, pm.inventory])
+	check(event.offer.size() == 2 and not event.offer.has(first), "he has the other two left")
+	check(not input_manager.choosing_card, "the trade closed")
+	await tap("interact")
+	await frames(3)
+	check(not input_manager.choosing_card, "one card each")
+
+	# Shoot him: a card drops where he stands, he runs off and is gone.
+	player.global_position = fella.global_position + Vector2(-250, 0)
+	await frames(3)
+	var dropped_before := map.get_children().filter(func(c): return String(c.name).begins_with("DroppedCard_")).size()
+	map.get_node("Combat").fire(player, player.global_position, PackedFloat32Array([0.0]), &"pistol", 600.0)
+	check(await wait_until(func(): return event.state == ShadyFellaRules.State.FLEEING, 2.0), "shot: he runs")
+	var dropped_after := map.get_children().filter(func(c): return String(c.name).begins_with("DroppedCard_")).size()
+	check(dropped_after == dropped_before + 1, "one of his cards dropped")
+	check(await wait_until(func(): return not is_instance_valid(event), 6.0), "and he is gone")
+	check(director.active.is_empty(), "no event running")

@@ -103,3 +103,24 @@ keep one). Maps need 8 spawn points outside semi-permanent rooms.
 
 A yellow warning on the root node, a room, a doorway or a link says what is
 still missing. `git test` checks every map and tries 30 layouts of each.
+
+### In-game events
+
+Events happen during a match: the strip under the clock shows the next one
+("Shady Fella  in 0:42") and the one running now. A map lists its events in
+**Events** on its root node; each is an `EventSpec` (scene, name, when it first
+comes, how often after that, chance, how many at once and per match).
+
+- **Shady Fella** (`src/entities/npcs/shady_fella/`) wanders the map with 3
+  cards. Walk up and press interact to pick one (each player gets one; the
+  next player picks from what is left). Shoot him and one of his cards drops
+  while he runs off. Tuning: the Shady Fella group in `src/game_rules.tres`.
+
+Debug builds: F9 on the host starts the next event right away.
+
+A new event is a scene whose root extends `GameEvent` (`src/systems/events/`):
+the host sets it up in `begin()`, syncs it through its own RPCs and calls
+`finish()` when it is over. Building blocks: `PeaceZone` (no fighting inside),
+`PowerupManager.grant_card` / `take_all_cards`, `GameMap.spawn_card_pickup`,
+`GameMap.find_path` / `random_walkable_point` (walking NPCs), the "shootable"
+group, and `Interactables` (one interact prompt at a time).

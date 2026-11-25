@@ -39,6 +39,9 @@ const MAX_DROP_DISTANCE := 200.0
 	set(value):
 		layout_rules = value
 		update_configuration_warnings()
+## In-game events that may happen on this map (Shady Fella...): each with its
+## timing and chance. See EventSpec.
+@export var events: Array[EventSpec] = []
 @export_tool_button("Reroll layout preview", "RandomNumberGenerator") var reroll_preview := _preview_layout
 @export_tool_button("Clear layout preview", "Remove") var clear_preview := _clear_preview
 
@@ -49,6 +52,8 @@ var rooms: Array[MapRoom] = []
 var _room_of := {}
 ## Room -> how far build_layout moved it, in tiles.
 var _built_offsets := {}
+## Walkable tiles for NPCs (walk_grid), built on first use.
+var _walk: AStarGrid2D = null
 var _dropped_pickup_count: int = 0
 var _dropped_card_count: int = 0
 
@@ -64,6 +69,10 @@ func _ready():
 	add_child(combat)
 	if has_layout():
 		build_layout(GameManager.map_seed)
+	var director := EventDirector.new()
+	director.name = "Events"
+	director.specs = events
+	add_child(director)
 
 	var team_mode := GameManager.is_team_mode()
 	var spawns := spawn_points()
@@ -299,6 +308,7 @@ func set_gate_open(gate: StringName, open: bool) -> void:
 	for room in rooms:
 		if room.gate == gate:
 			room.set_gates_open(open)
+	_walk = null # rebuilt with the room open or closed
 
 func _preview_layout() -> void:
 	_clear_preview()
@@ -332,6 +342,83 @@ func _clear_preview() -> void:
 	if holder:
 		remove_child(holder)
 		holder.queue_free()
+
+# --- Walking (NPCs) ----------------------------------------------------------------
+
+## The map's walkable tiles for NPCs: a tile with floor and nothing solid on it
+## (any tile with a collision shape is solid), outside closed semi-permanent
+## rooms. Built on first use after the rooms are put together; rebuilt when
+## gates open or close.
+func walk_grid() -> AStarGrid2D:
+	if _walk == null:
+		_walk = _build_walk_grid()
+	return _walk
+
+func _build_walk_grid() -> AStarGrid2D:
+	var floor_cells := {}
+	var solid := {}
+	for layer: TileMapLayer in find_children("*", "TileMapLayer", true, false):
+		if _in_preview(layer) or layer.tile_set == null:
+			continue
+		var origin := Vector2i((_map_point(layer) / MapRoom.TILE).round())
+		var physics := layer.tile_set.get_physics_layers_count()
+		for cell in layer.get_used_cells():
+			var data := layer.get_cell_tile_data(cell)
+			var blocks := false
+			for i in range(physics):
+				if data and data.get_collision_polygons_count(i) > 0:
+					blocks = true
+			if blocks:
+				solid[cell + origin] = true
+			else:
+				floor_cells[cell + origin] = true
+	for room in rooms:
+		if room.is_closed():
+			var origin := _room_origin(room)
+			for cell in room.cells():
+				solid[cell + origin] = true
+	var grid := AStarGrid2D.new()
+	grid.cell_size = Vector2(MapRoom.TILE, MapRoom.TILE)
+	grid.offset = grid.cell_size * 0.5
+	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+	grid.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+	grid.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+	if floor_cells.is_empty():
+		grid.region = Rect2i(0, 0, 1, 1)
+		grid.update()
+		grid.set_point_solid(Vector2i.ZERO)
+		return grid
+	var first: Vector2i = floor_cells.keys()[0]
+	var region := Rect2i(first, Vector2i.ONE)
+	for cell in floor_cells:
+		region = region.expand(cell).expand(cell + Vector2i.ONE)
+	grid.region = region
+	grid.update()
+	grid.fill_solid_region(region, true)
+	for cell in floor_cells:
+		if not solid.has(cell):
+			grid.set_point_solid(cell, false)
+	return grid
+
+## A walking path between two map positions (tile centres), or empty when
+## there is none.
+func find_path(from: Vector2, to: Vector2) -> PackedVector2Array:
+	var grid := walk_grid()
+	var a := Vector2i((from / MapRoom.TILE).floor())
+	var b := Vector2i((to / MapRoom.TILE).floor())
+	if not grid.is_in_boundsv(a) or not grid.is_in_boundsv(b) or grid.is_point_solid(b):
+		return PackedVector2Array()
+	return grid.get_point_path(a, b, true)
+
+## A random walkable position (a tile centre), or `fallback` when there is none.
+func random_walkable_point(rng: RandomNumberGenerator, fallback: Vector2 = Vector2.ZERO) -> Vector2:
+	var grid := walk_grid()
+	var region := grid.region
+	for attempt in range(200):
+		var cell := Vector2i(rng.randi_range(region.position.x, region.end.x - 1), rng.randi_range(region.position.y, region.end.y - 1))
+		if not grid.is_point_solid(cell):
+			return grid.get_point_position(cell)
+	return fallback
 
 # --- Spawn points -----------------------------------------------------------------
 

@@ -49,6 +49,13 @@ signal powerup_used(player: Node, card: PowerupDef, slot: int)
 ## An active card ran out.
 signal powerup_expired(player: Node, card: PowerupDef)
 
+# --- In-game events (Shady Fella, the blackjack table...) -------------------------
+
+## An event began on this game (a GameEvent node).
+signal game_event_started(event: Node)
+## An event is over (the node is freed right after).
+signal game_event_ended(event: Node)
+
 # --- Session -----------------------------------------------------------------------
 
 ## A peer joined the lobby (host side, and on clients for others).

@@ -108,3 +108,25 @@ func test_outdoor_maps_are_one_walled_rectangle() -> void:
 		var placed := Rect2i(rect.position + map._room_origin(room), rect.size)
 		check(area.grow(-1).encloses(placed), "%s is inside the walls" % room.name)
 	map.free()
+
+## The walk grid follows the real tiles: every spawn point can walk to every
+## other one (so corridors really connect the doorways), and walls are solid.
+func test_every_spawn_point_can_walk_to_every_other() -> void:
+	for path in _maps():
+		for seed_value in [1, 2, 3]:
+			var map: GameMap = load(path).instantiate()
+			var has_layout := map.has_layout()
+			if has_layout:
+				map.build_layout(seed_value)
+			var spawns := map.spawn_points()
+			var grid := map.walk_grid()
+			for i in range(1, spawns.size()):
+				var from: Vector2 = map._map_point(spawns[0])
+				var to: Vector2 = map._map_point(spawns[i])
+				var route := map.find_path(from, to)
+				check(not route.is_empty(), "%s layout %d: no way from %s to %s" % [path.get_file(), seed_value, spawns[0].name, spawns[i].name])
+				for point in route:
+					check(not grid.is_point_solid(Vector2i((point / MapRoom.TILE).floor())), "%s: path through a wall" % path.get_file())
+			map.free()
+			if not has_layout:
+				break
