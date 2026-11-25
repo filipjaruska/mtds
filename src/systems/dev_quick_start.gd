@@ -3,8 +3,10 @@ class_name DevQuickStart
 ## Editor-only quick start: skips the menus and drops straight into the debug
 ## map. Works with Godot's "Run Multiple Instances": the first instance hosts
 ## on DEV_PORT, every other one finds the port taken and joins it. The host
-## starts the debug match once players stop joining, and restarts it when
-## someone joins later, so every instance ends up in the same match.
+## starts the first match (the debug map) once players stop joining. Someone
+## joining during a match restarts that match, on whatever map it is, so every
+## instance ends up in it. Back in the lobby you pick any map and start it
+## yourself; quick start leaves the lobby alone.
 ##
 ## Never runs in exported builds. Turn it off with the project setting
 ## dev/quick_start = false, or launch once with the user argument --menu.
@@ -18,6 +20,8 @@ const SETTLE_SECONDS := 2.5
 const MATCH_SECONDS := 3600.0
 
 var _start_timer: Timer
+## The first match has started (after that the map is the lobby's choice).
+var _started_once := false
 
 static func enabled() -> bool:
 	return OS.has_feature("editor") \
@@ -47,7 +51,10 @@ func _host(peer: ENetMultiplayerPeer) -> void:
 	multiplayer.multiplayer_peer = peer
 	GameManager.local_player_name = "Dev Host"
 	print("[dev] hosting the debug match on port %d" % DEV_PORT)
-	multiplayer.peer_connected.connect(func(_id: int) -> void: _start_timer.start(SETTLE_SECONDS))
+	multiplayer.peer_connected.connect(func(_id: int) -> void:
+		# Before the first match, or during one: (re)start once joins settle.
+		if not _started_once or GameManager.is_state(GameManager.GameState.PLAYING):
+			_start_timer.start(SETTLE_SECONDS))
 	get_tree().change_scene_to_file(LOBBY_SCENE)
 	_start_timer.start(SETTLE_SECONDS)
 
@@ -65,13 +72,19 @@ func _join() -> void:
 		EventManager.connected_to_host.emit()
 		get_tree().change_scene_to_file(LOBBY_SCENE), CONNECT_ONE_SHOT)
 
-## Host: (re)start the debug match with everyone who has joined so far.
+## Host: start the first match on the debug map, or restart the running match
+## (same map) with everyone who has joined so far.
 func _start_debug_match() -> void:
 	var lobby := get_tree().get_first_node_in_group("Lobby")
 	if lobby == null:
 		_start_timer.start(0.5) # lobby not loaded yet
 		return
-	GameManager.set_map(DEBUG_MAP)
-	print("[dev] starting the debug match with %d player(s)" % GameManager.get_player_count())
+	if not _started_once:
+		_started_once = true
+		GameManager.set_map(DEBUG_MAP)
+	elif not GameManager.is_state(GameManager.GameState.PLAYING):
+		return # back in the lobby: the host picks the map and starts
+	var map := GameManager.get_map()
+	print("[dev] starting %s with %d player(s)" % [map.get_file(), GameManager.get_player_count()])
 	lobby._broadcast_settings()
-	lobby.start_game.rpc(DEBUG_MAP, randi())
+	lobby.start_game.rpc(map, randi())
