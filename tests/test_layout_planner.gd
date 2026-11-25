@@ -34,10 +34,10 @@ func _room(id: String, origin: Vector2i, size: Vector2i, facings: Array, extra: 
 	return room
 
 func _input(rooms: Array, links: Array = [], spots: Dictionary = {}) -> Dictionary:
-	return {"rooms": rooms, "links": links, "spots": spots, "settings": {"width": 3, "turn_cost": 3.0, "padding": 10}}
+	return {"rooms": rooms, "links": links, "spots": spots, "settings": {"width": 3, "turn_cost": 3.0, "padding": 10, "max_detour": 1.6}}
 
-func _link(a: String, b: String, chance := 1.0) -> Dictionary:
-	return {"a": a, "b": b, "chance": chance}
+func _link(a: String, b: String, chance := 1.0, width := 0) -> Dictionary:
+	return {"a": a, "b": b, "chance": chance, "width": width}
 
 ## Rooms reachable from `start` walking over room tiles and corridor floor.
 func _reachable(input: Dictionary, plan: Dictionary, start: String) -> Dictionary:
@@ -69,8 +69,8 @@ func test_straight_corridor_between_facing_doorways() -> void:
 	check(plan.ok, str(plan.problems))
 	check_eq(plan.floor.size(), 3 * 6, "a 3-wide corridor across the 6-tile gap")
 	check(plan.floor.has(Vector2i(9, 4)) and plan.floor.has(Vector2i(14, 4)), "straight across")
-	check_eq(plan.doors.get(LayoutPlanner.door_key("a", 0)), LayoutPlanner.OPEN)
-	check_eq(plan.doors.get(LayoutPlanner.door_key("b", 0)), LayoutPlanner.OPEN)
+	check_eq(plan.doors[LayoutPlanner.door_key("a", 0)].state, LayoutPlanner.OPEN)
+	check_eq(plan.doors[LayoutPlanner.door_key("b", 0)].open, [0, 1, 2], "the whole doorway is open")
 	check(not plan.doors.has(LayoutPlanner.door_key("a", 1)), "the unused doorway is walled up")
 
 func test_corridor_goes_around_a_room() -> void:
@@ -134,7 +134,7 @@ func test_semi_permanent_room_gets_a_gate() -> void:
 	], [_link("a", "c")])
 	var plan := LayoutPlanner.plan(input, 3)
 	check(plan.ok, str(plan.problems))
-	var states: Array = [plan.doors.get(LayoutPlanner.door_key("table", 0)), plan.doors.get(LayoutPlanner.door_key("table", 1))]
+	var states: Array = [plan.doors.get(LayoutPlanner.door_key("table", 0), {}).get("state"), plan.doors.get(LayoutPlanner.door_key("table", 1), {}).get("state")]
 	check(states.has(LayoutPlanner.GATE), "a gate into the closed room: %s" % [states])
 	check(not states.has(LayoutPlanner.OPEN), "never an open way in")
 
@@ -142,3 +142,32 @@ func test_overlapping_rooms_are_a_problem() -> void:
 	var plan := LayoutPlanner.plan(_input([_room("a", Vector2i(0, 0), Vector2i(9, 9), [E]), _room("b", Vector2i(5, 5), Vector2i(9, 9), [W])]), 1)
 	check(not plan.ok)
 	check(str(plan.problems).contains("overlap"), str(plan.problems))
+
+func test_long_way_round_is_dropped_for_closer_rooms() -> void:
+	# a's only doorway faces away from c: the a-c corridor would loop round a
+	# long way. The link is dropped and a gets a short corridor to b instead.
+	var rooms := [
+		_room("a", Vector2i(0, 0), Vector2i(9, 9), [W]),
+		_room("b", Vector2i(-14, 0), Vector2i(9, 9), [E, S]),
+		_room("c", Vector2i(30, 0), Vector2i(9, 9), [W, S]),
+	]
+	var input := _input(rooms, [_link("a", "c")])
+	input.settings.max_detour = 1.0
+	var plan := LayoutPlanner.plan(input, 1)
+	check(plan.ok, str(plan.problems))
+	check(not plan.links.any(func(l): return l[0] == "a" and l[1] == "c" and not l[2]), "the long a-c corridor is not carved")
+	check(plan.links.any(func(l): return "a" in [l[0], l[1]] and "b" in [l[0], l[1]]), "a joins its neighbour b: %s" % [plan.links])
+	check_eq(_reachable(input, plan, "a").size(), 3, "every room still reachable")
+	input.settings.max_detour = 5.0
+	var relaxed := LayoutPlanner.plan(input, 1)
+	check(relaxed.links.any(func(l): return l[0] == "a" and l[1] == "c" and not l[2]), "with a high Max Detour the link stays")
+
+func test_link_width_and_wide_doorways() -> void:
+	var wide := _room("b", Vector2i(15, 0), Vector2i(9, 9), [W])
+	# A 5-tile doorway on b; the corridor is only 3 wide.
+	wide.doors[0].cells = [Vector2i(15, 2), Vector2i(15, 3), Vector2i(15, 4), Vector2i(15, 5), Vector2i(15, 6)]
+	var input := _input([_room("a", Vector2i(0, 0), Vector2i(9, 9), [E]), wide], [_link("a", "b")])
+	var plan := LayoutPlanner.plan(input, 1)
+	check_eq(plan.doors[LayoutPlanner.door_key("b", 0)].open, [1, 2, 3], "the middle 3 tiles stay open, the rest is walled up")
+	var five := LayoutPlanner.plan(_input([_room("a", Vector2i(0, 0), Vector2i(9, 9), [E]), _room("b", Vector2i(15, 0), Vector2i(9, 9), [W])], [_link("a", "b", 1.0, 5)]), 1)
+	check_eq(five.floor.size(), 5 * 6, "a 5-wide corridor across the 6-tile gap")

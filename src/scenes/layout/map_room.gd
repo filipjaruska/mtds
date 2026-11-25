@@ -88,15 +88,22 @@ func used_rect() -> Rect2i:
 
 # --- Applying a layout ---------------------------------------------------------------
 
-func seal_door(door: RoomDoor, width: int) -> void:
+## Walls up a doorway, except the tiles (by index along it) a corridor uses.
+func seal_door(door: RoomDoor, keep_open: Array = []) -> void:
 	var walls := walls_layer()
 	if walls == null:
 		return
-	for cell in door.cells(width):
-		walls.set_cell(cell, seal_source_id, seal_atlas_coords)
+	var gap := door.cells(door.gap_width())
+	for i in range(gap.size()):
+		if not keep_open.has(i):
+			walls.set_cell(gap[i], seal_source_id, seal_atlas_coords)
 
-func add_gate(door: RoomDoor, width: int) -> void:
-	var gap := door.cells(width)
+## A gate over the doorway tiles (by index along it) a corridor uses.
+func add_gate(door: RoomDoor, open: Array) -> void:
+	var all := door.cells(door.gap_width())
+	var gap: Array[Vector2i] = []
+	for i in open:
+		gap.append(all[i])
 	var rect := Rect2(Vector2(gap[0]) * TILE, Vector2(TILE, TILE))
 	for cell in gap:
 		rect = rect.merge(Rect2(Vector2(cell) * TILE, Vector2(TILE, TILE)))
@@ -104,17 +111,6 @@ func add_gate(door: RoomDoor, width: int) -> void:
 	g.name = "Gate_%s" % door.name
 	add_child(g)
 	gates.append(g)
-
-## Facts the map checks use.
-func summary() -> Dictionary:
-	var spawns := 0
-	var weapons := {}
-	for node in find_children("*", "", true, false):
-		if node is SpawnPoint or node.is_in_group("PlayerSpawnLocation"):
-			spawns += 1
-		elif node is WeaponSpawner and node.weapon_def:
-			weapons[node.weapon_def.id] = weapons.get(node.weapon_def.id, 0) + 1
-	return {"gated": gated, "spawns": spawns, "weapons": weapons}
 
 # --- Editor ---------------------------------------------------------------------------
 

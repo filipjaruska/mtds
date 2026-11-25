@@ -1,9 +1,11 @@
 @tool
 extends Node2D
 class_name RoomLink
-## A corridor between two rooms of a map, always or with a chance. The game
-## adds more corridors only when a room would otherwise be unreachable.
-## In the editor it shows as a line between the rooms (dashed below 100%).
+## A corridor between two rooms, always or with a chance, of the map's width or
+## its own. A link whose corridor would be a long way round is dropped for the
+## match (Layout Rules: Max Detour). The game adds more corridors only when a
+## room would otherwise be unreachable. In the editor it shows as a line
+## between the rooms (dashed below 100%, thicker when wider).
 
 ## The two rooms (MapRoom nodes).
 @export var from: NodePath:
@@ -18,6 +20,11 @@ class_name RoomLink
 @export_range(0.0, 1.0, 0.05) var chance: float = 1.0:
 	set(value):
 		chance = value
+		_changed()
+## Corridor width in tiles; 0 = the map's corridor width.
+@export_range(0, 8) var width: int = 0:
+	set(value):
+		width = value
 		_changed()
 
 func from_room() -> MapRoom:
@@ -53,12 +60,17 @@ func _draw() -> void:
 	var start := to_local(_centre(a))
 	var end := to_local(_centre(b))
 	var color := Color(1.0, 0.85, 0.3)
+	var thickness := 8.0 if width <= 0 else 4.0 + width * 3.0
 	if chance >= 1.0:
-		draw_line(start, end, color, 8.0)
+		draw_line(start, end, color, thickness)
 	else:
-		draw_dashed_line(start, end, color, 8.0, 40.0)
-	draw_string(ThemeDB.fallback_font, (start + end) * 0.5 + Vector2(12, -12),
-		"%d%%" % roundi(chance * 100.0) if chance < 1.0 else "", HORIZONTAL_ALIGNMENT_LEFT, -1, 34, color)
+		draw_dashed_line(start, end, color, thickness, 40.0)
+	var label := PackedStringArray()
+	if chance < 1.0:
+		label.append("%d%%" % roundi(chance * 100.0))
+	if width > 0:
+		label.append("%d wide" % width)
+	draw_string(ThemeDB.fallback_font, (start + end) * 0.5 + Vector2(12, -12), "  ".join(label), HORIZONTAL_ALIGNMENT_LEFT, -1, 34, color)
 
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings := PackedStringArray()

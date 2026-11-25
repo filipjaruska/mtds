@@ -11,6 +11,8 @@ var placed: Array = []
 var plan: Dictionary = {}
 ## [{cell: Vector2i, state: String}] doorway tiles in map cells
 var doors: Array = []
+## Outdoor maps: the ground rectangle, wall included (size 0 indoors).
+var outdoor_area := Rect2i()
 
 func _ready() -> void:
 	z_index = 100
@@ -26,11 +28,18 @@ func _draw() -> void:
 		bounds = box if bounds.size == Vector2.ZERO else bounds.merge(box)
 	for cell in plan.walls:
 		bounds = bounds.merge(Rect2(Vector2(cell) * TILE, Vector2(TILE, TILE)))
+	if outdoor_area.size != Vector2i.ZERO:
+		bounds = bounds.merge(Rect2(Vector2(outdoor_area.position) * TILE, Vector2(outdoor_area.size) * TILE))
 	draw_rect(bounds.grow(TILE * 4), shade)
+	if outdoor_area.size != Vector2i.ZERO:
+		var area := Rect2(Vector2(outdoor_area.position) * TILE, Vector2(outdoor_area.size) * TILE)
+		draw_rect(area, Color(0.23, 0.33, 0.17))
+		draw_rect(area.grow(-TILE * 0.5), Color(0.16, 0.16, 0.18), false, TILE)
 	for cell in plan.floor:
 		draw_rect(Rect2(Vector2(cell) * TILE, Vector2(TILE, TILE)), Color(0.55, 0.5, 0.42))
-	for cell in plan.walls:
-		draw_rect(Rect2(Vector2(cell) * TILE, Vector2(TILE, TILE)), Color(0.18, 0.16, 0.2))
+	if outdoor_area.size == Vector2i.ZERO:
+		for cell in plan.walls:
+			draw_rect(Rect2(Vector2(cell) * TILE, Vector2(TILE, TILE)), Color(0.18, 0.16, 0.2))
 	for entry in placed:
 		var color := Color(1.0, 0.6, 0.15) if entry.room.gated else Color(0.55, 0.75, 1.0)
 		for cell in entry.cells:

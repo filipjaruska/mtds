@@ -47,6 +47,8 @@ var rooms: Array[MapRoom] = []
 ## Spawn points, weapon spots and card areas placed next to the rooms (not in
 ## them) -> the room they stand in; they move with it. Filled by build_layout.
 var _room_of := {}
+## Room -> how far build_layout moved it, in tiles.
+var _built_offsets := {}
 var _dropped_pickup_count: int = 0
 
 func _ready():
@@ -163,7 +165,7 @@ func layout_input() -> Dictionary:
 		var doors: Array = []
 		for door in room.doors():
 			var door_cells: Array[Vector2i] = []
-			for cell in door.cells(width):
+			for cell in door.cells(door.gap_width()):
 				door_cells.append(cell + origin)
 			doors.append({"cells": door_cells, "facing": int(door.facing)})
 		rooms_in.append({"id": String(get_path_to(room)), "cells": cells, "anchor": origin + rect.get_center(),
@@ -177,10 +179,11 @@ func layout_input() -> Dictionary:
 		var a: MapRoom = link.from_room()
 		var b: MapRoom = link.to_room()
 		if a and b:
-			links.append({"a": String(get_path_to(a)), "b": String(get_path_to(b)), "chance": link.chance})
+			links.append({"a": String(get_path_to(a)), "b": String(get_path_to(b)), "chance": link.chance, "width": link.width})
 	var settings := {"width": width}
 	if layout_rules:
 		settings["turn_cost"] = layout_rules.turn_cost
+		settings["max_detour"] = layout_rules.max_detour
 		settings["padding"] = layout_rules.padding_tiles
 	return {"rooms": rooms_in, "spots": spots, "links": links, "settings": settings}
 
@@ -195,7 +198,6 @@ func build_layout(seed_value: int) -> Dictionary:
 	var plan := plan_layout(seed_value)
 	if not plan.ok:
 		push_warning("Map %s, layout %d: %s" % [name, seed_value, "; ".join(plan.problems)])
-	var width := _corridor_width()
 	rooms = map_rooms()
 	_room_of = _rooms_under_loose_things()
 	for node in _room_of:
@@ -205,33 +207,73 @@ func build_layout(seed_value: int) -> Dictionary:
 		var id := String(get_path_to(room))
 		var doors := room.doors()
 		for i in range(doors.size()):
-			match plan.doors.get(LayoutPlanner.door_key(id, i), ""):
-				LayoutPlanner.OPEN:
-					pass
-				LayoutPlanner.GATE:
-					room.add_gate(doors[i], width)
-				_:
-					room.seal_door(doors[i], width)
+			var used: Dictionary = plan.doors.get(LayoutPlanner.door_key(id, i), {})
+			if used.is_empty():
+				room.seal_door(doors[i])
+				continue
+			room.seal_door(doors[i], used.open) # the part of a wide doorway no corridor uses
+			if used.state == LayoutPlanner.GATE:
+				room.add_gate(doors[i], used.open)
 		room.position += Vector2(plan.offsets.get(id, Vector2i.ZERO)) * MapRoom.TILE
+		_built_offsets[room] = plan.offsets.get(id, Vector2i.ZERO)
 	if layout_rules and layout_rules.tile_set:
 		var corridors := Node2D.new()
 		corridors.name = "Corridors"
 		add_child(corridors)
 		move_child(corridors, 0)
-		var floor_layer := TileMapLayer.new()
-		floor_layer.name = "Floor"
-		floor_layer.tile_set = layout_rules.tile_set
-		floor_layer.z_index = -10
-		corridors.add_child(floor_layer)
-		var walls := TileMapLayer.new()
-		walls.name = "Walls"
-		walls.tile_set = layout_rules.tile_set
-		corridors.add_child(walls)
+		var floor_layer := _tile_layer(corridors, "Floor", -10)
+		var walls := _tile_layer(corridors, "Walls", 0)
 		for cell in plan.floor:
 			floor_layer.set_cell(cell, layout_rules.floor_source_id, layout_rules.floor_atlas_coords)
-		for cell in plan.walls:
-			walls.set_cell(cell, layout_rules.wall_source_id, layout_rules.wall_atlas_coords)
+		if layout_rules.outdoors:
+			# Roads have no walls: grass everywhere between, a wall round the map.
+			var ground := _tile_layer(corridors, "Ground", -11)
+			var area := outdoor_area(plan)
+			for x in range(area.position.x, area.end.x):
+				for y in range(area.position.y, area.end.y):
+					var cell := Vector2i(x, y)
+					if x == area.position.x or y == area.position.y or x == area.end.x - 1 or y == area.end.y - 1:
+						walls.set_cell(cell, layout_rules.wall_source_id, layout_rules.wall_atlas_coords)
+					else:
+						ground.set_cell(cell, layout_rules.ground_source_id, layout_rules.ground_atlas_coords)
+		else:
+			for cell in plan.walls:
+				walls.set_cell(cell, layout_rules.wall_source_id, layout_rules.wall_atlas_coords)
 	return plan
+
+func _tile_layer(parent: Node, layer_name: String, z: int) -> TileMapLayer:
+	var layer := TileMapLayer.new()
+	layer.name = layer_name
+	layer.tile_set = layout_rules.tile_set
+	layer.z_index = z
+	parent.add_child(layer)
+	return layer
+
+## Outdoor maps: the rectangle (or square) of ground, wall included, around
+## every room and road of a layout.
+func outdoor_area(plan: Dictionary) -> Rect2i:
+	var rect := Rect2i()
+	var first := true
+	for room in map_rooms():
+		var used := room.used_rect()
+		var offset: Vector2i = plan.offsets.get(String(get_path_to(room)), Vector2i.ZERO)
+		var placed := Rect2i(used.position + _painted_origin(room) + offset, used.size)
+		rect = placed if first else rect.merge(placed)
+		first = false
+	for cell in plan.floor:
+		rect = rect.expand(cell).expand(cell + Vector2i.ONE)
+	rect = rect.grow(layout_rules.border_tiles + 1)
+	if layout_rules.square:
+		var side := maxi(rect.size.x, rect.size.y)
+		rect = Rect2i(rect.get_center() - Vector2i(side, side) / 2, Vector2i(side, side))
+	return rect
+
+## A room's top-left tile where it is painted (before build_layout moves it).
+func _painted_origin(room: MapRoom) -> Vector2i:
+	var origin := _room_origin(room)
+	if rooms.has(room) and _built_offsets.has(room):
+		origin -= _built_offsets[room]
+	return origin
 
 ## Host -> everyone: open or close the gates of every room with this gate name.
 @rpc("authority", "call_local", "reliable")
@@ -247,7 +289,8 @@ func _preview_layout() -> void:
 	var preview: Node2D = load("res://src/scenes/layout/layout_preview.gd").new()
 	preview.name = "LayoutPreview"
 	preview.plan = plan
-	var width := _corridor_width()
+	if layout_rules and layout_rules.outdoors:
+		preview.outdoor_area = outdoor_area(plan)
 	for room in map_rooms():
 		var id := String(get_path_to(room))
 		var origin := _room_origin(room)
@@ -257,9 +300,11 @@ func _preview_layout() -> void:
 		preview.placed.append({"room": room, "offset": offset, "cells": cells, "rect": Rect2i(rect.position + origin, rect.size)})
 		var doors := room.doors()
 		for i in range(doors.size()):
-			var state: String = plan.doors.get(LayoutPlanner.door_key(id, i), "")
-			for cell in doors[i].cells(width):
-				preview.doors.append({"cell": cell + origin + offset, "state": state})
+			var used: Dictionary = plan.doors.get(LayoutPlanner.door_key(id, i), {})
+			var gap := doors[i].cells(doors[i].gap_width())
+			for k in range(gap.size()):
+				var state: String = used.state if not used.is_empty() and used.open.has(k) else ""
+				preview.doors.append({"cell": gap[k] + origin + offset, "state": state})
 	add_child(preview) # no owner: never saved with the scene
 	print("Layout preview of %s, seed %d: %d corridors%s" % [name, seed_value, plan.links.size(),
 		"" if plan.ok else ". Problems: " + "; ".join(plan.problems)])
@@ -287,10 +332,13 @@ func spawn_points() -> Array[Node2D]:
 	return out
 
 ## Team of each spawn point (TeamRules team index): its own setting, else even
-## and odd numbers on fixed maps, else the half of the map it is in (Red west).
+## and odd numbers on maps without rooms, else the half of the map it is in
+## after the rooms are put together (Red west).
 func spawn_teams_of(spawns: Array[Node2D]) -> Array[int]:
 	var teams: Array[int] = []
-	var numbered := spawns.all(func(n): return String(n.name).is_valid_int())
+	# Numbers only count on maps used as painted: rooms trading places would
+	# mix the sides up, so maps with rooms always split west / east.
+	var numbered := not has_layout() and spawns.all(func(n): return String(n.name).is_valid_int())
 	var xs: Array = spawns.map(func(n): return _map_point(n).x)
 	xs.sort()
 	var middle := 0.0
@@ -443,8 +491,9 @@ func _get_configuration_warnings() -> PackedStringArray:
 		warnings.append("Needs at least %d spawn points (SpawnPoint nodes) outside semi-permanent rooms, has %d." % [needed, count])
 	if not _has_walls():
 		warnings.append("No walls: paint walls with a tile set whose physics layer is on layer 3 \"walls\" (like src/assets/maps/catacombs/tiles.tres), or shots and players pass through.")
-	# A few layouts, like the ones matches will get (the tests try many more).
-	warnings.append_array(layout_problems(range(1, 6), false))
+	# Two layouts, like the ones matches will get (the tests try many more);
+	# the editor runs this after every change, so it has to stay quick.
+	warnings.append_array(layout_problems([1, 2], false))
 	return warnings
 
 ## Some painted tile is solid on the "walls" physics layer.

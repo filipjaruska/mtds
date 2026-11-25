@@ -85,3 +85,26 @@ func test_things_move_with_their_room() -> void:
 					var cell := Vector2i((map._map_point(node) / MapRoom.TILE).floor()) - map._room_origin(room)
 					check(room.cells().has(cell), "%s layout %d: %s is still inside %s" % [path.get_file(), seed_value, node.name, room.name])
 			map.free()
+
+## Outdoors: roads without walls, ground everywhere between, a wall round it all.
+func test_outdoor_maps_are_one_walled_rectangle() -> void:
+	# The setting is for future maps; try it on the template (catacombs tiles:
+	# room floor as the ground, corridor floor as the roads).
+	var map: GameMap = load("res://src/scenes/map_template.tscn").instantiate()
+	var rules: MapLayoutRules = map.layout_rules.duplicate()
+	rules.outdoors = true
+	rules.square = true
+	map.layout_rules = rules
+	var plan := map.build_layout(3)
+	var area := map.outdoor_area(plan)
+	check_eq(area.size.x, area.size.y, "square")
+	var corridors: Node = map.get_node("Corridors")
+	var walls: TileMapLayer = corridors.get_node("Walls")
+	var ground: TileMapLayer = corridors.get_node("Ground")
+	check_eq(walls.get_used_cells().size(), (area.size.x + area.size.y) * 2 - 4, "the only corridor walls are the ring round the map")
+	check_eq(ground.get_used_cells().size(), (area.size.x - 2) * (area.size.y - 2), "ground fills the inside")
+	for room in map.rooms:
+		var rect := room.used_rect()
+		var placed := Rect2i(rect.position + map._room_origin(room), rect.size)
+		check(area.grow(-1).encloses(placed), "%s is inside the walls" % room.name)
+	map.free()

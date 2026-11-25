@@ -2,9 +2,10 @@
 extends Marker2D
 class_name RoomDoor
 ## A doorway of a MapRoom: put it in the middle of a gap in the room's border
-## wall and point it outwards. The gap must be as wide as the map's corridors
-## (shown green while it is clear, red while walls are in it). Corridors attach
-## here; a doorway no corridor uses is walled up for the match.
+## wall and point it outwards. The gap is as wide as the map's corridors unless
+## `width` says otherwise (shown green while it is clear, red while walls are in
+## it). Corridors attach here; a doorway no corridor uses is walled up for the
+## match.
 
 enum Facing { NORTH, EAST, SOUTH, WEST }
 
@@ -15,6 +16,12 @@ const TILE := 64
 	set(value):
 		facing = value
 		_changed()
+## Gap width in tiles; 0 = the map's corridor width. A corridor narrower than
+## the gap leaves the rest of it walled up.
+@export_range(0, 8) var width: int = 0:
+	set(value):
+		width = value
+		_changed()
 
 func room() -> MapRoom:
 	var node := get_parent()
@@ -22,8 +29,12 @@ func room() -> MapRoom:
 		node = node.get_parent()
 	return node as MapRoom
 
+## This doorway's gap width in tiles.
+func gap_width() -> int:
+	return width if width > 0 else map_width()
+
 ## The map's corridor width (3 when there is no map or no rules).
-func width() -> int:
+func map_width() -> int:
 	var node := get_parent()
 	while node and not node is GameMap:
 		node = node.get_parent()
@@ -60,7 +71,7 @@ func blocked_by_walls() -> bool:
 	var walls := r.walls_layer() if r else null
 	if walls == null:
 		return false
-	for cell in cells(width()):
+	for cell in cells(gap_width()):
 		if walls.get_cell_source_id(cell) != -1:
 			return true
 	return false
@@ -85,7 +96,7 @@ func _draw() -> void:
 		return
 	var color := Color(1.0, 0.3, 0.3) if blocked_by_walls() else Color(0.3, 1.0, 0.45)
 	var origin := room_position()
-	for cell in cells(width()):
+	for cell in cells(gap_width()):
 		draw_rect(Rect2(Vector2(cell) * TILE - origin + Vector2(4, 4), Vector2(TILE - 8, TILE - 8)), color, false, 4.0)
 	var out: Vector2 = [Vector2.UP, Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT][facing]
 	var tip := out * 90.0
@@ -98,5 +109,5 @@ func _get_configuration_warnings() -> PackedStringArray:
 	if room() == null:
 		warnings.append("Must be inside a MapRoom.")
 	elif blocked_by_walls():
-		warnings.append("Walls in the doorway: leave the %d border tiles shown in red empty." % width())
+		warnings.append("Walls in the doorway: leave the %d border tiles shown in red empty." % gap_width())
 	return warnings

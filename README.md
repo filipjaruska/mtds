@@ -85,10 +85,21 @@ and rooms in a swap group may trade places, so no two matches look the same.
    and give the gate a name. Their doorways get gates; nobody spawns inside.
 8. The katana lies in exactly one place per map (weapons marked One Location).
 
+**Corridors:** Layout Rules set their width (a link can set its own; a
+doorway can be wider than its corridor, the rest is walled up), how much they
+avoid turning, and Max Detour: a link whose corridor would be a long way round
+is dropped for that match, and rooms get short corridors to their nearest
+neighbours instead.
+
+**Outdoors** (for future maps): tick Outdoors under Layout Rules, with a tile
+set that has ground, road and wall tiles (set their ids there), and the
+corridors become roads without walls, ground fills everything between the
+rooms and a wall runs round the whole map: one rectangle (or a square, with
+Square) with the rooms standing in it like buildings.
+
 Press "Reroll layout preview" on the root node to see a layout drawn over the
 map (the output panel prints its seed; set Preview Seed under Layout Rules to
-keep one). Layout Rules also set the corridor width, how much corridors avoid
-turning and their tiles. Maps need 8 spawn points outside semi-permanent rooms.
+keep one). Maps need 8 spawn points outside semi-permanent rooms.
 
 A yellow warning on the root node, a room, a doorway or a link says what is
 still missing. `git test` checks every map and tries 30 layouts of each.
