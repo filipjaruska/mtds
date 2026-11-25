@@ -1,111 +1,144 @@
 extends "res://tests/test_case.gd"
-## LayoutPlanner: which room goes where, turned how, with which doorways open.
+## LayoutPlanner: where rooms go and the corridors between them.
 
-const W := LayoutPlanner.Edge.WALL
-const D := LayoutPlanner.Edge.DOOR
-const O := LayoutPlanner.Edge.OPEN
+const N := 0
+const E := 1
+const S := 2
+const W := 3
 
-func _choice(key: String, edges: Array, extra: Dictionary = {}) -> Dictionary:
-	var c := {"key": key, "weight": 1.0, "max": 0, "edges": edges, "gated": false, "spawns": 1}
-	c.merge(extra, true)
-	return c
+## A box-shaped room with 3-tile doorways in the middle of the given sides.
+func _room(id: String, origin: Vector2i, size: Vector2i, facings: Array, extra: Dictionary = {}) -> Dictionary:
+	var cells := {}
+	for x in range(size.x):
+		for y in range(size.y):
+			cells[origin + Vector2i(x, y)] = true
+	var doors: Array = []
+	for facing in facings:
+		var door: Array[Vector2i] = []
+		var along := size.x if facing == N or facing == S else size.y
+		@warning_ignore("integer_division")
+		var start := (along - 3) / 2
+		for i in range(3):
+			match facing:
+				N:
+					door.append(origin + Vector2i(start + i, 0))
+				S:
+					door.append(origin + Vector2i(start + i, size.y - 1))
+				E:
+					door.append(origin + Vector2i(size.x - 1, start + i))
+				W:
+					door.append(origin + Vector2i(0, start + i))
+		doors.append({"cells": door, "facing": facing})
+	var room := {"id": id, "cells": cells, "anchor": origin + size / 2, "group": &"", "gated": false, "doors": doors}
+	room.merge(extra, true)
+	return room
 
-func _slot(cell: Vector2i, choices: Array, extra: Dictionary = {}) -> Dictionary:
-	var s := {"cell": cell, "choices": choices, "empty_chance": 0.0, "rotate": true, "flip": true, "required": false, "square": true}
-	s.merge(extra, true)
-	return s
+func _input(rooms: Array, links: Array = [], spots: Dictionary = {}) -> Dictionary:
+	return {"rooms": rooms, "links": links, "spots": spots, "settings": {"width": 3, "turn_cost": 3.0, "padding": 10}}
 
-func _grid(w: int, h: int, choices: Array) -> Array:
-	var out: Array = []
-	for y in range(h):
-		for x in range(w):
-			out.append(_slot(Vector2i(x, y), choices))
-	return out
+func _link(a: String, b: String, chance := 1.0) -> Dictionary:
+	return {"a": a, "b": b, "chance": chance}
 
-## Rooms reachable from `start` through open doorways.
-func _reachable(plan: Dictionary, start: Vector2i) -> Dictionary:
-	var seen := {start: true}
-	var todo: Array = [start]
+## Rooms reachable from `start` walking over room tiles and corridor floor.
+func _reachable(input: Dictionary, plan: Dictionary, start: String) -> Dictionary:
+	var owner := {}
+	for room in input.rooms:
+		for cell in room.cells:
+			owner[cell + plan.offsets[room.id]] = room.id
+	var walkable: Dictionary = plan.floor.duplicate()
+	for cell in owner:
+		walkable[cell] = true
+	var first: Vector2i = owner.keys().filter(func(c): return owner[c] == start)[0]
+	var seen := {first: true}
+	var todo: Array = [first]
+	var rooms := {}
 	while not todo.is_empty():
 		var cell: Vector2i = todo.pop_back()
-		for side in range(4):
-			var next: Vector2i = cell + LayoutPlanner.STEPS[side]
-			if plan.rooms.has(next) and not seen.has(next) and plan.sides.get(LayoutPlanner.side_key(cell, side)) == LayoutPlanner.Side.OPEN:
+		if owner.has(cell):
+			rooms[owner[cell]] = true
+		for step in LayoutPlanner.STEPS:
+			var next: Vector2i = cell + step
+			if walkable.has(next) and not seen.has(next):
 				seen[next] = true
 				todo.append(next)
-	return seen
+	return rooms
 
-func test_sides_turn_and_mirror_back() -> void:
-	for rot in range(4):
-		for flip in [false, true]:
-			for side in range(4):
-				check_eq(LayoutPlanner.own_side(LayoutPlanner.map_side(side, rot, flip), rot, flip), side)
-	check_eq(LayoutPlanner.map_side(0, 1, false), 1, "a quarter turn puts north east")
-	check_eq(LayoutPlanner.map_side(1, 0, true), 3, "mirroring swaps east and west")
-	check_eq(LayoutPlanner.map_side(0, 0, true), 0, "mirroring keeps north")
+func test_straight_corridor_between_facing_doorways() -> void:
+	var input := _input([_room("a", Vector2i(0, 0), Vector2i(9, 9), [E, S]), _room("b", Vector2i(15, 0), Vector2i(9, 9), [W])], [_link("a", "b")])
+	var plan := LayoutPlanner.plan(input, 1)
+	check(plan.ok, str(plan.problems))
+	check_eq(plan.floor.size(), 3 * 6, "a 3-wide corridor across the 6-tile gap")
+	check(plan.floor.has(Vector2i(9, 4)) and plan.floor.has(Vector2i(14, 4)), "straight across")
+	check_eq(plan.doors.get(LayoutPlanner.door_key("a", 0)), LayoutPlanner.OPEN)
+	check_eq(plan.doors.get(LayoutPlanner.door_key("b", 0)), LayoutPlanner.OPEN)
+	check(not plan.doors.has(LayoutPlanner.door_key("a", 1)), "the unused doorway is walled up")
 
-func test_same_seed_same_plan() -> void:
-	var slots := _grid(4, 3, [_choice("a", [D, D, D, D]), _choice("b", [D, W, D, W])])
-	var a := LayoutPlanner.plan(slots, 42, 0.3)
-	var b := LayoutPlanner.plan(slots, 42, 0.3)
-	check_eq(var_to_str(a), var_to_str(b))
-	var others := 0
-	for seed_value in range(1, 20):
-		if var_to_str(LayoutPlanner.plan(slots, seed_value, 0.3)) != var_to_str(a):
-			others += 1
-	check(others > 10, "other seeds give other layouts (%d of 19)" % others)
-
-func test_every_room_is_reachable() -> void:
-	var slots := _grid(4, 4, [_choice("cross", [D, D, D, D]), _choice("corner", [D, D, W, W]), _choice("line", [D, W, D, W])])
-	for seed_value in range(30):
-		var plan := LayoutPlanner.plan(slots, seed_value, 0.0)
-		check(plan.ok, "seed %d: %s" % [seed_value, plan.problems])
-		check_eq(_reachable(plan, plan.rooms.keys()[0]).size(), plan.rooms.size(), "seed %d: all rooms connected" % seed_value)
-
-func test_doorways_to_nowhere_are_sealed() -> void:
-	var plan := LayoutPlanner.plan([_slot(Vector2i.ZERO, [_choice("a", [D, D, D, D])])], 1, 1.0)
-	for side in range(4):
-		check_eq(plan.sides[LayoutPlanner.side_key(Vector2i.ZERO, side)], LayoutPlanner.Side.SEALED)
-
-func test_open_blocks_always_join() -> void:
-	var slots := [_slot(Vector2i(0, 0), [_choice("block", [O, O, O, O])]), _slot(Vector2i(1, 0), [_choice("block", [O, O, O, O])])]
-	var plan := LayoutPlanner.plan(slots, 3, 0.0)
-	check_eq(plan.sides[LayoutPlanner.side_key(Vector2i(0, 0), 1)], LayoutPlanner.Side.OPEN)
-	check_eq(plan.sides[LayoutPlanner.side_key(Vector2i(1, 0), 3)], LayoutPlanner.Side.OPEN)
-	check_eq(plan.sides[LayoutPlanner.side_key(Vector2i(0, 0), 3)], LayoutPlanner.Side.SEALED, "open edge at the map's border is walled")
-
-func test_required_empty_and_max_per_map() -> void:
-	var once := _choice("once", [D, D, D, D], {"max": 1})
-	var slots := [
-		_slot(Vector2i(0, 0), [once], {"required": true}),
-		_slot(Vector2i(1, 0), [once, _choice("other", [D, D, D, D])]),
-		_slot(Vector2i(2, 0), [_choice("other", [D, D, D, D])], {"empty_chance": 1.0}),
+func test_corridor_goes_around_a_room() -> void:
+	var rooms := [
+		_room("a", Vector2i(0, 0), Vector2i(9, 9), [E]),
+		_room("block", Vector2i(14, -4), Vector2i(8, 17), [N]),
+		_room("c", Vector2i(28, 0), Vector2i(9, 9), [W]),
 	]
-	for seed_value in range(10):
-		var plan := LayoutPlanner.plan(slots, seed_value, 0.5)
-		check(plan.rooms.has(Vector2i(0, 0)), "required slot filled")
-		check_eq(plan.rooms[Vector2i(0, 0)].choice.key, "once")
-		check_eq(plan.rooms[Vector2i(1, 0)].choice.key, "other", "max 1 per map")
-		check(not plan.rooms.has(Vector2i(2, 0)), "empty chance 1 stays empty")
+	var input := _input(rooms, [_link("a", "c"), _link("block", "c")])
+	var plan := LayoutPlanner.plan(input, 2)
+	check(plan.ok, str(plan.problems))
+	for room in rooms:
+		for cell in room.cells:
+			check(not plan.floor.has(cell) and not plan.walls.has(cell), "corridors never cut into %s" % room.id)
+	check(_reachable(input, plan, "a").has("c"), "a reaches c")
 
-func test_semi_permanent_room_gets_gates_only() -> void:
-	var gated := _choice("table", [D, D, D, D], {"gated": true, "spawns": 0})
-	var slots := _grid(3, 3, [_choice("room", [D, D, D, D])])
-	slots[4] = _slot(Vector2i(1, 1), [gated], {"required": true})
-	for seed_value in range(15):
-		var plan := LayoutPlanner.plan(slots, seed_value, 0.3)
+func test_unlinked_rooms_are_connected_anyway() -> void:
+	var input := _input([
+		_room("a", Vector2i(0, 0), Vector2i(9, 9), [E, S]),
+		_room("b", Vector2i(20, 0), Vector2i(9, 9), [W, S]),
+		_room("c", Vector2i(10, 20), Vector2i(9, 9), [N, E, W]),
+	], [_link("a", "b", 0.0)])
+	for seed_value in range(5):
+		var plan := LayoutPlanner.plan(input, seed_value)
 		check(plan.ok, "seed %d: %s" % [seed_value, plan.problems])
-		var gates := 0
-		for side in range(4):
-			var state: int = plan.sides[LayoutPlanner.side_key(Vector2i(1, 1), side)]
-			check(state != LayoutPlanner.Side.OPEN, "no open way into a closed room")
-			if state == LayoutPlanner.Side.GATE:
-				gates += 1
-		check(gates >= 1, "seed %d: at least one gate" % seed_value)
-		var outside: Array = plan.rooms.keys().filter(func(c): return c != Vector2i(1, 1))
-		check_eq(_reachable(plan, outside[0]).size(), outside.size(), "the rest connects without the closed room")
+		check_eq(_reachable(input, plan, "a").size(), 3, "seed %d: every room reachable" % seed_value)
+		check(plan.links.all(func(l): return l[2]), "the 0%% link never comes; the corridors are added ones")
 
-func test_too_few_spawn_points_is_a_problem() -> void:
-	var plan := LayoutPlanner.plan(_grid(2, 1, [_choice("a", [D, D, D, D])]), 1, 0.3, 5)
+func test_link_chance() -> void:
+	var input := _input([_room("a", Vector2i(0, 0), Vector2i(9, 9), [E, S]), _room("b", Vector2i(15, 0), Vector2i(9, 9), [W, S])],
+		[_link("a", "b"), _link("a", "b", 0.5)])
+	var doubled := 0
+	for seed_value in range(40):
+		var plan := LayoutPlanner.plan(input, seed_value)
+		if plan.links.size() == 2:
+			doubled += 1
+	check(doubled > 5 and doubled < 35, "the 50%% link came %d times in 40" % doubled)
+
+func test_swap_group_trades_places() -> void:
+	var rooms := [
+		_room("a", Vector2i(0, 0), Vector2i(9, 9), [E], {"group": &"g"}),
+		_room("b", Vector2i(30, 0), Vector2i(9, 9), [W], {"group": &"g"}),
+		_room("hub", Vector2i(15, 0), Vector2i(9, 9), [E, W]),
+	]
+	var input := _input(rooms, [_link("a", "hub"), _link("b", "hub")], {&"g": [Vector2i(19, 25)]})
+	var moved := {}
+	for seed_value in range(30):
+		var plan := LayoutPlanner.plan(input, seed_value)
+		check(plan.ok, "seed %d: %s" % [seed_value, plan.problems])
+		check_eq(plan.offsets["hub"], Vector2i.ZERO, "rooms outside the group stay")
+		moved[plan.offsets["a"]] = true
+		check(plan.offsets["a"] != plan.offsets["b"] + Vector2i(30, 0) or plan.offsets["a"] == plan.offsets["b"], "two rooms never share a place")
+	check_eq(moved.size(), 3, "a lands on each of the three places")
+	check_eq(var_to_str(LayoutPlanner.plan(input, 7)), var_to_str(LayoutPlanner.plan(input, 7)), "same seed, same layout")
+
+func test_semi_permanent_room_gets_a_gate() -> void:
+	var input := _input([
+		_room("a", Vector2i(0, 0), Vector2i(9, 9), [E]),
+		_room("table", Vector2i(15, 0), Vector2i(9, 9), [W, S], {"gated": true}),
+		_room("c", Vector2i(15, 15), Vector2i(9, 9), [N, W]),
+	], [_link("a", "c")])
+	var plan := LayoutPlanner.plan(input, 3)
+	check(plan.ok, str(plan.problems))
+	var states: Array = [plan.doors.get(LayoutPlanner.door_key("table", 0)), plan.doors.get(LayoutPlanner.door_key("table", 1))]
+	check(states.has(LayoutPlanner.GATE), "a gate into the closed room: %s" % [states])
+	check(not states.has(LayoutPlanner.OPEN), "never an open way in")
+
+func test_overlapping_rooms_are_a_problem() -> void:
+	var plan := LayoutPlanner.plan(_input([_room("a", Vector2i(0, 0), Vector2i(9, 9), [E]), _room("b", Vector2i(5, 5), Vector2i(9, 9), [W])]), 1)
 	check(not plan.ok)
-	check(plan.problems[0].contains("spawn"), str(plan.problems))
+	check(str(plan.problems).contains("overlap"), str(plan.problems))

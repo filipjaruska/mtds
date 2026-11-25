@@ -56,47 +56,38 @@ give it a new `id`; it shows up in the game by itself.
 
 ### Making a map
 
-Maps are put together from rooms each match: a map is a grid of slots, and
-every slot gets one of the rooms you allow it, turned and mirrored at random,
-with doorways between rooms opened or walled up so every room stays
-reachable. `src/scenes/maps/crypts.tscn` is an example; `catacombs.tscn` is
-an older fixed map, painted in one piece.
-
-**A room** (or a block of an open area):
-
-1. Duplicate `src/scenes/rooms/room_template.tscn` (rooms live under
-   `src/scenes/rooms/<set>/`) and rename the root node.
-2. Paint `Floor` and `Walls` inside the white box (16 x 16 tiles). Walls must
-   come from a tile set whose physics layer is on layer 3 "walls", like
-   `src/assets/maps/catacombs/tiles.tres`.
-3. On the root node, set each side to Wall, Door or Open. A door is the 4
-   tiles in the middle of that side's border (shown green): leave them
-   without walls. Open sides have no border wall at all; neighbouring open
-   blocks run into each other. Doorways that lead nowhere get walled up.
-4. Add what the room holds: spawn points (`SpawnPoint` under
-   `SpawnLocations`), weapon spots (`WeaponSpawner` under `WeaponDrops`) and
-   card areas (`PowerupSpawner` under `CardDrops`).
-5. Semi-permanent rooms (closed until an event opens them): tick Gated and
-   give the gate a name.
-
-**A map:**
+A map is one scene with its rooms painted in place (`src/scenes/maps/catacombs.tscn`
+is the example). Each match the corridors between the rooms are carved anew,
+and rooms in a swap group may trade places, so no two matches look the same.
 
 1. Duplicate `src/scenes/map_template.tscn` into `src/scenes/maps/` (every
    scene there is listed in the lobby) and rename the root node.
-2. Place `MapSlot` nodes on the grid (corners on multiples of 1024 px) and
-   give each the rooms it may use (Room Choices: scene, weight, how many per
-   map), a chance to stay empty, and whether its room may be turned or
-   mirrored. Layout Rules on the root node set the slot and door size and how
-   many extra doorways open.
-3. The katana lies in exactly one place per map: give its room
-   (`rooms/catacombs/katana_tomb.tscn`) one required slot of its own. Weapons
-   marked "One Location" are checked this way.
-4. Press "Reroll layout preview" on the root node to see a layout in the
-   editor (the output panel prints its seed; set Preview Seed to keep one).
+2. **Rooms:** under `Rooms`, one `MapRoom` node per room (duplicate one), on
+   the tile grid. Paint each room's `Floor` and `Walls` (TileMap panel), any
+   size and shape. Walls must come from a tile set whose physics layer is on
+   layer 3 "walls", like `src/assets/maps/catacombs/tiles.tres`. Put what the
+   room holds inside it: spawn points (`SpawnPoint` under `SpawnLocations`),
+   weapon spots (`WeaponSpawner` under `WeaponDrops`), card areas
+   (`PowerupSpawner` under `CardDrops`).
+3. **Doorways:** a `RoomDoor` under the room's `Doors` at each gap in its
+   border wall, arrow pointing out. The gap is 3 tiles wide (the map's corridor
+   width): green while clear, red while a wall is in it. Doorways no corridor
+   uses that match are walled up.
+4. **Links:** a `RoomLink` under `Links` for each pair of rooms that should
+   get a corridor (pick From and To; Chance below 1 for one that only
+   sometimes appears). Rooms left unreachable get the closest corridor that
+   fits anyway.
+5. **Swap groups:** rooms with the same Swap Group trade places each match.
+   `RoomSpot` nodes add more places for a group. Places where a room would
+   overlap another are skipped.
+6. **Semi-permanent rooms** (closed until an event opens them): tick Gated
+   and give the gate a name. Their doorways get gates; nobody spawns inside.
+7. The katana lies in exactly one place per map (weapons marked One Location).
 
-Rooms need 8 spawn points between them. In team matches Red spawns in the
-west half of the map and Blue in the east (a spawn point's Team overrides it).
+Press "Reroll layout preview" on the root node to see a layout drawn over the
+map (the output panel prints its seed; set Preview Seed under Layout Rules to
+keep one). Layout Rules also set the corridor width, how much corridors avoid
+turning and their tiles. Maps need 8 spawn points outside semi-permanent rooms.
 
-A yellow warning on the root node of a map, room or slot says what is still
-missing. `git test` checks every map, tries 40 layouts of each slot map, and
-checks every room.
+A yellow warning on the root node, a room, a doorway or a link says what is
+still missing. `git test` checks every map and tries 30 layouts of each.
