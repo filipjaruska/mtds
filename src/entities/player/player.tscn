@@ -36,7 +36,7 @@ properties/2/replication_mode = 1
 
 
 [node name="Player" type="CharacterBody2D" groups=["Player"]]
-collision_mask = 5
+collision_mask = 21
 script = ExtResource("1_new")
 
 [node name="PlayerSprite" type="Sprite2D" parent="."]

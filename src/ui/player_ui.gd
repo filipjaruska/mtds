@@ -11,6 +11,8 @@ const VALUE_PULSE_DURATION := 0.16
 @onready var weapon_slots = %WeaponSlots
 
 var _player_node: Node = null
+## "No fighting here" while the player stands in a PeaceZone.
+var _peace_hint: Label
 var _scoreboard: CanvasLayer = null
 var _last_match_time: int = -1
 var _value_tweens: Dictionary = {}
@@ -22,6 +24,7 @@ func _process(_delta: float):
 			_scoreboard.visible = false
 		return
 	_ensure_scoreboard()
+	_peace_hint.visible = PeaceZone.covers(_player_node)
 	var powerup_manager = _player_node.get_node_or_null("PowerupManager")
 	if powerup_manager and powerup_inventory_ui:
 		powerup_inventory_ui.update_inventory(powerup_manager.get_inventory_display_data())
@@ -34,6 +37,15 @@ func _process(_delta: float):
 
 func _ready():
 	_player_node = get_parent().get_parent().get_parent()
+	_peace_hint = UiPalette.label("No fighting here", UiPalette.M, UiPalette.WARN)
+	_peace_hint.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_peace_hint.offset_top = -250
+	_peace_hint.offset_bottom = -220
+	_peace_hint.offset_left = -200
+	_peace_hint.offset_right = 200
+	_peace_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_peace_hint.visible = false
+	add_child(_peace_hint)
 	EventManager.health_changed.connect(_on_health_updated)
 	EventManager.ammo_changed.connect(_on_ammo_updated)
 	EventManager.weapon_slots_changed.connect(_on_weapon_slots_updated)

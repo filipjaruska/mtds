@@ -92,8 +92,8 @@ func _handle_fire_input(now: int) -> void:
 	var primary := LoadoutRules.active(loadout)
 	if primary.is_empty() or LoadoutRules.any_bursting(loadout):
 		return
-
-	if InputManager.is_shoot_pressed():
+	# No shooting in a no-fighting zone; reloading is fine.
+	if InputManager.is_shoot_pressed() and not PeaceZone.covers(player):
 		if not _stats_for(primary).melee and _try_start_burst(now):
 			return
 		if LoadoutRules.is_dual(loadout) and _stats_for(primary).melee:

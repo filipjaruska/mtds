@@ -11,6 +11,10 @@ class_name CombatServer
 const HITBOX_LAYER := 2 # physics layer 2 "hitboxes"
 const WALL_LAYER := 4 # physics layer 3 "walls" (map TileSets use this)
 const SHIELD_LAYER := RiotShield.SHIELD_LAYER # physics layer 4 "shields"
+const NPC_LAYER := 16 # physics layer 5 "npcs" (Shady Fella...)
+## Bodies in this group can be shot and cut: they have take_hit(amount,
+## shooter_id) and is_hittable() (TrainingTarget, Shady Fella).
+const SHOOTABLE := &"shootable"
 ## How far a shot may start from where the host sees the shooter.
 const MAX_ORIGIN_DISTANCE := 150.0
 ## Anti-spam budget per player: trigger pulls accepted within one second.
@@ -73,6 +77,8 @@ func _resolve(item: Dictionary) -> void:
 	var def := WeaponDefs.get_def(item.def)
 	if holder == null or health == null or health.is_dead or def == null:
 		return
+	if PeaceZone.covers(shooter):
+		return # no fighting here (the owner's game stops the trigger too)
 	var shot_count := ceili(item.rotations.size() / float(def.pellets))
 	if not holder.has_weapon(def.id) or item.rotations.is_empty() or shot_count > MAX_SHOTS_PER_REQUEST:
 		return
@@ -105,10 +111,10 @@ func _resolve(item: Dictionary) -> void:
 				if is_instance_valid(shield):
 					shield.take_hit(stats.damage))
 		if hit.target:
-			var target: TrainingTarget = hit.target
+			var target: Node = hit.target
 			_on_arrival(origin, hit.end, def.bullet_speed, func() -> void:
 				if is_instance_valid(target):
-					target.take_hit(stats.damage))
+					target.take_hit(stats.damage, shooter_id))
 
 	for peer in multiplayer.get_peers():
 		if peer != shooter_id:
@@ -151,16 +157,16 @@ func _resolve_swing(shooter: Node2D, shooter_id: int, def_id: StringName, dual: 
 		if player == shooter or health == null or health.is_dead or GameManager.are_teammates(shooter_id, id):
 			continue
 		candidates.append({"id": id, "position": player.global_position, "health": health})
-	# Practice targets can be cut too (ids below zero never clash with peers).
-	var targets := get_tree().get_nodes_in_group("training_target")
+	# Practice targets and NPCs can be cut too (ids below zero never clash with peers).
+	var targets := get_tree().get_nodes_in_group(SHOOTABLE)
 	for i in range(targets.size()):
-		if targets[i].hp > 0.0:
+		if targets[i].is_hittable():
 			candidates.append({"id": -1000 - i, "position": targets[i].global_position, "health": null})
 	var target_id := WeaponRules.melee_target(origin, aim, stats.max_range, stats.arc_degrees, candidates)
 	if target_id < 0:
 		return
 	var target: Dictionary = candidates.filter(func(c): return c.id == target_id)[0]
-	var query := PhysicsRayQueryParameters2D.create(origin, target.position, WALL_LAYER | SHIELD_LAYER, exclude)
+	var query := PhysicsRayQueryParameters2D.create(origin, target.position, WALL_LAYER | SHIELD_LAYER | NPC_LAYER, exclude)
 	query.collide_with_bodies = true
 	var blocked := space.intersect_ray(query)
 	var dir: Vector2 = (target.position - origin).normalized()
@@ -169,8 +175,8 @@ func _resolve_swing(shooter: Node2D, shooter_id: int, def_id: StringName, dual: 
 		target.health.apply_damage(stats.damage, stats.armor_penetration, shooter_id)
 		_show_slash_hit.rpc(target.position - dir * 18.0, dir, BulletFx.Impact.PLAYER)
 		landed = true
-	elif not blocked.is_empty() and blocked.collider is TrainingTarget:
-		blocked.collider.take_hit(stats.damage)
+	elif not blocked.is_empty() and blocked.collider.is_in_group(SHOOTABLE):
+		blocked.collider.take_hit(stats.damage, shooter_id)
 		_show_slash_hit.rpc(blocked.position, dir, BulletFx.Impact.WALL)
 		landed = true
 	elif not blocked.is_empty() and blocked.collider is RiotShield:
@@ -211,7 +217,7 @@ static func cast_piercing(space: PhysicsDirectSpaceState2D, origin: Vector2, rot
 	var skip: Array[RID] = exclude.duplicate()
 	var healths: Array = []
 	while true:
-		var query := PhysicsRayQueryParameters2D.create(origin, to, HITBOX_LAYER | WALL_LAYER | SHIELD_LAYER, skip)
+		var query := PhysicsRayQueryParameters2D.create(origin, to, HITBOX_LAYER | WALL_LAYER | SHIELD_LAYER | NPC_LAYER, skip)
 		query.collide_with_areas = true
 		# Walls and shields are bodies; player bodies sit on layer 1, which is not in the mask.
 		query.collide_with_bodies = true
@@ -228,7 +234,8 @@ static func cast_piercing(space: PhysicsDirectSpaceState2D, origin: Vector2, rot
 			skip.append(hit.rid)
 			continue
 		var shield := collider as RiotShield
-		return {"end": hit.position, "healths": healths, "shield": shield, "target": collider as TrainingTarget,
+		var target: Node = collider if collider.is_in_group(SHOOTABLE) else null
+		return {"end": hit.position, "healths": healths, "shield": shield, "target": target,
 			"impact": BulletFx.Impact.SHIELD if shield else BulletFx.Impact.WALL}
 	return {} # unreachable
 

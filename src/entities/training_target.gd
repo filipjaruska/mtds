@@ -19,9 +19,13 @@ func _ready() -> void:
 	collision_layer = CombatServer.WALL_LAYER
 	collision_mask = 0
 	add_to_group("training_target")
+	add_to_group(CombatServer.SHOOTABLE)
+
+func is_hittable() -> bool:
+	return hp > 0.0
 
 ## Host only: a shot or swing hit this target.
-func take_hit(amount: float) -> void:
+func take_hit(amount: float, _shooter_id: int = 0) -> void:
 	if not multiplayer.is_server() or hp <= 0.0:
 		return
 	hp = maxf(hp - amount, 0.0)

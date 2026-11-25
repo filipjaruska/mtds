@@ -83,6 +83,8 @@ func request_charge_hit(target_id: int) -> void:
 	var my_health: HealthComponent = player.get_health_component()
 	if target_health == null or target_health.is_dead or my_health.is_dead:
 		return
+	if PeaceZone.covers(player) or PeaceZone.covers(target):
+		return
 	if target.global_position.distance_to(player.global_position) > CHARGE_RANGE:
 		return
 	var now := Time.get_ticks_msec()

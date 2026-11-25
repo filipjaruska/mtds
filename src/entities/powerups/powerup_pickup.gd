@@ -59,7 +59,14 @@ func _apply_visuals() -> void:
 func _process(_delta: float) -> void:
 	if _local_player_inside and not is_instance_valid(_local_player_inside):
 		_local_player_inside = null
-	if _local_player_inside == null or _taken or not InputManager.is_interact_pressed():
+		Interactables.leave(self)
+	if _local_player_inside == null or _taken:
+		return
+	# Only the nearest thing shows its prompt and takes the interact key.
+	var focused := Interactables.focused(self)
+	if label:
+		label.visible = focused
+	if not focused or not InputManager.is_interact_pressed():
 		return
 	var powerup_manager: PowerupManager = _local_player_inside.get_node_or_null("PowerupManager")
 	if powerup_manager == null:
@@ -121,14 +128,14 @@ func _on_body_entered(body: Node) -> void:
 	if not body.is_in_group("Player") or not body.is_multiplayer_authority() or _taken:
 		return
 	_local_player_inside = body
-	if label:
-		label.visible = true
+	Interactables.enter(self, body)
 	create_tween().tween_property(self, "scale", Vector2(1.1, 1.1), 0.2)
 
 func _on_body_exited(body: Node) -> void:
 	if body != _local_player_inside:
 		return
 	_local_player_inside = null
+	Interactables.leave(self)
 	if label:
 		label.visible = false
 	create_tween().tween_property(self, "scale", Vector2(1.0, 1.0), 0.2)

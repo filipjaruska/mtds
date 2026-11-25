@@ -42,9 +42,14 @@ func _refresh() -> void:
 func _process(_delta: float) -> void:
 	if _local_player_inside and not is_instance_valid(_local_player_inside):
 		_local_player_inside = null
+		Interactables.leave(self)
 	if _local_player_inside == null or _taken or weapon_def == null:
 		return
-	if not InputManager.is_interact_pressed():
+	# Only the nearest thing shows its prompt and takes the interact key.
+	var focused := Interactables.focused(self)
+	if label:
+		label.visible = focused
+	if not focused or not InputManager.is_interact_pressed():
 		return
 	var holder: WeaponHolder = _local_player_inside.get_weapon_holder()
 	if holder and holder.can_pick_up():
@@ -80,11 +85,11 @@ func _find_player(peer_id: int) -> Node2D:
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("Player") and body.is_multiplayer_authority():
 		_local_player_inside = body
-		if label:
-			label.visible = true
+		Interactables.enter(self, body)
 
 func _on_body_exited(body: Node) -> void:
 	if body == _local_player_inside:
 		_local_player_inside = null
+		Interactables.leave(self)
 		if label:
 			label.visible = false

@@ -50,6 +50,7 @@ var _room_of := {}
 ## Room -> how far build_layout moved it, in tiles.
 var _built_offsets := {}
 var _dropped_pickup_count: int = 0
+var _dropped_card_count: int = 0
 
 func _ready():
 	if Engine.is_editor_hint():
@@ -117,6 +118,23 @@ func request_weapon_drop(def_id: StringName, pos: Vector2) -> void:
 		pos = player.global_position
 	_dropped_pickup_count += 1
 	_spawn_weapon_pickup.rpc(def_id, pos, "DroppedWeapon_%d" % _dropped_pickup_count)
+
+## Host: put a card on the ground for anyone to pick up (Shady Fella drops one
+## when shot).
+func spawn_card_pickup(def_id: StringName, pos: Vector2) -> void:
+	if not multiplayer.is_server() or PowerupDefs.get_def(def_id) == null:
+		return
+	_dropped_card_count += 1
+	_spawn_card_pickup.rpc(def_id, pos, "DroppedCard_%d" % _dropped_card_count)
+
+@rpc("authority", "call_local", "reliable")
+func _spawn_card_pickup(def_id: StringName, pos: Vector2, node_name: String) -> void:
+	var def := PowerupDefs.get_def(def_id)
+	if def == null or has_node(node_name):
+		return
+	var pickup := PowerupPickup.create_pickup(def, pos)
+	pickup.name = node_name
+	add_child(pickup)
 
 ## Pickups get the same name on every peer so their RPCs resolve everywhere,
 ## and live under the map so they disappear with it.

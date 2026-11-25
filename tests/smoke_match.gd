@@ -82,6 +82,7 @@ func _run() -> void:
 	check(holder.loadout.slots.size() == 1 and LoadoutRules.active(holder.loadout).def == &"pistol", "reset to pistol on death")
 	check(map.has_node("DroppedWeapon_2"), "death dropped the shotgun")
 	await _powerups(map, player, holder)
+	await _event_blocks(map, player, holder)
 
 	print("SMOKE: %d failures" % _failures.size())
 	quit(1 if not _failures.is_empty() else 0)
@@ -148,3 +149,51 @@ func _powerups(map: Node, player: Node2D, holder) -> void:
 	pm.expire(&"health_boost")
 	check(is_equal_approx(health.max_health, 100.0), "max health back to base")
 	print("powerup scenarios done, dual/burst/boosts checked")
+
+## What events are built from: cards the host gives and takes, cards dropped
+## on the map, and no-fighting zones.
+func _event_blocks(map: Node, player: Node2D, holder) -> void:
+	var pm = player.get_node("PowerupManager")
+	pm.take_all_cards.rpc_id(1)
+	await frames(2)
+	check(pm.hand_ids.is_empty(), "host sees the empty hand: %s" % [pm.hand_ids])
+	pm.grant_card.rpc_id(1, &"armor")
+	await frames(2)
+	check(pm.inventory[0].def == &"armor", "the host gave a card, inventory=%s" % [pm.inventory])
+	check(pm.hand_ids == ([&"armor"] as Array[StringName]), "the host knows the hand: %s" % [pm.hand_ids])
+	pm.take_all_cards.rpc_id(1)
+	await frames(2)
+	check(pm.get_used_inventory_slots() == 0 and pm.hand_ids.is_empty(), "the host took the cards")
+
+	map.spawn_card_pickup(&"damage_boost", player.global_position + Vector2(300, 0))
+	await frames(2)
+	check(map.has_node("DroppedCard_1"), "a dropped card lies on the map")
+
+	# A no-fighting zone round the player: the trigger does nothing, cards stay in hand.
+	var zone := PeaceZone.new()
+	var shape := CollisionShape2D.new()
+	shape.shape = CircleShape2D.new()
+	shape.shape.radius = 200.0
+	zone.add_child(shape)
+	zone.position = player.global_position
+	map.add_child(zone)
+	await frames(4)
+	check(PeaceZone.covers(player), "the player stands in the zone")
+	await wait_until(func(): return not WeaponRules.is_reloading(LoadoutRules.active(holder.loadout), Time.get_ticks_msec()), 3.0)
+	await tap("reload")
+	var full := await wait_until(func(): return LoadoutRules.active(holder.loadout).ammo == 16, 4.0)
+	check(full, "reloading works in the zone")
+	await tap("shoot")
+	check(LoadoutRules.active(holder.loadout).ammo == 16, "no shooting in the zone, ammo=%s" % LoadoutRules.active(holder.loadout).ammo)
+	pm.grant_card.rpc_id(1, &"armor")
+	await frames(2)
+	await tap("powerup_slot_1")
+	check(pm.inventory[0].def == &"armor", "no cards played in the zone")
+	var health = player.get_health_component()
+	var before: float = health.current_health
+	health.apply_damage(30.0, 0.0, 99)
+	check(health.current_health == before, "nobody gets hurt by players in the zone")
+	zone.active = false
+	await tap("shoot")
+	check(LoadoutRules.active(holder.loadout).ammo == 15, "shooting again once the zone is off")
+	zone.queue_free()

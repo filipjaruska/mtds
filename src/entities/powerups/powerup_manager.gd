@@ -20,6 +20,10 @@ signal active_changed(active: Array)
 var inventory: Array = PowerupRules.empty_inventory(MAX_INVENTORY_SLOTS)
 ## Every peer: Array of PowerupRules entries.
 var active: Array = []
+## Host: the card ids in this player's hand, as the owner last reported them
+## (the inventory itself lives on the owner). Events use it to know who holds
+## cards and who has room for one.
+var hand_ids: Array[StringName] = []
 
 @onready var player_node: Node = get_parent()
 
@@ -27,6 +31,7 @@ var _shuffle_selected_slot: int = -1
 
 func _ready() -> void:
 	EventManager.weapon_fired.connect(_on_weapon_fired)
+	inventory_updated.connect(func(_data): _report_hand())
 
 func _exit_tree() -> void:
 	if EventManager.weapon_fired.is_connected(_on_weapon_fired): EventManager.weapon_fired.disconnect(_on_weapon_fired)
@@ -137,6 +142,46 @@ func _consume_use_from_host(def_id: StringName) -> void:
 	active = PowerupRules.consume_use(active, def_id)
 	active_changed.emit(active)
 
+# --- Cards given and taken by the host (events) -------------------------------------
+
+## Host: has this player room for another card?
+func host_has_free_slot() -> bool:
+	return hand_ids.size() < MAX_INVENTORY_SLOTS
+
+## Host -> owner: put a card in the hand (Shady Fella's offer, the blackjack table).
+@rpc("any_peer", "call_local", "reliable")
+func grant_card(def_id: StringName) -> void:
+	if multiplayer.get_remote_sender_id() != 1 or not is_multiplayer_authority():
+		return
+	add_to_inventory(def_id)
+
+## Host -> owner: the hand is lost (a lost blackjack game).
+@rpc("any_peer", "call_local", "reliable")
+func take_all_cards() -> void:
+	if multiplayer.get_remote_sender_id() != 1 or not is_multiplayer_authority():
+		return
+	inventory = PowerupRules.empty_inventory(MAX_INVENTORY_SLOTS)
+	_shuffle_selected_slot = -1
+	inventory_updated.emit(get_inventory_display_data())
+
+## Owner -> host: what is in the hand now.
+func _report_hand() -> void:
+	if not is_multiplayer_authority():
+		return
+	var ids: Array[StringName] = []
+	for slot in inventory:
+		for i in range(slot.count):
+			ids.append(slot.def)
+	if multiplayer.is_server():
+		hand_ids = ids
+	else:
+		_receive_hand.rpc_id(1, ids)
+
+@rpc("any_peer", "reliable")
+func _receive_hand(ids: Array[StringName]) -> void:
+	if multiplayer.is_server() and multiplayer.get_remote_sender_id() == get_multiplayer_authority():
+		hand_ids = ids
+
 func clear_on_death() -> void:
 	if not is_multiplayer_authority():
 		return
@@ -167,7 +212,7 @@ func _check_powerup_inputs() -> void:
 		return
 	if InputManager.is_powerup_shuffle_held():
 		_handle_shuffle_slot_pressed(slot_index)
-	else:
+	elif not PeaceZone.covers(player_node): # merging is fine, playing is not
 		_shuffle_selected_slot = -1
 		use_powerup_at_slot(slot_index)
 
