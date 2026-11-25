@@ -64,34 +64,26 @@ func get_inventory_stack_count(slot_index: int) -> int:
 func get_used_inventory_slots() -> int:
 	return inventory.filter(func(slot): return slot.def != &"").size()
 
-## For the hand UI: one {card: PowerupDef or null, count, selected, hole, hand}
-## per slot. Under Poker `hole` is the slot's playing card and `hand` the poker
-## hand it makes with the board right now ({rank, name, stacks}); otherwise
-## hole is -1 and hand is {}.
+## For the hand UI: one {card: PowerupDef or null, count, selected} per slot.
 func get_inventory_display_data() -> Array[Dictionary]:
 	var display_data: Array[Dictionary] = []
-	var poker := GameManager.is_poker_mode()
 	for i in range(inventory.size()):
 		var slot: Dictionary = inventory[i]
-		var hole: int = slot.get("hole", -1) if poker else -1
 		display_data.append({
 			"card": PowerupDefs.get_def(slot.def) if slot.def != &"" else null,
 			"count": slot.count,
 			"selected": i == _shuffle_selected_slot,
-			"hole": hole,
-			"hand": PokerRules.hand_with_board(hole, GameManager.poker_board) if hole >= 0 else {},
 		})
 	return display_data
 
 # --- Owner actions -------------------------------------------------------------
 
-## `hole` is the playing card dealt with the pickup under Poker (-1 otherwise).
-func add_to_inventory(def_id: StringName, hole: int = -1) -> bool:
+func add_to_inventory(def_id: StringName) -> bool:
 	var slot := PowerupRules.empty_slot(inventory)
 	var def := PowerupDefs.get_def(def_id)
 	if slot < 0 or def == null:
 		return false
-	inventory = PowerupRules.with_slot(inventory, slot, def_id, 1, hole)
+	inventory = PowerupRules.with_slot(inventory, slot, def_id, 1)
 	inventory_updated.emit(get_inventory_display_data())
 	EventManager.powerup_collected.emit(player_node, def, slot)
 	return true
@@ -103,9 +95,7 @@ func use_powerup_at_slot(slot_index: int) -> void:
 	var def := PowerupDefs.get_def(slot.def)
 	if def == null:
 		return
-	var hole: int = slot.get("hole", -1)
-	var poker_stacks: int = PokerRules.hand_with_board(hole, GameManager.poker_board).stacks if hole >= 0 else 1
-	var stacks := PowerupRules.activation_stacks(def, slot.count, GameManager.get_card_rules(), poker_stacks)
+	var stacks := PowerupRules.activation_stacks(def, slot.count)
 	inventory = PowerupRules.with_slot(inventory, slot_index, &"", 0)
 	_shuffle_selected_slot = -1
 	inventory_updated.emit(get_inventory_display_data())
@@ -175,13 +165,13 @@ func _check_powerup_inputs() -> void:
 		if not InputManager.is_powerup_shuffle_held():
 			_shuffle_selected_slot = -1
 		return
-	if GameManager.is_shuffle_mode() and InputManager.is_powerup_shuffle_held():
+	if InputManager.is_powerup_shuffle_held():
 		_handle_shuffle_slot_pressed(slot_index)
 	else:
 		_shuffle_selected_slot = -1
 		use_powerup_at_slot(slot_index)
 
-## Shuffle mode: pick a slot, then a matching slot to merge the stacks.
+## Shift + slot: pick a slot, then a matching slot to merge the stacks.
 func _handle_shuffle_slot_pressed(slot_index: int) -> void:
 	if inventory[slot_index].def == &"":
 		return
@@ -204,7 +194,7 @@ func _sync_activate(def_id: StringName, stacks: int) -> void:
 	var def := PowerupDefs.get_def(def_id)
 	if def == null:
 		return
-	active = PowerupRules.activate(active, def, stacks, GameManager.get_card_rules(), Time.get_ticks_msec())
+	active = PowerupRules.activate(active, def, stacks, Time.get_ticks_msec())
 	active_changed.emit(active)
 
 @rpc("authority", "call_local", "reliable")

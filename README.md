@@ -45,7 +45,7 @@ Most of the game can be changed without code:
 
 | To change | Open |
 | --- | --- |
-| Match length, max players, respawn, speeds, dash, health, regeneration, camera feel, poker and chat timings | `src/game_rules.tres` |
+| Match length, max players, respawn, speeds, dash, health, regeneration, camera feel and chat timings | `src/game_rules.tres` |
 | A weapon (damage, fire rate, spread, range, ammo...) | `src/entities/weapons/defs/<weapon>.tres` |
 | A card (timing, stacking, stat bonuses, ability) | `src/entities/powerups/defs/<card>.tres` |
 | The look of the UI (colours, fonts, buttons, panels) | `src/ui/theme/main_theme.tres` (Theme editor) |

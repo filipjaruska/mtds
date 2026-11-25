@@ -5,13 +5,9 @@ class_name PowerupRules
 ##
 ## Active powerup entry: {def: StringName, stacks: int, expires_at: int, uses_left: int}
 ##   uses_left is -1 when the powerup has no use limit.
-## Inventory: Array of slots {def: StringName, count: int, hole: int}; an empty
-## slot has def &"". `hole` is the slot's playing card under Poker (-1 otherwise).
-
-## Card rules (independent of the game type).
-const RULES_STANDARD := "standard"
-const RULES_SHUFFLE := "shuffle"
-const RULES_POKER := "poker"
+## Inventory: Array of slots {def: StringName, count: int}; an empty slot has
+## def &"". Matching cards merge into one slot (Shift + slot); using a merged
+## slot plays all of its cards at once as stacks.
 
 # --- Stacking -----------------------------------------------------------------
 
@@ -26,14 +22,9 @@ static func max_uses(def: PowerupDef, stacks: int) -> int:
 		return -1
 	return def.max_uses + maxi(stacks - 1, 0) * def.uses_per_stack
 
-## Stacks granted when using a card: poker plays the stacks of the card's poker
-## hand (PokerRules), shuffle uses the merged inventory count, standard is one.
-static func activation_stacks(def: PowerupDef, inventory_count: int, rules: String, poker_stacks: int) -> int:
-	if rules == RULES_POKER:
-		return clampi(poker_stacks, 1, def.max_stack_count)
-	if rules == RULES_SHUFFLE:
-		return clampi(inventory_count, 1, def.max_stack_count)
-	return 1
+## Stacks granted when using a card: the number of cards merged in its slot.
+static func activation_stacks(def: PowerupDef, inventory_count: int) -> int:
+	return clampi(inventory_count, 1, def.max_stack_count)
 
 # --- Active powerups ----------------------------------------------------------
 
@@ -52,13 +43,13 @@ static func find(active: Array, def_id: StringName) -> Dictionary:
 			return entry
 	return {}
 
-## Activates a card. Re-activating an active powerup refreshes it; outside
-## poker rules the stacks add up (capped), under poker rules they are replaced.
-static func activate(active: Array, def: PowerupDef, stacks: int, rules: String, now: int) -> Array:
+## Activates a card. Re-activating an active powerup refreshes it and the
+## stacks add up (capped).
+static func activate(active: Array, def: PowerupDef, stacks: int, now: int) -> Array:
 	var next := without(active, def.id)
 	var existing := find(active, def.id)
 	var total := stacks
-	if not existing.is_empty() and rules != RULES_POKER:
+	if not existing.is_empty():
 		total = existing.stacks + stacks
 	next.append(new_entry(def, total, now))
 	return next
@@ -167,7 +158,7 @@ static func last_stand_entry(active: Array) -> Dictionary:
 static func empty_inventory(slots: int) -> Array:
 	var out: Array = []
 	for i in range(slots):
-		out.append({"def": &"", "count": 0, "hole": -1})
+		out.append({"def": &"", "count": 0})
 	return out
 
 static func empty_slot(inventory: Array) -> int:
@@ -176,10 +167,9 @@ static func empty_slot(inventory: Array) -> int:
 			return i
 	return -1
 
-static func with_slot(inventory: Array, index: int, def_id: StringName, count: int, hole: int = -1) -> Array:
+static func with_slot(inventory: Array, index: int, def_id: StringName, count: int) -> Array:
 	var next := inventory.duplicate(true)
-	var empty := def_id == &""
-	next[index] = {"def": def_id, "count": 0 if empty else count, "hole": -1 if empty else hole}
+	next[index] = {"def": def_id, "count": 0 if def_id == &"" else count}
 	return next
 
 ## Moves as many cards as fit from `source` onto a matching `target` stack.
@@ -189,6 +179,6 @@ static func merge(inventory: Array, source: int, target: int, max_stack: int) ->
 	if source == target or from.def == &"" or from.def != to.def or to.count >= max_stack:
 		return inventory
 	var moved := mini(from.count, max_stack - to.count)
-	var next := with_slot(inventory, target, to.def, to.count + moved, to.get("hole", -1))
+	var next := with_slot(inventory, target, to.def, to.count + moved)
 	var left: int = from.count - moved
-	return with_slot(next, source, from.def if left > 0 else &"", left, from.get("hole", -1))
+	return with_slot(next, source, from.def if left > 0 else &"", left)

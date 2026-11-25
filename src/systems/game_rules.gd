@@ -49,12 +49,6 @@ class_name GameRules
 ## Minimum time between dropping weapons.
 @export_range(0.0, 5.0, 0.1, "suffix:s") var drop_cooldown_seconds: float = 1.0
 
-@export_group("Poker")
-## Time between board cards (the board has 4).
-@export_range(1.0, 60.0, 0.5, "suffix:s") var poker_reveal_seconds: float = 15.0
-## A new board is dealt this often. Keep it at 4 x the reveal time or more.
-@export_range(4.0, 300.0, 1.0, "suffix:s") var poker_round_seconds: float = 60.0
-
 @export_group("Chat")
 ## Longest message, in characters.
 @export_range(10, 200) var chat_max_length: int = 80

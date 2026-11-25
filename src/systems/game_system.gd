@@ -18,9 +18,6 @@ enum GameState {
 
 const GAME_TYPE_DEATHMATCH := "deathmatch"
 const GAME_TYPE_TEAMS := "teams"
-const CARD_RULES_STANDARD := PowerupRules.RULES_STANDARD
-const CARD_RULES_SHUFFLE := PowerupRules.RULES_SHUFFLE
-const CARD_RULES_POKER := PowerupRules.RULES_POKER
 
 const RULES: GameRules = preload("res://src/game_rules.tres") # tuning numbers, edit in the inspector
 ## Players per match, host included. Maps need this many spawn points.
@@ -30,7 +27,6 @@ var current_state: GameState = GameState.MENU
 var game_settings: Dictionary = {
 	"max_players": MAX_PLAYERS,
 	"game_type": GAME_TYPE_DEATHMATCH,
-	"card_rules": CARD_RULES_STANDARD,
 	"map": "", # res:// path of the selected map scene
 	"match_duration_seconds": RULES.match_seconds
 }
@@ -40,12 +36,6 @@ var match_time_remaining: float = 0.0
 var tutorial_mode := false
 var match_end_time_msec: int = 0
 var match_stats: Dictionary = {}
-## Poker card rules: the board of shared playing cards under the clock (see
-## PokerRules), dealt by the host one card every 15 s and replaced every minute.
-var poker_board: Array[int] = []
-var poker_round: int = -1
-var _poker_deck: Array[int] = [] # host only
-var _poker_rng := RandomNumberGenerator.new()
 
 var _match_timer: Timer
 var _match_stats_dirty: bool = false
@@ -76,18 +66,6 @@ func get_game_type() -> String:
 func is_team_mode() -> bool:
 	return get_game_type() == GAME_TYPE_TEAMS
 
-func set_card_rules(card_rules: String) -> void:
-	game_settings["card_rules"] = card_rules
-
-func get_card_rules() -> String:
-	return game_settings.get("card_rules", CARD_RULES_STANDARD)
-
-func is_shuffle_mode() -> bool:
-	return get_card_rules() == CARD_RULES_SHUFFLE
-
-func is_poker_mode() -> bool:
-	return get_card_rules() == CARD_RULES_POKER
-
 func set_map(map_path: String) -> void:
 	game_settings["map"] = map_path
 
@@ -107,19 +85,6 @@ func are_teammates(a: int, b: int) -> bool:
 
 func get_match_duration() -> float:
 	return float(game_settings.get("match_duration_seconds", RULES.match_seconds))
-
-## Seconds since the current poker minute began (for the board's timer bar).
-func get_poker_seconds_into_round() -> float:
-	var elapsed := get_match_duration() - match_time_remaining
-	return elapsed - PokerRules.round_of(elapsed) * PokerRules.ROUND_SECONDS
-
-## Host: deal the playing card that goes with a picked-up powerup (-1 outside poker).
-func poker_deal_hole() -> int:
-	if not multiplayer.is_server() or not is_poker_mode():
-		return -1
-	var result := PokerRules.draw(_poker_deck, poker_board, _poker_rng)
-	_poker_deck = result.deck
-	return result.card
 
 func add_player(player_id: int, player_data: Dictionary) -> void:
 	players[player_id] = player_data
@@ -171,8 +136,6 @@ func start_game() -> void:
 ## Begin a timed match. Server runs the countdown and returns players to lobby when it expires.
 func start_match() -> void:
 	reset_match_stats()
-	if multiplayer.is_server():
-		_prepare_match_mode_state()
 	var duration: float = float(game_settings.get("match_duration_seconds", RULES.match_seconds))
 	match_time_remaining = duration
 	set_game_state(GameState.PLAYING)
@@ -181,7 +144,7 @@ func start_match() -> void:
 	if not multiplayer.is_server():
 		return
 	
-	sync_match_mode_state.rpc(get_game_type(), get_card_rules())
+	sync_match_mode_state.rpc(get_game_type())
 	# Send the remaining duration, not an absolute tick value: Time.get_ticks_msec()
 	# is process uptime and differs on every machine.
 	sync_match_timer.rpc(duration)
@@ -200,7 +163,6 @@ func _stop_match(broadcast_stats: bool) -> void:
 	_stop_match_timer()
 	match_end_time_msec = 0
 	match_time_remaining = 0.0
-	_reset_poker()
 	if broadcast_stats:
 		reset_match_stats()
 	else:
@@ -337,37 +299,6 @@ func _process(delta: float) -> void:
 		return
 
 	match_time_remaining = maxf(0.0, (match_end_time_msec - Time.get_ticks_msec()) / 1000.0)
-	if multiplayer.is_server() and is_poker_mode():
-		_tick_poker_board()
-
-## Host: a new board every minute, one more card every 15 seconds.
-func _tick_poker_board() -> void:
-	var elapsed := get_match_duration() - match_time_remaining
-	var round_index := PokerRules.round_of(elapsed)
-	var changed := false
-	if round_index != poker_round:
-		poker_round = round_index
-		poker_board = []
-		_poker_deck = PokerRules.new_deck(_poker_rng)
-		changed = true
-	var wanted := PokerRules.revealed_count(elapsed - round_index * PokerRules.ROUND_SECONDS)
-	while poker_board.size() < wanted:
-		var result := PokerRules.draw(_poker_deck, poker_board, _poker_rng)
-		_poker_deck = result.deck
-		poker_board.append(result.card)
-		changed = true
-	if changed:
-		sync_poker_board.rpc(poker_round, poker_board)
-
-@rpc("authority", "call_local", "reliable")
-func sync_poker_board(round_index: int, board: Array[int]) -> void:
-	poker_round = round_index
-	poker_board = board
-
-func _reset_poker() -> void:
-	poker_board = []
-	poker_round = -1
-	_poker_deck = []
 
 ## Host: end the round now (Esc menu), with results for everyone.
 func finish_match_now() -> void:
@@ -392,14 +323,9 @@ func _stop_match_timer() -> void:
 	if _match_timer.time_left > 0.0:
 		_match_timer.stop()
 
-func _prepare_match_mode_state() -> void:
-	_poker_rng.randomize()
-	_reset_poker()
-
 @rpc("authority", "call_local", "reliable")
-func sync_match_mode_state(game_type: String, card_rules: String) -> void:
+func sync_match_mode_state(game_type: String) -> void:
 	set_game_type(game_type)
-	set_card_rules(card_rules)
 
 @rpc("authority", "call_local", "reliable")
 func sync_match_timer(remaining_seconds: float) -> void:

@@ -12,7 +12,6 @@
 [ext_resource type="Script" uid="uid://d0fx2h5lnky3i" path="res://src/ui/powerup_hand_ui.gd" id="10_inventory"]
 [ext_resource type="Script" uid="uid://dmlrypu5xkgqa" path="res://src/ui/active_powerups_ui.gd" id="11_active"]
 [ext_resource type="Script" path="res://src/entities/powerups/card_effects.gd" id="12_effects"]
-[ext_resource type="Script" path="res://src/ui/poker_board_ui.gd" id="13_poker"]
 [ext_resource type="Script" path="res://src/ui/chat_bubble.gd" id="14_chat_bubble"]
 [ext_resource type="Script" path="res://src/ui/top_bar_ui.gd" id="15_top_bar"]
 [ext_resource type="Script" path="res://src/ui/chat_input.gd" id="16_chat_input"]
@@ -249,18 +248,6 @@ grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CameraComponent/PlayerCamera/PlayerUI/ActivePowerupsUI/ScrollContainer"]
 layout_mode = 2
-
-[node name="PokerBoard" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
-theme = ExtResource("main_theme")
-layout_mode = 3
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_top = 50.0
-offset_bottom = 50.0
-grow_horizontal = 2
-mouse_filter = 2
-script = ExtResource("13_poker")
 
 [node name="TopBar" type="Control" parent="CameraComponent/PlayerCamera/PlayerUI"]
 theme = ExtResource("main_theme")

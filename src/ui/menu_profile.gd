@@ -4,7 +4,7 @@ const SAMPLE_MATCHES := [
 	{"result": "Victory", "mode": "deathmatch", "kills": 12, "deaths": 4, "date": "2026-07-14"},
 	{"result": "Defeat", "mode": "deathmatch+shuffle", "kills": 7, "deaths": 9, "date": "2026-07-13"},
 	{"result": "Victory", "mode": "deathmatch", "kills": 15, "deaths": 6, "date": "2026-07-12"},
-	{"result": "Defeat", "mode": "deathmatch+poker", "kills": 3, "deaths": 11, "date": "2026-07-10"},
+	{"result": "Defeat", "mode": "deathmatch", "kills": 3, "deaths": 11, "date": "2026-07-10"},
 	{"result": "Victory", "mode": "deathmatch+shuffle", "kills": 10, "deaths": 5, "date": "2026-07-08"},
 ]
 

@@ -10,7 +10,7 @@ const SUITES := [
 	"res://tests/test_powerup_rules.gd",
 	"res://tests/test_team_rules.gd",
 	"res://tests/test_hand_layout.gd",
-	"res://tests/test_poker_rules.gd",
+	"res://tests/test_playing_cards.gd",
 	"res://tests/test_chat_rules.gd",
 	"res://tests/test_view_rules.gd",
 	"res://tests/test_results_format.gd",

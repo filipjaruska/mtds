@@ -78,19 +78,18 @@ func _request_pickup() -> void:
 	if player == null or player.global_position.distance_to(global_position) > PICKUP_RANGE:
 		return
 	_taken = true
-	# Under Poker the card comes with a playing card dealt by the host.
-	_grant.rpc_id(sender, GameManager.poker_deal_hole())
+	_grant.rpc_id(sender)
 	despawn.rpc()
 
 ## Host -> collecting player.
 @rpc("any_peer", "call_local", "reliable")
-func _grant(hole: int) -> void:
+func _grant() -> void:
 	if multiplayer.get_remote_sender_id() != 1 or powerup_def == null:
 		return
 	var player := _find_player(multiplayer.get_unique_id())
 	var powerup_manager: PowerupManager = player.get_node_or_null("PowerupManager") if player else null
 	if powerup_manager:
-		powerup_manager.add_to_inventory(powerup_def.id, hole)
+		powerup_manager.add_to_inventory(powerup_def.id)
 
 @rpc("authority", "call_local", "reliable")
 func despawn() -> void:

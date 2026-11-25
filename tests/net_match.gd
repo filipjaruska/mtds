@@ -77,7 +77,6 @@ func _run_host() -> void:
 	# Host picks the lobby settings; the client must see all of them (see _run_client).
 	var lobby = current_scene
 	gm.set_map(MAP_PATH)
-	lobby._on_card_rules_dropdown_item_selected(2) # poker
 	lobby._on_gametype_dropdown_item_selected(1) # teams
 	check(gm.get_team(1) != gm.get_team(client_id), "host and client on different teams")
 	await seconds(0.5)
@@ -152,13 +151,10 @@ func _run_client() -> void:
 	check(_chat_from(my_id)[0][1] == "hello host" if not _chat_from(my_id).is_empty() else false, "message was cleaned by the host")
 	var gm = root.get_node("GameManager")
 	check(gm.get_game_type() == "teams", "client sees host's game type, got %s" % gm.get_game_type())
-	check(gm.get_card_rules() == "poker", "client sees host's card rules, got %s" % gm.get_card_rules())
 	check(gm.get_map() == MAP_PATH, "client sees host's map, got %s" % gm.get_map())
 	var lobby = current_scene
 	check(lobby.map_dropdown.get_item_text(lobby.map_dropdown.selected) == "test_arena", "client map dropdown shows the host's map")
-	check(lobby.game_type_dropdown.selected == 1 and lobby.card_rules_dropdown.selected == 2, "client dropdowns show the host's settings")
-	check(await wait_until(func(): return gm.poker_board.size() >= 1, 5.0), "client sees the poker board")
-	check(gm.poker_board.all(func(c): return c >= 0 and c < 52), "board cards are valid: %s" % [gm.poker_board])
+	check(lobby.game_type_dropdown.selected == 1, "client dropdown shows the host's game type")
 	await seconds(1.5)
 
 	var me: Node2D = _player(my_id)

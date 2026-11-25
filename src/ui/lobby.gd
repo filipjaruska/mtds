@@ -19,14 +19,6 @@ const GAME_TYPES := [
 	[GameManager.GAME_TYPE_TEAMS, "Team Deathmatch",
 		"Red vs Blue. No friendly fire, each team spawns on its own side, and the team with the most kills wins."],
 ]
-const CARD_RULES := [
-	[GameManager.CARD_RULES_STANDARD, "Standard",
-		"Each card gives one stack. Using a card again while it is active adds a stack."],
-	[GameManager.CARD_RULES_SHUFFLE, "Shuffle",
-		"Hold Shift (RB on controller) and press slots to merge matching cards in your inventory, up to x4."],
-	[GameManager.CARD_RULES_POKER, "Poker",
-		"Every card you pick up comes with a playing card. Play it with the 4 cards under the clock (one more every 15 s, new ones each minute): the better the poker hand, the stronger the card, up to x4."],
-]
 
 @onready var player_name_input: LineEdit = %NameInput
 @onready var start_button: Button = %StartButton
@@ -35,8 +27,6 @@ const CARD_RULES := [
 @onready var map_dropdown: OptionButton = %MapDropdown
 @onready var game_type_dropdown: OptionButton = %GametypeDropdown
 @onready var game_type_description: Label = %GametypeDescription
-@onready var card_rules_dropdown: OptionButton = %CardRulesDropdown
-@onready var card_rules_description: Label = %CardRulesDescription
 @onready var switch_team_button: Button = %SwitchTeamButton
 
 func _enter_tree() -> void:
@@ -60,7 +50,6 @@ func _ready() -> void:
 	_load_available_maps()
 	add_child(PAUSE_MENU_SCENE.instantiate())
 	_fill_dropdown(game_type_dropdown, GAME_TYPES)
-	_fill_dropdown(card_rules_dropdown, CARD_RULES)
 	_sync_settings_ui()
 	_setup_ui_for_role()
 	
@@ -80,14 +69,12 @@ func _setup_ui_for_role() -> void:
 		ready_button.visible = false
 		map_dropdown.disabled = false
 		game_type_dropdown.disabled = false
-		card_rules_dropdown.disabled = false
 	else:
 		start_button.visible = false
 		ready_button.visible = true
 		ready_button.disabled = false
 		map_dropdown.disabled = true
 		game_type_dropdown.disabled = true
-		card_rules_dropdown.disabled = true
 		player_ready_states[multiplayer.get_unique_id()] = false
 
 func _load_available_maps() -> void:
@@ -133,7 +120,6 @@ func _show_option(dropdown: OptionButton, description: Label, options: Array, va
 ## Shows the current GameManager settings in the dropdowns and player list.
 func _sync_settings_ui() -> void:
 	_show_option(game_type_dropdown, game_type_description, GAME_TYPES, GameManager.get_game_type())
-	_show_option(card_rules_dropdown, card_rules_description, CARD_RULES, GameManager.get_card_rules())
 	_show_map(GameManager.get_map())
 	switch_team_button.visible = GameManager.is_team_mode()
 	_update_player_list()
@@ -152,14 +138,13 @@ func _show_map(map_path: String) -> void:
 
 ## Host -> everyone: the lobby settings. Sent whole so they can never drift apart.
 @rpc("authority", "call_local", "reliable")
-func sync_lobby_settings(game_type: String, card_rules: String, map_path: String) -> void:
+func sync_lobby_settings(game_type: String, map_path: String) -> void:
 	GameManager.set_game_type(game_type)
-	GameManager.set_card_rules(card_rules)
 	GameManager.set_map(map_path)
 	_sync_settings_ui()
 
 func _broadcast_settings() -> void:
-	sync_lobby_settings.rpc(GameManager.get_game_type(), GameManager.get_card_rules(), GameManager.get_map())
+	sync_lobby_settings.rpc(GameManager.get_game_type(), GameManager.get_map())
 
 func _on_player_connected(id: int) -> void:
 	EventManager.player_connected.emit(id)
@@ -194,7 +179,7 @@ func request_register(player_name: String, color: Color = Color.WHITE) -> void:
 
 	for player_id in GameManager.players:
 		_broadcast_player(player_id)
-	sync_lobby_settings.rpc_id(id, GameManager.get_game_type(), GameManager.get_card_rules(), GameManager.get_map())
+	sync_lobby_settings.rpc_id(id, GameManager.get_game_type(), GameManager.get_map())
 	sync_ready_states.rpc(player_ready_states)
 	_update_player_list()
 
@@ -414,11 +399,6 @@ func _on_ready_pressed() -> void:
 func _on_gametype_dropdown_item_selected(index: int) -> void:
 	if multiplayer.is_server() and index >= 0 and index < GAME_TYPES.size():
 		GameManager.set_game_type(GAME_TYPES[index][0])
-		_broadcast_settings()
-
-func _on_card_rules_dropdown_item_selected(index: int) -> void:
-	if multiplayer.is_server() and index >= 0 and index < CARD_RULES.size():
-		GameManager.set_card_rules(CARD_RULES[index][0])
 		_broadcast_settings()
 
 func _on_map_dropdown_item_selected(index: int) -> void:

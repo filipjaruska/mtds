@@ -5,11 +5,11 @@ class_name PowerupHandUI
 ## slot its place. Each update is compared with the previous inventory
 ## (HandLayout.diff) to decide what to animate:
 ##   collected  card rises into its slot
-##   merged     (shuffle) a copy flies from the source slot onto the pile, which thunks
-##   played     a copy lifts, grows and fades upwards (Poker shows the hand, e.g. "FLUSH x3")
+##   merged     a copy flies from the source slot onto the pile, which thunks
+##   played     a copy lifts, grows and fades upwards (a merged pile shows "x3")
 ##   cleared    (death) the card drops away
 ## Holding details spreads the fan into a flat row with descriptions; holding
-## shuffle makes the cards jiggle, lifts the picked card and lights up matches.
+## the merge key makes the cards jiggle, lifts the picked card and lights up matches.
 
 const SLOT_COUNT := 4
 const MOVE_DURATION := 0.18
@@ -40,7 +40,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	_expanded = InputManager.is_powerup_details_held()
-	_shuffle_held = GameManager.is_shuffle_mode() and InputManager.is_powerup_shuffle_held() and not _expanded
+	_shuffle_held = InputManager.is_powerup_shuffle_held() and not _expanded
 	var selected_def: StringName = _inventory[_selected].def if _selected >= 0 else &""
 	for i in range(SLOT_COUNT):
 		var view := _views[i]
@@ -60,7 +60,7 @@ func _process(delta: float) -> void:
 	_hint.text = "Merge"
 
 ## `inventory` is PowerupManager.get_inventory_display_data():
-## one {card: PowerupDef or null, count, selected, hole, hand} per slot.
+## one {card: PowerupDef or null, count, selected} per slot.
 func update_inventory(inventory: Array) -> void:
 	var next: Array = []
 	_selected = -1
@@ -77,7 +77,7 @@ func update_inventory(inventory: Array) -> void:
 		old_textures.append(view.art_texture())
 	for i in range(SLOT_COUNT):
 		var entry: Dictionary = inventory[i] if i < inventory.size() else {}
-		_views[i].set_card(entry.get("card", null), int(entry.get("count", 0)), int(entry.get("hole", -1)), entry.get("hand", {}))
+		_views[i].set_card(entry.get("card", null), int(entry.get("count", 0)))
 	_inventory = next
 	for change in changes:
 		match change.kind:
@@ -104,10 +104,7 @@ func play_card(slot: int) -> void:
 	tween.tween_property(ghost, "scale", Vector2(1.7, 1.7), 0.5)
 	tween.tween_property(ghost, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
 	tween.chain().tween_callback(ghost.queue_free)
-	if not view.hand.is_empty():
-		var label := "%s x%d" % [String(view.hand.name).to_upper(), view.strength()]
-		_burst_text(label, rise + Vector2(HandLayout.CARD_SIZE.x * 0.5, HandLayout.CARD_SIZE.y * 0.4), CardView.strength_color(view.strength()))
-	elif view.count > 1:
+	if view.count > 1:
 		_burst_text("x%d" % view.count, rise + Vector2(HandLayout.CARD_SIZE.x * 0.5, HandLayout.CARD_SIZE.y * 0.4), UiPalette.ACCENT)
 
 ## Kept for callers of the old inventory UI.

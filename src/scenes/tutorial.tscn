@@ -98,15 +98,16 @@ horizontal_alignment = 1
 
 [node name="Sign5" type="Label" parent="Signs" unique_id=374900208]
 z_index = -1
-offset_left = 4320.0
-offset_top = 88.0
-offset_right = 5280.0
+offset_left = 4200.0
+offset_top = 60.0
+offset_right = 5400.0
 offset_bottom = 188.0
 theme_override_colors/font_color = Color(1, 1, 1, 0.85)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 20
 text = "{interact} to collect a card. {powerup_slot_1} to {powerup_slot_4} to play one.
+Hold {powerup_shuffle} and press two matching slots to merge them: a merged card plays stronger.
 Hold {powerup_details} to read your cards."
 horizontal_alignment = 1
 

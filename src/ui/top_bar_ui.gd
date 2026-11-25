@@ -4,7 +4,7 @@ class_name TopBarUI
 ## side of the clock, with a thin HP bar, greyed out while dead, and your own
 ## icon outlined. Team matches put Red left and Blue right (ChatRules.bar_sides).
 ## Chat messages also appear under the sender's icon, growing away from the
-## clock so they never cover it or the poker board. When several players on
+## clock so they never cover it or the strip under it. When several players on
 ## one side talk at once their bubbles stack into rows instead of overlapping.
 ## This node sits at the top-centre of the screen; only the local player's copy runs.
 
@@ -12,7 +12,7 @@ const SLOT_SCENE := preload("res://src/ui/library/top_bar_slot.tscn")
 const SLOT := TopBarSlot.SIZE
 const GAP := 6.0
 ## Distance from the screen centre to the nearest icon: clears the clock pill
-## and the poker board under it.
+## and the strip under it.
 const START := 96.0
 const TOP := 8.0
 const BUBBLE_GAP := 4.0

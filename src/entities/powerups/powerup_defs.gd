@@ -1,7 +1,7 @@
 extends RefCounted
 class_name PowerupDefs
 ## Registry of every PowerupDef in DEFS_DIR, keyed by id. Ids are what goes over
-## the network and what poker mode features.
+## the network.
 
 const DEFS_DIR := "res://src/entities/powerups/defs/"
 

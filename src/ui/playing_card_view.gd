@@ -1,8 +1,7 @@
 extends Control
 class_name PlayingCardView
-## A small playing card (see PokerRules for the int encoding): a white face
-## with rank and suit, or the card back. Used for the poker board under the
-## clock and as the badge on powerup cards in the hand.
+## A small playing card (see PlayingCards for the int encoding): a white face
+## with rank and suit, or the card back (-1). Used by the blackjack table.
 
 const CARD_BACK := preload("res://src/assets/cards/card_back (tmp).png")
 const SUIT_ICONS := [
@@ -75,9 +74,9 @@ func show_card(value: int) -> void:
 	_back.visible = not face_up
 	if not face_up:
 		return
-	_rank.text = PokerRules.RANKS[PokerRules.rank_of(value)]
-	_rank.add_theme_color_override("font_color", RED if PokerRules.is_red(value) else BLACK)
-	_suit.texture = SUIT_ICONS[PokerRules.suit_of(value)]
+	_rank.text = PlayingCards.RANKS[PlayingCards.rank_of(value)]
+	_rank.add_theme_color_override("font_color", RED if PlayingCards.is_red(value) else BLACK)
+	_suit.texture = SUIT_ICONS[PlayingCards.suit_of(value)]
 
 ## Turns the card over to show `value` (or its back for -1).
 func flip_to(value: int, delay: float = 0.0) -> void:

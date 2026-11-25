@@ -17,7 +17,6 @@ func _ready() -> void:
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	GameManager.tutorial_mode = true
 	GameManager.set_game_type(GameManager.GAME_TYPE_DEATHMATCH)
-	GameManager.set_card_rules(GameManager.CARD_RULES_STANDARD)
 	GameManager.set_map(TUTORIAL_MAP)
 	GameManager.game_settings["match_duration_seconds"] = 36000.0
 	if GameManager.local_player_name.is_empty():

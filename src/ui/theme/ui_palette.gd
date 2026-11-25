@@ -37,7 +37,7 @@ static var GOOD: Color
 static var WARN: Color
 static var BAD: Color
 static var INFO: Color
-static var GOLD: Color # strong poker hands
+static var GOLD: Color # gold highlights (the blackjack table)
 
 static func _static_init() -> void:
 	var theme: Theme = load(THEME_PATH)

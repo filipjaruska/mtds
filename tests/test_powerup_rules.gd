@@ -23,33 +23,25 @@ func test_stack_scale() -> void:
 	check_eq(PowerupRules.stack_scale(def, 2), 2.1)
 	check_eq(PowerupRules.stack_scale(def, 4), 2.3)
 
-func test_activation_stacks_per_card_rules() -> void:
+func test_activation_stacks_are_the_merged_count() -> void:
 	var def := _def(&"x")
-	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_STANDARD, 1), 1)
-	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_SHUFFLE, 1), 3)
-	check_eq(PowerupRules.activation_stacks(def, 9, PowerupRules.RULES_SHUFFLE, 1), 4, "capped")
-	check_eq(PowerupRules.activation_stacks(def, 3, PowerupRules.RULES_POKER, 2), 2, "poker plays the hand's stacks")
-	check_eq(PowerupRules.activation_stacks(def, 1, PowerupRules.RULES_POKER, 9), 4, "capped at max stacks")
+	check_eq(PowerupRules.activation_stacks(def, 1), 1)
+	check_eq(PowerupRules.activation_stacks(def, 3), 3)
+	check_eq(PowerupRules.activation_stacks(def, 9), 4, "capped")
 
 func test_reactivation_adds_stacks_and_refreshes() -> void:
 	var def := _def(&"x")
-	var active := PowerupRules.activate([], def, 1, PowerupRules.RULES_STANDARD, 0)
-	active = PowerupRules.activate(active, def, 1, PowerupRules.RULES_STANDARD, 5000)
+	var active := PowerupRules.activate([], def, 1, 0)
+	active = PowerupRules.activate(active, def, 1, 5000)
 	check_eq(active.size(), 1, "one entry per powerup")
 	check_eq(active[0].stacks, 2)
 	check_eq(active[0].expires_at, 15000, "duration refreshed")
 
-func test_poker_reactivation_replaces_stacks() -> void:
-	var def := _def(&"x")
-	var active := PowerupRules.activate([], def, 4, PowerupRules.RULES_POKER, 0)
-	active = PowerupRules.activate(active, def, 1, PowerupRules.RULES_POKER, 0)
-	check_eq(active[0].stacks, 1)
-
 func test_expiry_by_time_and_uses() -> void:
 	var timed := _def(&"timed")
 	var limited := _def(&"limited", {"max_uses": 1})
-	var active := PowerupRules.activate([], timed, 1, PowerupRules.RULES_STANDARD, 0)
-	active = PowerupRules.activate(active, limited, 1, PowerupRules.RULES_STANDARD, 0)
+	var active := PowerupRules.activate([], timed, 1, 0)
+	active = PowerupRules.activate(active, limited, 1, 0)
 	check(PowerupRules.expired_ids(active, 9999).is_empty())
 	check_eq(PowerupRules.expired_ids(active, 10000).size(), 2)
 	active = PowerupRules.consume_use(active, &"limited")
@@ -59,8 +51,8 @@ func test_modifiers_sum_and_disappear_without_drift() -> void:
 	# Regression: apply/remove with +=/-= used to leave values behind.
 	var armor := _def(&"armor", {"modifiers": _mods({"damage_resist": 0.15}), "stack_multiplier": 1.5})
 	var dmg := _def(&"dmg", {"modifiers": _mods({"damage_mult": 0.2})})
-	var active := PowerupRules.activate([], armor, 2, PowerupRules.RULES_SHUFFLE, 0)
-	active = PowerupRules.activate(active, dmg, 1, PowerupRules.RULES_STANDARD, 0)
+	var active := PowerupRules.activate([], armor, 2, 0)
+	active = PowerupRules.activate(active, dmg, 1, 0)
 	# Defs are looked up through the registry, so register these test defs.
 	PowerupDefs._by_id[&"armor"] = armor
 	PowerupDefs._by_id[&"dmg"] = dmg
@@ -110,12 +102,12 @@ func test_shield_grows_with_stacks() -> void:
 func test_pierce_counts_stacks() -> void:
 	var def := PowerupDefs.get_def(&"damage_boost")
 	check_eq(PowerupRules.pierce([]), 0, "no card, no pierce")
-	check_eq(PowerupRules.pierce(PowerupRules.activate([], def, 1, PowerupRules.RULES_STANDARD, 0)), 1)
-	check_eq(PowerupRules.pierce(PowerupRules.activate([], def, 3, PowerupRules.RULES_STANDARD, 0)), 3)
+	check_eq(PowerupRules.pierce(PowerupRules.activate([], def, 1, 0)), 1)
+	check_eq(PowerupRules.pierce(PowerupRules.activate([], def, 3, 0)), 3)
 
 func test_last_stand_charges_run_out() -> void:
 	var def := PowerupDefs.get_def(&"health_boost")
-	var active := PowerupRules.activate([], def, 2, PowerupRules.RULES_STANDARD, 0)
+	var active := PowerupRules.activate([], def, 2, 0)
 	check_eq(PowerupRules.last_stand_entry(active).uses_left, 2, "one charge per stack")
 	active = PowerupRules.consume_use(active, def.id)
 	check(not PowerupRules.last_stand_entry(active).is_empty(), "one charge left")
@@ -128,12 +120,10 @@ func test_charge_damage_scales() -> void:
 	check_eq(PowerupRules.charge_params(def, 1).damage, 25.0)
 	check(PowerupRules.charge_params(def, 2).damage > 25.0)
 
-func test_slots_keep_their_hole_card() -> void:
+func test_emptied_slot_is_cleared() -> void:
 	var inv := PowerupRules.empty_inventory(3)
-	check_eq(inv[0].hole, -1)
-	inv = PowerupRules.with_slot(inv, 0, &"x", 1, 17)
-	check_eq(inv[0].hole, 17)
-	inv = PowerupRules.with_slot(inv, 1, &"x", 1, 30)
+	inv = PowerupRules.with_slot(inv, 0, &"x", 1)
+	inv = PowerupRules.with_slot(inv, 1, &"x", 1)
 	var merged := PowerupRules.merge(inv, 0, 1, 4)
-	check_eq(merged[1].hole, 30, "target keeps its card")
-	check_eq(merged[0].hole, -1, "emptied slot has no card")
+	check_eq(merged[1].count, 2, "target holds both")
+	check_eq(merged[0], {"def": &"", "count": 0}, "emptied slot is a plain empty slot")
