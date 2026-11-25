@@ -48,8 +48,11 @@ func _ready() -> void:
 	_prompt.visible = false
 	UiPalette.world_text(_name, UiPalette.S, UiPalette.TEXT_DIM)
 	_bubble = ChatBubbleView.create(14, 200.0, ChatBubbleView.Align.CENTER, true)
-	_bubble.position = Vector2(0, -60)
-	fella.add_child(_bubble)
+	# The bubble keeps itself anchored to its parent's origin: above his head.
+	var anchor := Node2D.new()
+	anchor.position = Vector2(0, -34)
+	fella.add_child(anchor)
+	anchor.add_child(_bubble)
 	super._ready()
 
 # --- Host: running him -------------------------------------------------------------
