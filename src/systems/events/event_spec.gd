@@ -14,11 +14,12 @@ class_name EventSpec
 @export_group("When")
 ## The first one starts this many seconds into the match, at random between
 ## the two.
-@export_range(0.0, 1800.0, 5.0, "suffix:s") var first_after_min: float = 60.0
-@export_range(0.0, 1800.0, 5.0, "suffix:s") var first_after_max: float = 120.0
-## Then another one this often (the time counts from when the last one started).
-@export_range(5.0, 1800.0, 5.0, "suffix:s") var every_min: float = 120.0
-@export_range(5.0, 1800.0, 5.0, "suffix:s") var every_max: float = 180.0
+@export_range(0.0, 1800.0, 1.0, "suffix:s") var first_after_min: float = 60.0
+@export_range(0.0, 1800.0, 1.0, "suffix:s") var first_after_max: float = 120.0
+## Then another one this often (the time counts from when the last one started;
+## with Max Active reached, the next one comes as soon as one is over).
+@export_range(1.0, 1800.0, 1.0, "suffix:s") var every_min: float = 120.0
+@export_range(1.0, 1800.0, 1.0, "suffix:s") var every_max: float = 180.0
 ## Chance that it happens when its time comes (otherwise it waits for the next).
 @export_range(0.0, 1.0, 0.05) var chance: float = 1.0
 ## How many may run at once.

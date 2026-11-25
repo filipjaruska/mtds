@@ -5,12 +5,25 @@
 [ext_resource type="TileSet" path="res://src/assets/maps/debug/tiles.tres" id="3_fjwj1"]
 [ext_resource type="PackedScene" path="res://src/entities/training_target.tscn" id="training_target"]
 [ext_resource type="Script" path="res://src/scenes/spawn_point.gd" id="spawn_point"]
+[ext_resource type="Script" path="res://src/systems/events/event_spec.gd" id="event_spec"]
+[ext_resource type="PackedScene" path="res://src/entities/npcs/shady_fella/shady_fella.tscn" id="shady_fella"]
+
+[sub_resource type="Resource" id="Resource_shady_always"]
+script = ExtResource("event_spec")
+scene = ExtResource("shady_fella")
+display_name = "Shady Fella"
+first_after_min = 1.0
+first_after_max = 1.0
+every_min = 1.0
+every_max = 1.0
+lasts_seconds = 90.0
 
 [node name="Debug" type="Node2D" unique_id=1144231477]
 script = ExtResource("1_eglss")
 armory_center = Vector2(960, 160)
 cards_center = Vector2(960, 992)
 playerScene = ExtResource("2_828io")
+events = Array[Resource]([SubResource("Resource_shady_always")])
 
 [node name="Floor" type="TileMapLayer" parent="." unique_id=773794559]
 z_index = -10

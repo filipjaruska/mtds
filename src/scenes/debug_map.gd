@@ -6,6 +6,8 @@ extends "res://src/scenes/scene_manager.gd"
 ##   Cards   one PowerupSpawner per PowerupDef, restocked as soon as it's taken
 ## Stations are built in the same order on every peer, so their names (and the
 ## RPC paths of their pickups) match everywhere.
+## Shady Fella is always around (an event in debug.tscn due every second, one
+## at a time): when he runs off or leaves, the next one turns up right away.
 
 const WEAPON_SPAWNER := preload("res://src/entities/weapons/weapon_spawner.tscn")
 const POWERUP_SPAWNER := preload("res://src/entities/powerups/powerup_spawner.tscn")
