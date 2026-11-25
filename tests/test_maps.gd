@@ -65,3 +65,23 @@ func test_same_seed_builds_the_same_map() -> void:
 		check(teams.has(0) and teams.has(1), "%s: both teams get spawn points" % path.get_file())
 		a.free()
 		b.free()
+
+## Spawn points, weapon spots and card areas placed next to the rooms move
+## with the room they stand in when rooms trade places.
+func test_things_move_with_their_room() -> void:
+	for path in _maps():
+		for seed_value in range(1, 6):
+			var map: GameMap = load(path).instantiate()
+			if not map.has_layout():
+				map.free()
+				break
+			map.build_layout(seed_value)
+			for node in map.find_children("*", "", true, false):
+				if not (node is SpawnPoint or node is WeaponSpawner or node is PowerupSpawner):
+					continue
+				var room := map.room_of(node)
+				check(room != null, "%s: %s belongs to a room" % [path.get_file(), node.name])
+				if room:
+					var cell := Vector2i((map._map_point(node) / MapRoom.TILE).floor()) - map._room_origin(room)
+					check(room.cells().has(cell), "%s layout %d: %s is still inside %s" % [path.get_file(), seed_value, node.name, room.name])
+			map.free()

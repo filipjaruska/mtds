@@ -41,16 +41,6 @@ tile_set = ExtResource("3_e3lsi")
 tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAADAAAAAgAAAAAAAAAEAAAAAgAAAAAAAAAFAAAAAgAAAAAAAAAGAAAAAgAAAAAAAAAHAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAJAAAAAgAAAAAAAAAKAAAAAgAAAAAAAAALAAAAAgAAAAAAAAAMAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAAMAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAAMAAIAAgAAAAAAAAAAAAMAAgAAAAAAAAAMAAMAAgAAAAAAAAAAAAQAAgAAAAAAAAAAAAUAAgAAAAAAAAAAAAYAAgAAAAAAAAAAAAcAAgAAAAAAAAAMAAcAAgAAAAAAAAAAAAgAAgAAAAAAAAAMAAgAAgAAAAAAAAAAAAkAAgAAAAAAAAABAAkAAgAAAAAAAAACAAkAAgAAAAAAAAADAAkAAgAAAAAAAAAHAAkAAgAAAAAAAAAIAAkAAgAAAAAAAAAJAAkAAgAAAAAAAAAKAAkAAgAAAAAAAAALAAkAAgAAAAAAAAAMAAkAAgAAAAAAAAAEAAMABAAAAAAAAAAFAAMABAAAAAAAAAAIAAYABAAAAAAAAAAJAAYABAAAAAAAAAA=")
 tile_set = ExtResource("3_e3lsi")
 
-[node name="SpawnLocations" type="Node2D" parent="Rooms/Crypt" unique_id=1782667030]
-
-[node name="0" type="Marker2D" parent="Rooms/Crypt/SpawnLocations" unique_id=1794089317 groups=["PlayerSpawnLocation"]]
-position = Vector2(224, 416)
-script = ExtResource("spawn_point")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/Crypt" unique_id=340730930]
-
-[node name="CardDrops" type="Node2D" parent="Rooms/Crypt" unique_id=625420986]
-
 [node name="Doors" type="Node2D" parent="Rooms/Crypt" unique_id=32303320]
 
 [node name="Door1" type="Marker2D" parent="Rooms/Crypt/Doors" unique_id=1923659926]
@@ -75,27 +65,6 @@ tile_set = ExtResource("3_e3lsi")
 tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAADAAAAAgAAAAAAAAAEAAAAAgAAAAAAAAAFAAAAAgAAAAAAAAAGAAAAAgAAAAAAAAAHAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAJAAAAAgAAAAAAAAAKAAAAAgAAAAAAAAALAAAAAgAAAAAAAAAMAAAAAgAAAAAAAAANAAAAAgAAAAAAAAAOAAAAAgAAAAAAAAAPAAAAAgAAAAAAAAAQAAAAAgAAAAAAAAARAAAAAgAAAAAAAAASAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAASAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAASAAIAAgAAAAAAAAASAAMAAgAAAAAAAAASAAQAAgAAAAAAAAASAAUAAgAAAAAAAAAAAAYAAgAAAAAAAAASAAYAAgAAAAAAAAAAAAcAAgAAAAAAAAASAAcAAgAAAAAAAAAAAAgAAgAAAAAAAAABAAgAAgAAAAAAAAACAAgAAgAAAAAAAAADAAgAAgAAAAAAAAAEAAgAAgAAAAAAAAAFAAgAAgAAAAAAAAAGAAgAAgAAAAAAAAAHAAgAAgAAAAAAAAAIAAgAAgAAAAAAAAASAAgAAgAAAAAAAAAIAAkAAgAAAAAAAAASAAkAAgAAAAAAAAAIAAoAAgAAAAAAAAASAAoAAgAAAAAAAAAIAAsAAgAAAAAAAAASAAsAAgAAAAAAAAAIAAwAAgAAAAAAAAASAAwAAgAAAAAAAAAIAA0AAgAAAAAAAAASAA0AAgAAAAAAAAAIAA4AAgAAAAAAAAAJAA4AAgAAAAAAAAANAA4AAgAAAAAAAAAOAA4AAgAAAAAAAAAPAA4AAgAAAAAAAAAQAA4AAgAAAAAAAAARAA4AAgAAAAAAAAASAA4AAgAAAAAAAAAFAAMABAAAAAAAAAAFAAUABAAAAAAAAAAGAAMABAAAAAAAAAAGAAUABAAAAAAAAAAHAAMABAAAAAAAAAAHAAUABAAAAAAAAAALAAMABAAAAAAAAAALAAUABAAAAAAAAAAMAAMABAAAAAAAAAAMAAUABAAAAAAAAAANAAMABAAAAAAAAAANAAUABAAAAAAAAAAPAAwAAwAAAAAAAAAQAAwAAwAAAAAAAAA=")
 tile_set = ExtResource("3_e3lsi")
 
-[node name="SpawnLocations" type="Node2D" parent="Rooms/Chapel" unique_id=574777601]
-
-[node name="2" type="Marker2D" parent="Rooms/Chapel/SpawnLocations" unique_id=905461275 groups=["PlayerSpawnLocation"]]
-position = Vector2(1056, 160)
-script = ExtResource("spawn_point")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/Chapel" unique_id=1023206828]
-
-[node name="M1903Chapel" parent="Rooms/Chapel/WeaponDrops" unique_id=1949902645 instance=ExtResource("7_y8o3a")]
-position = Vector2(288, 480)
-weapon_def = ExtResource("10_m1903")
-respawn_time = 30.0
-
-[node name="CardDrops" type="Node2D" parent="Rooms/Chapel" unique_id=726351941]
-
-[node name="CardsChapelApse" parent="Rooms/Chapel/CardDrops" unique_id=1753930314 instance=ExtResource("9_vg5cl")]
-position = Vector2(768, 672)
-spawn_frequency = 20.0
-max_powerups = 1
-spawn_area_size = Vector2(256, 192)
-
 [node name="Doors" type="Node2D" parent="Rooms/Chapel" unique_id=2110762134]
 
 [node name="Door1" type="Marker2D" parent="Rooms/Chapel/Doors" unique_id=581996776]
@@ -119,20 +88,6 @@ tile_set = ExtResource("3_e3lsi")
 [node name="Walls" type="TileMapLayer" parent="Rooms/Gallery" unique_id=1616394824]
 tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAADAAAAAgAAAAAAAAAEAAAAAgAAAAAAAAAFAAAAAgAAAAAAAAAGAAAAAgAAAAAAAAAHAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAJAAAAAgAAAAAAAAAKAAAAAgAAAAAAAAALAAAAAgAAAAAAAAAMAAAAAgAAAAAAAAANAAAAAgAAAAAAAAAOAAAAAgAAAAAAAAAPAAAAAgAAAAAAAAAQAAAAAgAAAAAAAAARAAAAAgAAAAAAAAASAAAAAgAAAAAAAAATAAAAAgAAAAAAAAAUAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAAUAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAAUAAUAAgAAAAAAAAAAAAYAAgAAAAAAAAABAAYAAgAAAAAAAAACAAYAAgAAAAAAAAADAAYAAgAAAAAAAAAEAAYAAgAAAAAAAAAFAAYAAgAAAAAAAAAGAAYAAgAAAAAAAAAHAAYAAgAAAAAAAAALAAYAAgAAAAAAAAAMAAYAAgAAAAAAAAANAAYAAgAAAAAAAAAOAAYAAgAAAAAAAAAPAAYAAgAAAAAAAAAQAAYAAgAAAAAAAAARAAYAAgAAAAAAAAASAAYAAgAAAAAAAAATAAYAAgAAAAAAAAAUAAYAAgAAAAAAAAAEAAEAAwAAAAAAAAAHAAUAAwAAAAAAAAALAAEAAwAAAAAAAAAPAAUAAwAAAAAAAAA=")
 tile_set = ExtResource("3_e3lsi")
-
-[node name="SpawnLocations" type="Node2D" parent="Rooms/Gallery" unique_id=2085077911]
-
-[node name="6" type="Marker2D" parent="Rooms/Gallery/SpawnLocations" unique_id=2032038599 groups=["PlayerSpawnLocation"]]
-position = Vector2(160, 160)
-script = ExtResource("spawn_point")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/Gallery" unique_id=73307474]
-
-[node name="M4Gallery" parent="Rooms/Gallery/WeaponDrops" unique_id=103543521 instance=ExtResource("7_y8o3a")]
-position = Vector2(1184, 224)
-weapon_def = ExtResource("9_m4")
-
-[node name="CardDrops" type="Node2D" parent="Rooms/Gallery" unique_id=1022200160]
 
 [node name="Doors" type="Node2D" parent="Rooms/Gallery" unique_id=1899155742]
 
@@ -162,18 +117,6 @@ tile_set = ExtResource("3_e3lsi")
 [node name="Walls" type="TileMapLayer" parent="Rooms/GreatHall" unique_id=552971]
 tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAADAAAAAgAAAAAAAAAEAAAAAgAAAAAAAAAFAAAAAgAAAAAAAAAGAAAAAgAAAAAAAAAHAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAMAAAAAgAAAAAAAAANAAAAAgAAAAAAAAAOAAAAAgAAAAAAAAAPAAAAAgAAAAAAAAAQAAAAAgAAAAAAAAARAAAAAgAAAAAAAAASAAAAAgAAAAAAAAATAAAAAgAAAAAAAAAUAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAAUAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAAUAAIAAgAAAAAAAAAAAAMAAgAAAAAAAAAUAAMAAgAAAAAAAAAAAAQAAgAAAAAAAAAUAAQAAgAAAAAAAAAAAAUAAgAAAAAAAAAUAAUAAgAAAAAAAAAAAAYAAgAAAAAAAAAUAAYAAgAAAAAAAAAUAAcAAgAAAAAAAAAUAAgAAgAAAAAAAAAUAAkAAgAAAAAAAAAAAAoAAgAAAAAAAAAAAAsAAgAAAAAAAAAAAAwAAgAAAAAAAAAAAA0AAgAAAAAAAAAUAA0AAgAAAAAAAAAAAA4AAgAAAAAAAAAUAA4AAgAAAAAAAAAAAA8AAgAAAAAAAAABAA8AAgAAAAAAAAACAA8AAgAAAAAAAAADAA8AAgAAAAAAAAAEAA8AAgAAAAAAAAAFAA8AAgAAAAAAAAAGAA8AAgAAAAAAAAAHAA8AAgAAAAAAAAAIAA8AAgAAAAAAAAAMAA8AAgAAAAAAAAANAA8AAgAAAAAAAAAOAA8AAgAAAAAAAAAPAA8AAgAAAAAAAAAQAA8AAgAAAAAAAAARAA8AAgAAAAAAAAASAA8AAgAAAAAAAAATAA8AAgAAAAAAAAAUAA8AAgAAAAAAAAALAAsABAAAAAAAAAAMAAsABAAAAAAAAAAEAAMAAwAAAAAAAAAFAAMAAwAAAAAAAAAEAAQAAwAAAAAAAAAFAAQAAwAAAAAAAAAPAAIAAwAAAAAAAAAQAAIAAwAAAAAAAAAPAAMAAwAAAAAAAAAQAAMAAwAAAAAAAAAFAAoAAwAAAAAAAAAGAAoAAwAAAAAAAAAFAAsAAwAAAAAAAAAGAAsAAwAAAAAAAAAQAAoAAwAAAAAAAAARAAoAAwAAAAAAAAAQAAsAAwAAAAAAAAARAAsAAwAAAAAAAAA=")
 tile_set = ExtResource("3_e3lsi")
-
-[node name="SpawnLocations" type="Node2D" parent="Rooms/GreatHall" unique_id=1194293959]
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/GreatHall" unique_id=1450748974]
-
-[node name="CardDrops" type="Node2D" parent="Rooms/GreatHall" unique_id=511142941]
-
-[node name="CardsGreatHall" parent="Rooms/GreatHall/CardDrops" unique_id=143063384 instance=ExtResource("9_vg5cl")]
-position = Vector2(704, 448)
-spawn_frequency = 12.0
-max_powerups = 2
-spawn_area_size = Vector2(384, 256)
 
 [node name="Doors" type="Node2D" parent="Rooms/GreatHall" unique_id=1878362282]
 
@@ -210,20 +153,6 @@ tile_set = ExtResource("3_e3lsi")
 tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAADAAAAAgAAAAAAAAAHAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAJAAAAAgAAAAAAAAAKAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAAKAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAAKAAIAAgAAAAAAAAAAAAMAAgAAAAAAAAAKAAMAAgAAAAAAAAAAAAQAAgAAAAAAAAAKAAQAAgAAAAAAAAAAAAUAAgAAAAAAAAAAAAYAAgAAAAAAAAAAAAcAAgAAAAAAAAAAAAgAAgAAAAAAAAAKAAgAAgAAAAAAAAAAAAkAAgAAAAAAAAAKAAkAAgAAAAAAAAAAAAoAAgAAAAAAAAAKAAoAAgAAAAAAAAAAAAsAAgAAAAAAAAAKAAsAAgAAAAAAAAAAAAwAAgAAAAAAAAAKAAwAAgAAAAAAAAAAAA0AAgAAAAAAAAAKAA0AAgAAAAAAAAAAAA4AAgAAAAAAAAABAA4AAgAAAAAAAAACAA4AAgAAAAAAAAAGAA4AAgAAAAAAAAAHAA4AAgAAAAAAAAAIAA4AAgAAAAAAAAAJAA4AAgAAAAAAAAAKAA4AAgAAAAAAAAADAAQAAwAAAAAAAAAHAAcAAwAAAAAAAAADAAoAAwAAAAAAAAA=")
 tile_set = ExtResource("3_e3lsi")
 
-[node name="SpawnLocations" type="Node2D" parent="Rooms/Ossuary" unique_id=473768024]
-
-[node name="4" type="Marker2D" parent="Rooms/Ossuary/SpawnLocations" unique_id=1317293870 groups=["PlayerSpawnLocation"]]
-position = Vector2(160, 160)
-script = ExtResource("spawn_point")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/Ossuary" unique_id=8786527]
-
-[node name="ShotgunOssuary" parent="Rooms/Ossuary/WeaponDrops" unique_id=996723901 instance=ExtResource("7_y8o3a")]
-position = Vector2(480, 800)
-weapon_def = ExtResource("8_ke45c")
-
-[node name="CardDrops" type="Node2D" parent="Rooms/Ossuary" unique_id=2016938973]
-
 [node name="Doors" type="Node2D" parent="Rooms/Ossuary" unique_id=1081498442]
 
 [node name="Door1" type="Marker2D" parent="Rooms/Ossuary/Doors" unique_id=274156350]
@@ -252,20 +181,6 @@ tile_set = ExtResource("3_e3lsi")
 [node name="Walls" type="TileMapLayer" parent="Rooms/Cistern" unique_id=1776075766]
 tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAADAAAAAgAAAAAAAAAEAAAAAgAAAAAAAAAFAAAAAgAAAAAAAAAGAAAAAgAAAAAAAAAHAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAJAAAAAgAAAAAAAAAKAAAAAgAAAAAAAAAOAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAAOAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAAOAAIAAgAAAAAAAAAOAAMAAgAAAAAAAAAOAAQAAgAAAAAAAAAOAAUAAgAAAAAAAAAAAAYAAgAAAAAAAAAOAAYAAgAAAAAAAAAAAAcAAgAAAAAAAAAOAAcAAgAAAAAAAAAAAAgAAgAAAAAAAAAOAAgAAgAAAAAAAAAAAAkAAgAAAAAAAAABAAkAAgAAAAAAAAACAAkAAgAAAAAAAAADAAkAAgAAAAAAAAAEAAkAAgAAAAAAAAAFAAkAAgAAAAAAAAAGAAkAAgAAAAAAAAAHAAkAAgAAAAAAAAAIAAkAAgAAAAAAAAAMAAkAAgAAAAAAAAANAAkAAgAAAAAAAAAOAAkAAgAAAAAAAAAKAAUAAwAAAAAAAAAKAAYAAwAAAAAAAAAFAAMAAwAAAAAAAAAGAAMAAwAAAAAAAAAFAAQAAwAAAAAAAAAGAAQAAwAAAAAAAAA=")
 tile_set = ExtResource("3_e3lsi")
-
-[node name="SpawnLocations" type="Node2D" parent="Rooms/Cistern" unique_id=1814479340]
-
-[node name="5" type="Marker2D" parent="Rooms/Cistern/SpawnLocations" unique_id=95446959 groups=["PlayerSpawnLocation"]]
-position = Vector2(160, 480)
-script = ExtResource("spawn_point")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/Cistern" unique_id=62661572]
-
-[node name="M4Cistern" parent="Rooms/Cistern/WeaponDrops" unique_id=789123446 instance=ExtResource("7_y8o3a")]
-position = Vector2(544, 480)
-weapon_def = ExtResource("9_m4")
-
-[node name="CardDrops" type="Node2D" parent="Rooms/Cistern" unique_id=1271176597]
 
 [node name="Doors" type="Node2D" parent="Rooms/Cistern" unique_id=535548163]
 
@@ -297,21 +212,6 @@ tile_set = ExtResource("3_e3lsi")
 tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAAGAAAAAgAAAAAAAAAHAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAJAAAAAgAAAAAAAAAKAAAAAgAAAAAAAAALAAAAAgAAAAAAAAAMAAAAAgAAAAAAAAANAAAAAgAAAAAAAAAOAAAAAgAAAAAAAAAPAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAAPAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAAPAAIAAgAAAAAAAAAAAAMAAgAAAAAAAAAPAAMAAgAAAAAAAAAAAAQAAgAAAAAAAAAAAAUAAgAAAAAAAAAAAAYAAgAAAAAAAAAAAAcAAgAAAAAAAAAPAAcAAgAAAAAAAAAAAAgAAgAAAAAAAAAPAAgAAgAAAAAAAAAAAAkAAgAAAAAAAAAPAAkAAgAAAAAAAAAAAAoAAgAAAAAAAAAPAAoAAgAAAAAAAAAAAAsAAgAAAAAAAAAPAAsAAgAAAAAAAAAAAAwAAgAAAAAAAAABAAwAAgAAAAAAAAACAAwAAgAAAAAAAAADAAwAAgAAAAAAAAAEAAwAAgAAAAAAAAAFAAwAAgAAAAAAAAAGAAwAAgAAAAAAAAAHAAwAAgAAAAAAAAAIAAwAAgAAAAAAAAAJAAwAAgAAAAAAAAAKAAwAAgAAAAAAAAALAAwAAgAAAAAAAAAMAAwAAgAAAAAAAAANAAwAAgAAAAAAAAAOAAwAAgAAAAAAAAAPAAwAAgAAAAAAAAAEAAQABAAAAAAAAAAFAAQABAAAAAAAAAAJAAMABAAAAAAAAAAKAAMABAAAAAAAAAAGAAgABAAAAAAAAAAHAAgABAAAAAAAAAALAAkABAAAAAAAAAAMAAkABAAAAAAAAAA=")
 tile_set = ExtResource("3_e3lsi")
 
-[node name="SpawnLocations" type="Node2D" parent="Rooms/Tomb" unique_id=561059881]
-
-[node name="3" type="Marker2D" parent="Rooms/Tomb/SpawnLocations" unique_id=944559915 groups=["PlayerSpawnLocation"]]
-position = Vector2(160, 672)
-script = ExtResource("spawn_point")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/Tomb" unique_id=752532659]
-
-[node name="KatanaTomb" parent="Rooms/Tomb/WeaponDrops" unique_id=1434809452 instance=ExtResource("7_y8o3a")]
-position = Vector2(544, 416)
-weapon_def = ExtResource("12_katana")
-respawn_time = 30.0
-
-[node name="CardDrops" type="Node2D" parent="Rooms/Tomb" unique_id=417747558]
-
 [node name="Doors" type="Node2D" parent="Rooms/Tomb" unique_id=2022377676]
 
 [node name="Door1" type="Marker2D" parent="Rooms/Tomb/Doors" unique_id=1255256619]
@@ -337,16 +237,6 @@ tile_set = ExtResource("3_e3lsi")
 [node name="Walls" type="TileMapLayer" parent="Rooms/Vault" unique_id=1974366276]
 tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAADAAAAAgAAAAAAAAAHAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAJAAAAAgAAAAAAAAAKAAAAAgAAAAAAAAALAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAALAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAALAAIAAgAAAAAAAAAAAAMAAgAAAAAAAAALAAMAAgAAAAAAAAALAAQAAgAAAAAAAAAAAAcAAgAAAAAAAAAAAAgAAgAAAAAAAAALAAgAAgAAAAAAAAAAAAkAAgAAAAAAAAABAAkAAgAAAAAAAAACAAkAAgAAAAAAAAADAAkAAgAAAAAAAAAEAAkAAgAAAAAAAAAFAAkAAgAAAAAAAAAGAAkAAgAAAAAAAAAHAAkAAgAAAAAAAAAIAAkAAgAAAAAAAAAJAAkAAgAAAAAAAAAKAAkAAgAAAAAAAAALAAkAAgAAAAAAAAACAAIAAwAAAAAAAAAJAAIAAwAAAAAAAAACAAcAAwAAAAAAAAAJAAcAAwAAAAAAAAA=")
 tile_set = ExtResource("3_e3lsi")
-
-[node name="SpawnLocations" type="Node2D" parent="Rooms/Vault" unique_id=512714532]
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/Vault" unique_id=69885092]
-
-[node name="ShotgunVault" parent="Rooms/Vault/WeaponDrops" unique_id=88607590 instance=ExtResource("7_y8o3a")]
-position = Vector2(352, 352)
-weapon_def = ExtResource("8_ke45c")
-
-[node name="CardDrops" type="Node2D" parent="Rooms/Vault" unique_id=1661588426]
 
 [node name="Doors" type="Node2D" parent="Rooms/Vault" unique_id=531114486]
 
@@ -379,16 +269,6 @@ tile_set = ExtResource("3_e3lsi")
 tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAAGAAAAAgAAAAAAAAAHAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAJAAAAAgAAAAAAAAAKAAAAAgAAAAAAAAALAAAAAgAAAAAAAAAMAAAAAgAAAAAAAAANAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAANAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAANAAIAAgAAAAAAAAAAAAMAAgAAAAAAAAANAAMAAgAAAAAAAAAAAAQAAgAAAAAAAAANAAQAAgAAAAAAAAAAAAUAAgAAAAAAAAANAAUAAgAAAAAAAAAAAAYAAgAAAAAAAAANAAYAAgAAAAAAAAANAAcAAgAAAAAAAAANAAgAAgAAAAAAAAANAAkAAgAAAAAAAAAAAAoAAgAAAAAAAAANAAoAAgAAAAAAAAAAAAsAAgAAAAAAAAANAAsAAgAAAAAAAAAAAAwAAgAAAAAAAAABAAwAAgAAAAAAAAACAAwAAgAAAAAAAAADAAwAAgAAAAAAAAAEAAwAAgAAAAAAAAAFAAwAAgAAAAAAAAAGAAwAAgAAAAAAAAAHAAwAAgAAAAAAAAAIAAwAAgAAAAAAAAAJAAwAAgAAAAAAAAAKAAwAAgAAAAAAAAALAAwAAgAAAAAAAAAMAAwAAgAAAAAAAAANAAwAAgAAAAAAAAADAAkABAAAAAAAAAAEAAkABAAAAAAAAAAHAAUAAwAAAAAAAAAIAAUAAwAAAAAAAAAHAAYAAwAAAAAAAAAIAAYAAwAAAAAAAAA=")
 tile_set = ExtResource("3_e3lsi")
 
-[node name="SpawnLocations" type="Node2D" parent="Rooms/Charnel" unique_id=1803329107]
-
-[node name="1" type="Marker2D" parent="Rooms/Charnel/SpawnLocations" unique_id=1762638050 groups=["PlayerSpawnLocation"]]
-position = Vector2(736, 672)
-script = ExtResource("spawn_point")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/Charnel" unique_id=158815983]
-
-[node name="CardDrops" type="Node2D" parent="Rooms/Charnel" unique_id=1290103261]
-
 [node name="Doors" type="Node2D" parent="Rooms/Charnel" unique_id=1815722158]
 
 [node name="Door1" type="Marker2D" parent="Rooms/Charnel/Doors" unique_id=384336037]
@@ -415,26 +295,6 @@ tile_set = ExtResource("3_e3lsi")
 tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAADAAAAAgAAAAAAAAAEAAAAAgAAAAAAAAAFAAAAAgAAAAAAAAAGAAAAAgAAAAAAAAAHAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAAIAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAAIAAIAAgAAAAAAAAAIAAMAAgAAAAAAAAAIAAQAAgAAAAAAAAAAAAYAAgAAAAAAAAAAAAcAAgAAAAAAAAAAAAgAAgAAAAAAAAAIAAgAAgAAAAAAAAAAAAkAAgAAAAAAAAAIAAkAAgAAAAAAAAAAAAoAAgAAAAAAAAABAAoAAgAAAAAAAAACAAoAAgAAAAAAAAADAAoAAgAAAAAAAAAEAAoAAgAAAAAAAAAFAAoAAgAAAAAAAAAGAAoAAgAAAAAAAAAHAAoAAgAAAAAAAAAIAAoAAgAAAAAAAAAEAAMAAwAAAAAAAAA=")
 tile_set = ExtResource("3_e3lsi")
 
-[node name="SpawnLocations" type="Node2D" parent="Rooms/Catacomb" unique_id=175703897]
-
-[node name="7" type="Marker2D" parent="Rooms/Catacomb/SpawnLocations" unique_id=1504307692 groups=["PlayerSpawnLocation"]]
-position = Vector2(416, 160)
-script = ExtResource("spawn_point")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/Catacomb" unique_id=441381613]
-
-[node name="MP5Catacomb" parent="Rooms/Catacomb/WeaponDrops" unique_id=1507574479 instance=ExtResource("7_y8o3a")]
-position = Vector2(160, 224)
-weapon_def = ExtResource("11_mp5")
-
-[node name="CardDrops" type="Node2D" parent="Rooms/Catacomb" unique_id=1555219097]
-
-[node name="CardsCatacomb" parent="Rooms/Catacomb/CardDrops" unique_id=773542431 instance=ExtResource("9_vg5cl")]
-position = Vector2(256, 480)
-spawn_frequency = 20.0
-max_powerups = 1
-spawn_area_size = Vector2(256, 192)
-
 [node name="Doors" type="Node2D" parent="Rooms/Catacomb" unique_id=1095457529]
 
 [node name="Door1" type="Marker2D" parent="Rooms/Catacomb/Doors" unique_id=1364274945]
@@ -446,6 +306,92 @@ facing = 3
 position = Vector2(544, 416)
 script = ExtResource("7_kveh1")
 facing = 1
+
+[node name="SpawnLocations" type="Node2D" parent="." unique_id=550940006]
+
+[node name="0" type="Marker2D" parent="SpawnLocations" unique_id=1794089317 groups=["PlayerSpawnLocation"]]
+position = Vector2(288, 480)
+script = ExtResource("spawn_point")
+
+[node name="1" type="Marker2D" parent="SpawnLocations" unique_id=1762638050 groups=["PlayerSpawnLocation"]]
+position = Vector2(3616, 2592)
+script = ExtResource("spawn_point")
+
+[node name="2" type="Marker2D" parent="SpawnLocations" unique_id=905461275 groups=["PlayerSpawnLocation"]]
+position = Vector2(3616, 224)
+script = ExtResource("spawn_point")
+
+[node name="3" type="Marker2D" parent="SpawnLocations" unique_id=944559915 groups=["PlayerSpawnLocation"]]
+position = Vector2(224, 2592)
+script = ExtResource("spawn_point")
+
+[node name="4" type="Marker2D" parent="SpawnLocations" unique_id=1317293870 groups=["PlayerSpawnLocation"]]
+position = Vector2(224, 992)
+script = ExtResource("spawn_point")
+
+[node name="5" type="Marker2D" parent="SpawnLocations" unique_id=95446959 groups=["PlayerSpawnLocation"]]
+position = Vector2(2656, 1632)
+script = ExtResource("spawn_point")
+
+[node name="6" type="Marker2D" parent="SpawnLocations" unique_id=2032038599 groups=["PlayerSpawnLocation"]]
+position = Vector2(1184, 288)
+script = ExtResource("spawn_point")
+
+[node name="7" type="Marker2D" parent="SpawnLocations" unique_id=1504307692 groups=["PlayerSpawnLocation"]]
+position = Vector2(2592, 2208)
+script = ExtResource("spawn_point")
+
+[node name="WeaponDrops" type="Node2D" parent="." unique_id=134795936]
+
+[node name="M1903Chapel" parent="WeaponDrops" unique_id=1949902645 instance=ExtResource("7_y8o3a")]
+position = Vector2(2848, 544)
+weapon_def = ExtResource("10_m1903")
+respawn_time = 30.0
+
+[node name="M4Gallery" parent="WeaponDrops" unique_id=103543521 instance=ExtResource("7_y8o3a")]
+position = Vector2(2208, 352)
+weapon_def = ExtResource("9_m4")
+
+[node name="ShotgunOssuary" parent="WeaponDrops" unique_id=996723901 instance=ExtResource("7_y8o3a")]
+position = Vector2(544, 1632)
+weapon_def = ExtResource("8_ke45c")
+
+[node name="M4Cistern" parent="WeaponDrops" unique_id=789123446 instance=ExtResource("7_y8o3a")]
+position = Vector2(3040, 1632)
+weapon_def = ExtResource("9_m4")
+
+[node name="KatanaTomb" parent="WeaponDrops" unique_id=1434809452 instance=ExtResource("7_y8o3a")]
+position = Vector2(608, 2336)
+weapon_def = ExtResource("12_katana")
+respawn_time = 30.0
+
+[node name="ShotgunVault" parent="WeaponDrops" unique_id=88607590 instance=ExtResource("7_y8o3a")]
+position = Vector2(1632, 2272)
+weapon_def = ExtResource("8_ke45c")
+
+[node name="MP5Catacomb" parent="WeaponDrops" unique_id=1507574479 instance=ExtResource("7_y8o3a")]
+position = Vector2(2336, 2272)
+weapon_def = ExtResource("11_mp5")
+
+[node name="CardDrops" type="Node2D" parent="." unique_id=1360647334]
+
+[node name="CardsChapelApse" parent="CardDrops" unique_id=1753930314 instance=ExtResource("9_vg5cl")]
+position = Vector2(3328, 736)
+spawn_frequency = 20.0
+max_powerups = 1
+spawn_area_size = Vector2(256, 192)
+
+[node name="CardsGreatHall" parent="CardDrops" unique_id=143063384 instance=ExtResource("9_vg5cl")]
+position = Vector2(1664, 1152)
+spawn_frequency = 12.0
+max_powerups = 2
+spawn_area_size = Vector2(384, 256)
+
+[node name="CardsCatacomb" parent="CardDrops" unique_id=773542431 instance=ExtResource("9_vg5cl")]
+position = Vector2(2432, 2528)
+spawn_frequency = 20.0
+max_powerups = 1
+spawn_area_size = Vector2(256, 192)
 
 [node name="Links" type="Node2D" parent="." unique_id=1391083009]
 

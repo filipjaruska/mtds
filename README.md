@@ -65,24 +65,25 @@ and rooms in a swap group may trade places, so no two matches look the same.
 2. **Rooms:** under `Rooms`, one `MapRoom` node per room (duplicate one), on
    the tile grid. Paint each room's `Floor` and `Walls` (TileMap panel), any
    size and shape. Walls must come from a tile set whose physics layer is on
-   layer 3 "walls", like `src/assets/maps/catacombs/tiles.tres`. Put what the
-   room holds inside it: spawn points (`SpawnPoint` under `SpawnLocations`),
-   weapon spots (`WeaponSpawner` under `WeaponDrops`), card areas
-   (`PowerupSpawner` under `CardDrops`).
-3. **Doorways:** a `RoomDoor` under the room's `Doors` at each gap in its
+   layer 3 "walls", like `src/assets/maps/catacombs/tiles.tres`.
+3. **What the rooms hold**, next to `Rooms`: spawn points (`SpawnPoint` under
+   `SpawnLocations`), weapon spots (`WeaponSpawner` under `WeaponDrops`) and
+   card areas (`PowerupSpawner` under `CardDrops`). Each belongs to the room it
+   stands in and moves with it; one outside every room gets a warning.
+4. **Doorways:** a `RoomDoor` under the room's `Doors` at each gap in its
    border wall, arrow pointing out. The gap is 3 tiles wide (the map's corridor
    width): green while clear, red while a wall is in it. Doorways no corridor
    uses that match are walled up.
-4. **Links:** a `RoomLink` under `Links` for each pair of rooms that should
+5. **Links:** a `RoomLink` under `Links` for each pair of rooms that should
    get a corridor (pick From and To; Chance below 1 for one that only
    sometimes appears). Rooms left unreachable get the closest corridor that
    fits anyway.
-5. **Swap groups:** rooms with the same Swap Group trade places each match.
+6. **Swap groups:** rooms with the same Swap Group trade places each match.
    `RoomSpot` nodes add more places for a group. Places where a room would
    overlap another are skipped.
-6. **Semi-permanent rooms** (closed until an event opens them): tick Gated
+7. **Semi-permanent rooms** (closed until an event opens them): tick Gated
    and give the gate a name. Their doorways get gates; nobody spawns inside.
-7. The katana lies in exactly one place per map (weapons marked One Location).
+8. The katana lies in exactly one place per map (weapons marked One Location).
 
 Press "Reroll layout preview" on the root node to see a layout drawn over the
 map (the output panel prints its seed; set Preview Seed under Layout Rules to

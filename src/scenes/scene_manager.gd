@@ -11,6 +11,9 @@ class_name GameMap
 ##     and shape) and RoomDoor nodes at the gaps in its walls
 ##   - RoomLink nodes: which rooms get a corridor between them (with a chance)
 ##   - swap groups and RoomSpot nodes: rooms that trade places each match
+##   - spawn points, weapon spots and card areas, next to the rooms (in
+##     SpawnLocations, WeaponDrops, CardDrops) or inside them: each belongs to
+##     the room it stands in and moves with it
 ## Each match the corridors are carved between doorways around the rooms, by the
 ## Layout Rules on this node; "Reroll layout preview" shows a layout in the
 ## editor. Maps without rooms (tutorial, debug arena) are used as painted.
@@ -41,6 +44,9 @@ const MAX_DROP_DISTANCE := 200.0
 
 ## The rooms, once put together for this match.
 var rooms: Array[MapRoom] = []
+## Spawn points, weapon spots and card areas placed next to the rooms (not in
+## them) -> the room they stand in; they move with it. Filled by build_layout.
+var _room_of := {}
 var _dropped_pickup_count: int = 0
 
 func _ready():
@@ -191,6 +197,10 @@ func build_layout(seed_value: int) -> Dictionary:
 		push_warning("Map %s, layout %d: %s" % [name, seed_value, "; ".join(plan.problems)])
 	var width := _corridor_width()
 	rooms = map_rooms()
+	_room_of = _rooms_under_loose_things()
+	for node in _room_of:
+		var moved: Vector2i = plan.offsets.get(String(get_path_to(_room_of[node])), Vector2i.ZERO)
+		node.position += Vector2(moved) * MapRoom.TILE
 	for room in rooms:
 		var id := String(get_path_to(room))
 		var doors := room.doors()
@@ -305,12 +315,59 @@ func random_spawn_position(player_id: int) -> Vector2:
 	return spawns[choices.pick_random()].global_position
 
 func _in_closed_room(node: Node) -> bool:
+	var room := room_of(node)
+	return room != null and room.is_closed()
+
+## The room a node belongs to: the MapRoom it is in, or for spawn points,
+## weapon spots and card areas placed next to the rooms, the room they stand in.
+func room_of(node: Node) -> MapRoom:
 	var parent := node.get_parent()
 	while parent and parent != self:
-		if parent is MapRoom and parent.is_closed():
-			return true
+		if parent is MapRoom:
+			return parent
 		parent = parent.get_parent()
-	return false
+	if _room_of.has(node):
+		return _room_of[node]
+	if rooms.is_empty() and node is Node2D:
+		# Not built yet (editor, checks): the room it stands in where painted.
+		return _painted_rooms().get(Vector2i((_map_point(node) / MapRoom.TILE).floor()))
+	return null
+
+## Map cell -> room, where the rooms are painted.
+func _painted_rooms() -> Dictionary:
+	var out := {}
+	for room in map_rooms():
+		var origin := _room_origin(room)
+		for cell in room.cells():
+			out[cell + origin] = room
+	return out
+
+## Spawn points, weapon spots and card areas outside any MapRoom node.
+func _loose_things() -> Array[Node2D]:
+	var out: Array[Node2D] = []
+	for node in find_children("*", "", true, false):
+		if not (node is SpawnPoint or node is WeaponSpawner or node is PowerupSpawner or node.is_in_group("PlayerSpawnLocation")):
+			continue
+		if _in_preview(node):
+			continue
+		var parent := node.get_parent()
+		var inside_room := false
+		while parent and parent != self:
+			if parent is MapRoom:
+				inside_room = true
+			parent = parent.get_parent()
+		if not inside_room:
+			out.append(node)
+	return out
+
+func _rooms_under_loose_things() -> Dictionary:
+	var painted := _painted_rooms()
+	var out := {}
+	for node in _loose_things():
+		var room = painted.get(Vector2i((_map_point(node) / MapRoom.TILE).floor()))
+		if room:
+			out[node] = room
+	return out
 
 func _in_preview(node: Node) -> bool:
 	var preview := get_node_or_null("LayoutPreview")
@@ -338,12 +395,8 @@ func _spawn_count() -> int:
 	return count
 
 func _in_gated_room(node: Node) -> bool:
-	var parent := node.get_parent()
-	while parent and parent != self:
-		if parent is MapRoom and parent.gated:
-			return true
-		parent = parent.get_parent()
-	return false
+	var room := room_of(node)
+	return room != null and room.gated
 
 ## Problems with this map's layouts, tried with `seeds`, and with weapons marked
 ## "one location" (`exactly_once`: maps in the lobby need each exactly once).
@@ -360,6 +413,10 @@ func layout_problems(seeds: Array, exactly_once: bool) -> PackedStringArray:
 		if n > 1 or (exactly_once and n != 1):
 			out.append("%s must be in exactly one place, found %d." % [def.display_name, n])
 	if has_layout():
+		var painted := _painted_rooms()
+		for node in _loose_things():
+			if not painted.has(Vector2i((_map_point(node) / MapRoom.TILE).floor())):
+				out.append("%s stands outside every room: a corridor could be carved over it. Move it into a room." % node.name)
 		if layout_rules == null:
 			out.append("Map with rooms but no Layout Rules: set Layout Rules on this node.")
 		elif layout_rules.tile_set == null:

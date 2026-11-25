@@ -48,24 +48,6 @@ facing = 1
 position = Vector2(416, 608)
 script = ExtResource("6_tlmjb")
 
-[node name="SpawnLocations" type="Node2D" parent="Rooms/RoomA" unique_id=1342604341]
-
-[node name="SpawnA" type="Marker2D" parent="Rooms/RoomA/SpawnLocations" unique_id=1189150927]
-position = Vector2(224, 224)
-script = ExtResource("7_5yvqd")
-
-[node name="SpawnB" type="Marker2D" parent="Rooms/RoomA/SpawnLocations" unique_id=53498194]
-position = Vector2(672, 416)
-script = ExtResource("7_5yvqd")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/RoomA" unique_id=545112874]
-
-[node name="Shotgun" parent="Rooms/RoomA/WeaponDrops" unique_id=1056504877 instance=ExtResource("8_nx13n")]
-position = Vector2(448, 480)
-weapon_def = ExtResource("10_86rp0")
-
-[node name="CardDrops" type="Node2D" parent="Rooms/RoomA" unique_id=641150683]
-
 [node name="RoomB" type="Node2D" parent="Rooms" unique_id=16908107]
 position = Vector2(1536, 0)
 script = ExtResource("5_pmpw7")
@@ -90,24 +72,6 @@ facing = 3
 [node name="Door2" type="Marker2D" parent="Rooms/RoomB/Doors" unique_id=179619456]
 position = Vector2(416, 608)
 script = ExtResource("6_tlmjb")
-
-[node name="SpawnLocations" type="Node2D" parent="Rooms/RoomB" unique_id=268821817]
-
-[node name="SpawnA" type="Marker2D" parent="Rooms/RoomB/SpawnLocations" unique_id=1853172238]
-position = Vector2(224, 224)
-script = ExtResource("7_5yvqd")
-
-[node name="SpawnB" type="Marker2D" parent="Rooms/RoomB/SpawnLocations" unique_id=486213189]
-position = Vector2(672, 416)
-script = ExtResource("7_5yvqd")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/RoomB" unique_id=1442291011]
-
-[node name="CardDrops" type="Node2D" parent="Rooms/RoomB" unique_id=1425894998]
-
-[node name="Cards" parent="Rooms/RoomB/CardDrops" unique_id=22240412 instance=ExtResource("11_45tbo")]
-position = Vector2(448, 480)
-spawn_area_size = Vector2(320, 192)
 
 [node name="RoomC" type="Node2D" parent="Rooms" unique_id=1967844584]
 position = Vector2(0, 1152)
@@ -135,24 +99,6 @@ position = Vector2(864, 288)
 script = ExtResource("6_tlmjb")
 facing = 1
 
-[node name="SpawnLocations" type="Node2D" parent="Rooms/RoomC" unique_id=97871338]
-
-[node name="SpawnA" type="Marker2D" parent="Rooms/RoomC/SpawnLocations" unique_id=448608423]
-position = Vector2(224, 224)
-script = ExtResource("7_5yvqd")
-
-[node name="SpawnB" type="Marker2D" parent="Rooms/RoomC/SpawnLocations" unique_id=1994195225]
-position = Vector2(672, 416)
-script = ExtResource("7_5yvqd")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/RoomC" unique_id=854173969]
-
-[node name="CardDrops" type="Node2D" parent="Rooms/RoomC" unique_id=2076903744]
-
-[node name="Cards" parent="Rooms/RoomC/CardDrops" unique_id=1939304970 instance=ExtResource("11_45tbo")]
-position = Vector2(448, 160)
-spawn_area_size = Vector2(320, 192)
-
 [node name="RoomD" type="Node2D" parent="Rooms" unique_id=576422044]
 position = Vector2(1536, 1152)
 script = ExtResource("5_pmpw7")
@@ -178,24 +124,6 @@ position = Vector2(32, 288)
 script = ExtResource("6_tlmjb")
 facing = 3
 
-[node name="SpawnLocations" type="Node2D" parent="Rooms/RoomD" unique_id=1188932082]
-
-[node name="SpawnA" type="Marker2D" parent="Rooms/RoomD/SpawnLocations" unique_id=2136039639]
-position = Vector2(224, 224)
-script = ExtResource("7_5yvqd")
-
-[node name="SpawnB" type="Marker2D" parent="Rooms/RoomD/SpawnLocations" unique_id=557919708]
-position = Vector2(672, 416)
-script = ExtResource("7_5yvqd")
-
-[node name="WeaponDrops" type="Node2D" parent="Rooms/RoomD" unique_id=1613485344]
-
-[node name="M4" parent="Rooms/RoomD/WeaponDrops" unique_id=45965340 instance=ExtResource("8_nx13n")]
-position = Vector2(448, 160)
-weapon_def = ExtResource("13_71rel")
-
-[node name="CardDrops" type="Node2D" parent="Rooms/RoomD" unique_id=1983445365]
-
 [node name="KatanaTomb" type="Node2D" parent="Rooms" unique_id=570149260]
 position = Vector2(896, 2176)
 script = ExtResource("5_pmpw7")
@@ -216,15 +144,63 @@ position = Vector2(288, 32)
 script = ExtResource("6_tlmjb")
 facing = 0
 
-[node name="SpawnLocations" type="Node2D" parent="Rooms/KatanaTomb" unique_id=1182906182]
+[node name="SpawnLocations" type="Node2D" parent="." unique_id=1510245120]
 
-[node name="WeaponDrops" type="Node2D" parent="Rooms/KatanaTomb" unique_id=424922838]
+[node name="RoomASpawnA" type="Marker2D" parent="SpawnLocations" unique_id=1189150927]
+position = Vector2(224, 224)
+script = ExtResource("7_5yvqd")
 
-[node name="Katana" parent="Rooms/KatanaTomb/WeaponDrops" unique_id=411777138 instance=ExtResource("8_nx13n")]
-position = Vector2(320, 288)
+[node name="RoomASpawnB" type="Marker2D" parent="SpawnLocations" unique_id=53498194]
+position = Vector2(672, 416)
+script = ExtResource("7_5yvqd")
+
+[node name="RoomBSpawnA" type="Marker2D" parent="SpawnLocations" unique_id=1853172238]
+position = Vector2(1760, 224)
+script = ExtResource("7_5yvqd")
+
+[node name="RoomBSpawnB" type="Marker2D" parent="SpawnLocations" unique_id=486213189]
+position = Vector2(2208, 416)
+script = ExtResource("7_5yvqd")
+
+[node name="RoomCSpawnA" type="Marker2D" parent="SpawnLocations" unique_id=448608423]
+position = Vector2(224, 1376)
+script = ExtResource("7_5yvqd")
+
+[node name="RoomCSpawnB" type="Marker2D" parent="SpawnLocations" unique_id=1994195225]
+position = Vector2(672, 1568)
+script = ExtResource("7_5yvqd")
+
+[node name="RoomDSpawnA" type="Marker2D" parent="SpawnLocations" unique_id=2136039639]
+position = Vector2(1760, 1376)
+script = ExtResource("7_5yvqd")
+
+[node name="RoomDSpawnB" type="Marker2D" parent="SpawnLocations" unique_id=557919708]
+position = Vector2(2208, 1568)
+script = ExtResource("7_5yvqd")
+
+[node name="WeaponDrops" type="Node2D" parent="." unique_id=388632296]
+
+[node name="Shotgun" parent="WeaponDrops" unique_id=1056504877 instance=ExtResource("8_nx13n")]
+position = Vector2(448, 480)
+weapon_def = ExtResource("10_86rp0")
+
+[node name="M4" parent="WeaponDrops" unique_id=45965340 instance=ExtResource("8_nx13n")]
+position = Vector2(1984, 1312)
+weapon_def = ExtResource("13_71rel")
+
+[node name="Katana" parent="WeaponDrops" unique_id=411777138 instance=ExtResource("8_nx13n")]
+position = Vector2(1216, 2464)
 weapon_def = ExtResource("14_fitpc")
 
-[node name="CardDrops" type="Node2D" parent="Rooms/KatanaTomb" unique_id=671594475]
+[node name="CardDrops" type="Node2D" parent="." unique_id=1668873604]
+
+[node name="RoomBCards" parent="CardDrops" unique_id=22240412 instance=ExtResource("11_45tbo")]
+position = Vector2(1984, 480)
+spawn_area_size = Vector2(320, 192)
+
+[node name="RoomCCards" parent="CardDrops" unique_id=1939304970 instance=ExtResource("11_45tbo")]
+position = Vector2(448, 1312)
+spawn_area_size = Vector2(320, 192)
 
 [node name="Links" type="Node2D" parent="." unique_id=1905343321]
 
