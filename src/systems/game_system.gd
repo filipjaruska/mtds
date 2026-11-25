@@ -31,6 +31,8 @@ var game_settings: Dictionary = {
 	"match_duration_seconds": RULES.match_seconds
 }
 
+## Seed of this match's map layout; the same on every peer (lobby start_game).
+var map_seed: int = 0
 var match_time_remaining: float = 0.0
 ## A single-player tutorial session (TutorialLauncher); cleared on return to menu.
 var tutorial_mode := false

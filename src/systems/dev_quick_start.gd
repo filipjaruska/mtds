@@ -74,4 +74,4 @@ func _start_debug_match() -> void:
 	GameManager.set_map(DEBUG_MAP)
 	print("[dev] starting the debug match with %d player(s)" % GameManager.get_player_count())
 	lobby._broadcast_settings()
-	lobby.start_game.rpc(DEBUG_MAP)
+	lobby.start_game.rpc(DEBUG_MAP, randi())

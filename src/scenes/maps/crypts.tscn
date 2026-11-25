@@ -1,0 +1,136 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/scenes/scene_manager.gd" id="1_g6xgv"]
+[ext_resource type="PackedScene" path="res://src/entities/player/player.tscn" id="2_8uumu"]
+[ext_resource type="Script" path="res://src/scenes/layout/map_layout_rules.gd" id="3_kgsbo"]
+[ext_resource type="Script" path="res://src/scenes/layout/map_slot.gd" id="4_rprup"]
+[ext_resource type="Script" path="res://src/scenes/layout/room_choice.gd" id="5_miwtg"]
+[ext_resource type="PackedScene" path="res://src/scenes/rooms/catacombs/hall.tscn" id="6_whc37"]
+[ext_resource type="PackedScene" path="res://src/scenes/rooms/catacombs/crypt.tscn" id="7_cj7dy"]
+[ext_resource type="PackedScene" path="res://src/scenes/rooms/catacombs/chapel.tscn" id="8_ev8mi"]
+[ext_resource type="PackedScene" path="res://src/scenes/rooms/catacombs/ossuary.tscn" id="9_uwncw"]
+[ext_resource type="PackedScene" path="res://src/scenes/rooms/catacombs/crossing.tscn" id="10_25mve"]
+[ext_resource type="PackedScene" path="res://src/scenes/rooms/catacombs/gallery.tscn" id="11_wtsto"]
+[ext_resource type="PackedScene" path="res://src/scenes/rooms/catacombs/yard.tscn" id="12_b1x27"]
+[ext_resource type="PackedScene" path="res://src/scenes/rooms/catacombs/katana_tomb.tscn" id="13_x3uwm"]
+
+[sub_resource type="Resource" id="Resource_tkjq4"]
+script = ExtResource("3_kgsbo")
+
+[sub_resource type="Resource" id="Resource_dm2r1"]
+script = ExtResource("5_miwtg")
+scene = ExtResource("6_whc37")
+weight = 2.0
+
+[sub_resource type="Resource" id="Resource_w0krh"]
+script = ExtResource("5_miwtg")
+scene = ExtResource("7_cj7dy")
+weight = 2.0
+
+[sub_resource type="Resource" id="Resource_xq3tw"]
+script = ExtResource("5_miwtg")
+scene = ExtResource("8_ev8mi")
+weight = 1.5
+
+[sub_resource type="Resource" id="Resource_2wwhf"]
+script = ExtResource("5_miwtg")
+scene = ExtResource("9_uwncw")
+weight = 1.5
+
+[sub_resource type="Resource" id="Resource_3j518"]
+script = ExtResource("5_miwtg")
+scene = ExtResource("10_25mve")
+
+[sub_resource type="Resource" id="Resource_1tn4i"]
+script = ExtResource("5_miwtg")
+scene = ExtResource("11_wtsto")
+max_per_map = 3
+
+[sub_resource type="Resource" id="Resource_8fhgt"]
+script = ExtResource("5_miwtg")
+scene = ExtResource("12_b1x27")
+weight = 0.5
+max_per_map = 2
+
+[sub_resource type="Resource" id="Resource_l5oh3"]
+script = ExtResource("5_miwtg")
+scene = ExtResource("13_x3uwm")
+max_per_map = 1
+
+[node name="Crypts" type="Node2D" unique_id=1718765097]
+script = ExtResource("1_g6xgv")
+playerScene = ExtResource("2_8uumu")
+layout_rules = SubResource("Resource_tkjq4")
+
+[node name="Slots" type="Node2D" parent="." unique_id=1698509311]
+
+[node name="Slot_0_0" type="Node2D" parent="Slots" unique_id=1581445715]
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+required = true
+
+[node name="Slot_1_0" type="Node2D" parent="Slots" unique_id=759715931]
+position = Vector2(1024, 0)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+required = true
+
+[node name="Slot_2_0" type="Node2D" parent="Slots" unique_id=50367393]
+position = Vector2(2048, 0)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+required = true
+
+[node name="Slot_3_0" type="Node2D" parent="Slots" unique_id=1155881901]
+position = Vector2(3072, 0)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+empty_chance = 0.25
+
+[node name="Slot_0_1" type="Node2D" parent="Slots" unique_id=347533631]
+position = Vector2(0, 1024)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+required = true
+
+[node name="Slot_1_1" type="Node2D" parent="Slots" unique_id=1829870644]
+position = Vector2(1024, 1024)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+required = true
+
+[node name="Slot_2_1" type="Node2D" parent="Slots" unique_id=1507733526]
+position = Vector2(2048, 1024)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+required = true
+
+[node name="Slot_3_1" type="Node2D" parent="Slots" unique_id=1942358620]
+position = Vector2(3072, 1024)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+required = true
+
+[node name="Slot_0_2" type="Node2D" parent="Slots" unique_id=2009266987]
+position = Vector2(0, 2048)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_l5oh3")])
+required = true
+
+[node name="Slot_1_2" type="Node2D" parent="Slots" unique_id=188460735]
+position = Vector2(1024, 2048)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+required = true
+
+[node name="Slot_2_2" type="Node2D" parent="Slots" unique_id=1751507111]
+position = Vector2(2048, 2048)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+required = true
+
+[node name="Slot_3_2" type="Node2D" parent="Slots" unique_id=1449267874]
+position = Vector2(3072, 2048)
+script = ExtResource("4_rprup")
+choices = Array[ExtResource("5_miwtg")]([SubResource("Resource_dm2r1"), SubResource("Resource_w0krh"), SubResource("Resource_xq3tw"), SubResource("Resource_2wwhf"), SubResource("Resource_3j518"), SubResource("Resource_1tn4i"), SubResource("Resource_8fhgt")])
+empty_chance = 0.25

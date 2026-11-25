@@ -306,10 +306,13 @@ func close_menu_overlay() -> void:
 	if not is_instance_valid(_active_map):
 		show()
 
+## Every peer builds the map itself; `layout_seed` makes slot maps come out
+## the same everywhere (see GameMap.build_layout).
 @rpc("authority", "call_local", "reliable")
-func start_game(map_path: String) -> void:
+func start_game(map_path: String, layout_seed: int = 0) -> void:
 	close_menu_overlay()
 	_free_active_map()
+	GameManager.map_seed = layout_seed
 	
 	_active_map = load(map_path).instantiate()
 	get_tree().root.add_child(_active_map)
@@ -385,7 +388,7 @@ func _reset_lobby_for_new_match() -> void:
 func _on_start_pressed() -> void:
 	if multiplayer.is_server():
 		_broadcast_settings()
-		start_game.rpc(GameManager.get_map())
+		start_game.rpc(GameManager.get_map(), randi())
 
 func _on_ready_pressed() -> void:
 	var player_id = multiplayer.get_unique_id()

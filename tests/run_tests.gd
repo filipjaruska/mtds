@@ -14,10 +14,22 @@ const SUITES := [
 	"res://tests/test_chat_rules.gd",
 	"res://tests/test_view_rules.gd",
 	"res://tests/test_results_format.gd",
+	"res://tests/test_layout_planner.gd",
 	"res://tests/test_maps.gd",
 ]
 
-func _init() -> void:
+var _started := false
+
+# Runs on the first frame, not in _init: autoloads (GameManager...) exist only
+# then, and scripts that use them (maps, players) do not compile without them.
+func _process(_delta: float) -> bool:
+	if _started:
+		return false
+	_started = true
+	_run()
+	return true
+
+func _run() -> void:
 	var total := 0
 	var failed := 0
 	for path in SUITES:

@@ -51,6 +51,11 @@ class_name WeaponDef
 ## don't count. The HUD shows the hits left. With Dual Wield each blade has its own.
 @export_range(0, 50) var durability: int = 0
 
+@export_group("Map")
+## Only one weapon spot per map may hold this weapon (the katana has its own
+## room). The map checks and tests enforce it.
+@export var one_location: bool = false
+
 @export_group("Visuals")
 ## Scene with a WeaponView root (sprite, animations, muzzle marker).
 @export var view_scene: PackedScene

@@ -27,13 +27,17 @@ static func other_team(team: int) -> int:
 static func is_friendly(players: Dictionary, a: int, b: int, team_mode: bool) -> bool:
 	return team_mode and a != b and team_of(players, a) == team_of(players, b)
 
-## Spawn point for a player's first spawn. In team matches Red takes the even
-## spawn points and Blue the odd ones, so each team starts on its own side.
-static func spawn_index(players: Dictionary, player_id: int, team_mode: bool) -> int:
+## Index of the spawn point for a player's first spawn. `spawn_teams` is the
+## team of every spawn point (see GameMap.spawn_teams_of). Players take spawn
+## points in id order; in team matches only their own team's, so each team
+## starts on its own side. -1 when the map has none.
+static func first_spawn(players: Dictionary, player_id: int, team_mode: bool, spawn_teams: Array) -> int:
+	if spawn_teams.is_empty():
+		return -1
 	var ids := players.keys()
 	ids.sort()
 	if not team_mode:
-		return ids.find(player_id)
+		return maxi(ids.find(player_id), 0) % spawn_teams.size()
 	var team := team_of(players, player_id)
 	var rank := 0
 	for id in ids:
@@ -41,16 +45,18 @@ static func spawn_index(players: Dictionary, player_id: int, team_mode: bool) ->
 			break
 		if team_of(players, id) == team:
 			rank += 1
-	return rank * TEAM_COUNT + team
+	var own := respawn_choices(team, spawn_teams, true)
+	return own[rank % own.size()]
 
-## Spawn point indices a player may respawn at.
-static func respawn_indices(team: int, spawn_count: int, team_mode: bool) -> Array[int]:
+## Indices of the spawn points a player may respawn at: their team's in team
+## matches (all of them when the team has none), any otherwise.
+static func respawn_choices(team: int, spawn_teams: Array, team_mode: bool) -> Array[int]:
 	var indices: Array[int] = []
-	for i in range(spawn_count):
-		if not team_mode or i % TEAM_COUNT == team:
+	for i in range(spawn_teams.size()):
+		if not team_mode or spawn_teams[i] == team:
 			indices.append(i)
-	if indices.is_empty(): # map with a single spawn point
-		for i in range(spawn_count):
+	if indices.is_empty():
+		for i in range(spawn_teams.size()):
 			indices.append(i)
 	return indices
 

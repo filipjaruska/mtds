@@ -56,16 +56,47 @@ give it a new `id`; it shows up in the game by itself.
 
 ### Making a map
 
+Maps are put together from rooms each match: a map is a grid of slots, and
+every slot gets one of the rooms you allow it, turned and mirrored at random,
+with doorways between rooms opened or walled up so every room stays
+reachable. `src/scenes/maps/crypts.tscn` is an example; `catacombs.tscn` is
+an older fixed map, painted in one piece.
+
+**A room** (or a block of an open area):
+
+1. Duplicate `src/scenes/rooms/room_template.tscn` (rooms live under
+   `src/scenes/rooms/<set>/`) and rename the root node.
+2. Paint `Floor` and `Walls` inside the white box (16 x 16 tiles). Walls must
+   come from a tile set whose physics layer is on layer 3 "walls", like
+   `src/assets/maps/catacombs/tiles.tres`.
+3. On the root node, set each side to Wall, Door or Open. A door is the 4
+   tiles in the middle of that side's border (shown green): leave them
+   without walls. Open sides have no border wall at all; neighbouring open
+   blocks run into each other. Doorways that lead nowhere get walled up.
+4. Add what the room holds: spawn points (`SpawnPoint` under
+   `SpawnLocations`), weapon spots (`WeaponSpawner` under `WeaponDrops`) and
+   card areas (`PowerupSpawner` under `CardDrops`).
+5. Semi-permanent rooms (closed until an event opens them): tick Gated and
+   give the gate a name.
+
+**A map:**
+
 1. Duplicate `src/scenes/map_template.tscn` into `src/scenes/maps/` (every
    scene there is listed in the lobby) and rename the root node.
-2. Paint the floor on `Floor` and the walls on `Walls` (TileMap panel). Walls
-   must come from a tile set whose physics layer is on layer 3 "walls", like
-   `src/assets/maps/catacombs/tiles.tres`. To give the map its own tiles, copy
-   that folder to `src/assets/maps/<name>/` and point both layers at the copy.
-3. Move the spawn points (numbered circles) under `SpawnLocations`: 8, named
-   0 to 7. In team matches Red starts on the even ones and Blue on the odd ones.
-4. Weapon spots: `WeaponSpawner` nodes under `WeaponDrops`, each with a
-   weapon picked. Card areas: `PowerupSpawner` nodes under `CardDrops`.
+2. Place `MapSlot` nodes on the grid (corners on multiples of 1024 px) and
+   give each the rooms it may use (Room Choices: scene, weight, how many per
+   map), a chance to stay empty, and whether its room may be turned or
+   mirrored. Layout Rules on the root node set the slot and door size and how
+   many extra doorways open.
+3. The katana lies in exactly one place per map: give its room
+   (`rooms/catacombs/katana_tomb.tscn`) one required slot of its own. Weapons
+   marked "One Location" are checked this way.
+4. Press "Reroll layout preview" on the root node to see a layout in the
+   editor (the output panel prints its seed; set Preview Seed to keep one).
 
-A yellow warning on the map's root node in the scene tree says what is still
-missing. `git test` checks every map the same way.
+Rooms need 8 spawn points between them. In team matches Red spawns in the
+west half of the map and Blue in the east (a spawn point's Team overrides it).
+
+A yellow warning on the root node of a map, room or slot says what is still
+missing. `git test` checks every map, tries 40 layouts of each slot map, and
+checks every room.

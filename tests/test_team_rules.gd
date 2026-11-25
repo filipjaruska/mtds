@@ -19,25 +19,31 @@ func test_friendly_only_in_team_mode() -> void:
 	check(not TeamRules.is_friendly(players, 1, 2, false), "deathmatch has no friends")
 	check(not TeamRules.is_friendly(players, 1, 1, true), "self is not a teammate")
 
-func test_spawn_index_deathmatch_follows_id_order() -> void:
+## Fixed maps: even spawn points are Red, odd ones Blue.
+const PARITY := [0, 1, 0, 1, 0, 1, 0, 1]
+
+func test_first_spawn_deathmatch_follows_id_order() -> void:
 	var players := _players({7: 0, 1: 0, 3: 1})
-	check_eq(TeamRules.spawn_index(players, 1, false), 0)
-	check_eq(TeamRules.spawn_index(players, 3, false), 1)
-	check_eq(TeamRules.spawn_index(players, 7, false), 2)
+	check_eq(TeamRules.first_spawn(players, 1, false, PARITY), 0)
+	check_eq(TeamRules.first_spawn(players, 3, false, PARITY), 1)
+	check_eq(TeamRules.first_spawn(players, 7, false, PARITY), 2)
+	check_eq(TeamRules.first_spawn(players, 7, false, [0, 1]), 0, "more players than spawn points wrap around")
+	check_eq(TeamRules.first_spawn(players, 7, false, []), -1, "no spawn points")
 
-func test_spawn_index_teams_use_own_side() -> void:
+func test_first_spawn_teams_use_own_side() -> void:
 	var players := _players({1: 0, 2: 1, 3: 0, 4: 1, 5: 0})
-	check_eq(TeamRules.spawn_index(players, 1, true), 0, "first Red")
-	check_eq(TeamRules.spawn_index(players, 3, true), 2, "second Red")
-	check_eq(TeamRules.spawn_index(players, 5, true), 4, "third Red")
-	check_eq(TeamRules.spawn_index(players, 2, true), 1, "first Blue")
-	check_eq(TeamRules.spawn_index(players, 4, true), 3, "second Blue")
+	check_eq(TeamRules.first_spawn(players, 1, true, PARITY), 0, "first Red")
+	check_eq(TeamRules.first_spawn(players, 3, true, PARITY), 2, "second Red")
+	check_eq(TeamRules.first_spawn(players, 5, true, PARITY), 4, "third Red")
+	check_eq(TeamRules.first_spawn(players, 2, true, PARITY), 1, "first Blue")
+	check_eq(TeamRules.first_spawn(players, 4, true, PARITY), 3, "second Blue")
+	check_eq(TeamRules.first_spawn(players, 2, true, [0, 0, 1, 0]), 2, "Blue's only spawn point")
 
-func test_respawn_indices() -> void:
-	check_eq(TeamRules.respawn_indices(0, 5, false), [0, 1, 2, 3, 4] as Array[int])
-	check_eq(TeamRules.respawn_indices(0, 5, true), [0, 2, 4] as Array[int])
-	check_eq(TeamRules.respawn_indices(1, 5, true), [1, 3] as Array[int])
-	check_eq(TeamRules.respawn_indices(1, 1, true), [0] as Array[int], "single spawn map")
+func test_respawn_choices() -> void:
+	check_eq(TeamRules.respawn_choices(0, [0, 1, 0, 1, 0], false), [0, 1, 2, 3, 4] as Array[int])
+	check_eq(TeamRules.respawn_choices(0, [0, 1, 0, 1, 0], true), [0, 2, 4] as Array[int])
+	check_eq(TeamRules.respawn_choices(1, [0, 1, 0, 1, 0], true), [1, 3] as Array[int])
+	check_eq(TeamRules.respawn_choices(1, [0], true), [0] as Array[int], "team without spawn points uses any")
 
 func test_team_totals_and_winner() -> void:
 	var results := [
