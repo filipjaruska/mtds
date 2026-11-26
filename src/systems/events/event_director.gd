@@ -4,9 +4,10 @@ class_name EventDirector
 ## on every peer. The host decides when each event starts and starts it on
 ## every peer as Events/Event_<n>; every peer knows what comes next (for the
 ## strip under the clock).
-##   - Big events (EventSpec.size: a boss, a room game) happen once each, at
-##     the big-event marks: about a third and two thirds of the way through
-##     the match, in random order (EventSchedule).
+##   - Big events (EventSpec.size: a boss, a room game) happen at the
+##     big-event marks: about a third and two thirds of the way through the
+##     match, in random order. A map with more big events than marks gets a
+##     random pick of them each match (EventSchedule).
 ##   - Small events (a roaming NPC) go by their spec's timing and chance, any
 ##     time in between or after.
 ##
@@ -37,7 +38,6 @@ func _ready() -> void:
 	for i in range(specs.size()):
 		if specs[i].size == EventSpec.Size.BIG:
 			big.append(i)
-	big.shuffle()
 	var big_at := EventSchedule.big_starts(big.size(), RULES.big_event_marks,
 		GameManager.get_match_duration(), RULES.big_event_jitter_seconds, _rng)
 	for spec in specs:

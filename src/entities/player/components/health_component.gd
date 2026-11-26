@@ -80,8 +80,8 @@ func _recompute_max_health() -> void:
 func apply_damage(amount: float, penetration: float, attacker_id: int) -> void:
 	if not _is_host() or is_dead or Time.get_ticks_msec() < invulnerable_until:
 		return
-	if attacker_id > 0 and PeaceZone.covers(get_parent()):
-		return # players cannot hurt anyone in a no-fighting zone (events still can)
+	if PeaceZone.covers(get_parent()):
+		return # nobody gets hurt in a no-fighting zone (not by players, NPCs or fire)
 	var final_damage := DamageRules.final_damage(amount, penetration, _damage_resistance())
 	if final_damage <= 0.0:
 		return
@@ -117,7 +117,7 @@ func _try_last_stand() -> bool:
 func apply_burn(damage_per_second: float, seconds: float, attacker_id: int) -> void:
 	if not _is_host() or is_dead or damage_per_second <= 0.0 or seconds <= 0.0:
 		return
-	if attacker_id > 0 and PeaceZone.covers(get_parent()):
+	if PeaceZone.covers(get_parent()):
 		return
 	var now := Time.get_ticks_msec()
 	if _burn_until <= now:

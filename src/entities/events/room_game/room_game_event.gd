@@ -272,6 +272,7 @@ func _clear_table() -> void:
 	if is_instance_valid(table):
 		table.queue_free()
 	table = null
+	map.forget_walk_grid()
 	if is_instance_valid(_zone):
 		_zone.queue_free()
 	if is_instance_valid(_hud):

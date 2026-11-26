@@ -30,8 +30,15 @@ func test_one_big_event_takes_one_of_the_marks() -> void:
 
 func test_more_big_events_than_marks() -> void:
 	var rng := RandomNumberGenerator.new()
-	var starts := EventSchedule.big_starts(3, MARKS, 300.0, 0.0, rng)
-	check_eq(starts.count(INF), 1, "the third has no mark and never comes")
+	var left_out := {}
+	for game_seed in range(60):
+		rng.seed = game_seed
+		var starts := EventSchedule.big_starts(4, MARKS, 300.0, 0.0, rng)
+		check_eq(starts.count(INF), 2, "two of four happen, two do not: %s" % [starts])
+		for i in range(4):
+			if starts[i] == INF:
+				left_out[i] = true
+	check_eq(left_out.size(), 4, "which ones are left out is random")
 
 func test_stays_inside_the_match() -> void:
 	var rng := RandomNumberGenerator.new()

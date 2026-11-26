@@ -130,3 +130,17 @@ func test_every_spawn_point_can_walk_to_every_other() -> void:
 			map.free()
 			if not has_layout:
 				break
+
+## NPCs walk round props that block like walls (the sarcophagus, the blackjack table).
+func test_props_block_the_walk_grid() -> void:
+	var map: GameMap = load("res://src/scenes/maps/catacombs.tscn").instantiate()
+	map.build_layout(5)
+	map.get_node("Rooms/BlackjackRoom").set_gates_open(true) # closed, the whole room is solid
+	var grid := map.walk_grid()
+	check(not grid.is_point_solid(Vector2i((map._map_point(map.get_node("Rooms/BlackjackRoom")) / MapRoom.TILE).floor()) + Vector2i(2, 8)), "the open room's floor is walkable")
+	for prop_path in ["Rooms/Tomb/Sarcophagus", "Rooms/BlackjackRoom/BlackjackTable"]:
+		var prop: Node2D = map.get_node(prop_path)
+		var cell := Vector2i((map._map_point(prop) / MapRoom.TILE).floor())
+		check(grid.is_point_solid(cell), "%s blocks NPCs" % prop_path)
+	map.free()
+

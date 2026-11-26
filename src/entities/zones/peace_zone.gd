@@ -1,7 +1,7 @@
 extends Area2D
 class_name PeaceZone
 ## A no-fighting area: players inside cannot shoot, swing, charge or play cards,
-## and players cannot hurt anyone inside. Give it a CollisionShape2D child for
+## and nobody inside can be hurt (by players, NPCs or fire). Give it a CollisionShape2D child for
 ## its shape. Player positions are synced, so every game agrees on who is in
 ## it: the owner's game stops the input (and the HUD says so), the host refuses
 ## any attack that slips through. Switch it with `active` (events do).

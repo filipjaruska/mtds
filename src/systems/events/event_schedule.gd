@@ -8,9 +8,10 @@ class_name EventSchedule
 ## Small events (a roaming NPC) keep their own timing (EventSpec) and can come
 ## any time.
 
-## Start times (match seconds) for `count` big events, in the order given:
-## each takes one of the marks (fractions of `duration`), shuffled, moved by up
-## to `jitter` seconds. Events beyond the number of marks get INF (never).
+## Start times (match seconds) for a map's `count` big events, one per event:
+## as many as there are marks (fractions of `duration`) are picked at random,
+## each takes one of the marks in random order, moved by up to `jitter`
+## seconds. The ones not picked get INF: they do not happen this match.
 static func big_starts(count: int, marks: Array, duration: float, jitter: float, rng: RandomNumberGenerator) -> Array[float]:
 	var order: Array = range(marks.size())
 	for i in range(order.size() - 1, 0, -1):
@@ -18,11 +19,16 @@ static func big_starts(count: int, marks: Array, duration: float, jitter: float,
 		var tmp = order[i]
 		order[i] = order[j]
 		order[j] = tmp
+	var picked: Array = range(count)
+	for i in range(picked.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var tmp = picked[i]
+		picked[i] = picked[j]
+		picked[j] = tmp
 	var out: Array[float] = []
-	for i in range(count):
-		if i >= order.size():
-			out.append(INF)
-			continue
-		var at := float(marks[order[i]]) * duration + rng.randf_range(-jitter, jitter)
-		out.append(clampf(at, 0.0, duration))
+	out.resize(count)
+	out.fill(INF)
+	for k in range(mini(count, order.size())):
+		var at := float(marks[order[k]]) * duration + rng.randf_range(-jitter, jitter)
+		out[picked[k]] = clampf(at, 0.0, duration)
 	return out

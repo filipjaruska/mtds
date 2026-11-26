@@ -62,6 +62,7 @@ var held_area: Rect2
 
 # Host only.
 var _path := PackedVector2Array()
+var _stuck_seconds := 0.0
 var _pause_until := 0
 var _next_shot := 0
 var _next_look := 0
@@ -192,6 +193,11 @@ func _follow(delta: float) -> void:
 		return
 	body.velocity = step.normalized() * speed
 	body.move_and_slide()
+	# Pushed against something the walk grid does not know: try another way.
+	_stuck_seconds = _stuck_seconds + delta if body.get_real_velocity().length() < speed * 0.2 else 0.0
+	if _stuck_seconds > 0.6:
+		_stuck_seconds = 0.0
+		_path = PackedVector2Array()
 	if state == State.BOUND and not held_area.has_point(body.global_position):
 		body.global_position = body.global_position.clamp(held_area.position + Vector2.ONE * 40.0, held_area.end - Vector2.ONE * 40.0)
 		_path = PackedVector2Array()

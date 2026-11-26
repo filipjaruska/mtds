@@ -385,6 +385,8 @@ func _build_walk_grid() -> AStarGrid2D:
 			var origin := _room_origin(room)
 			for cell in room.cells():
 				solid[cell + origin] = true
+	for cell in _prop_cells():
+		solid[cell] = true
 	var grid := AStarGrid2D.new()
 	grid.cell_size = Vector2(MapRoom.TILE, MapRoom.TILE)
 	grid.offset = grid.cell_size * 0.5
@@ -407,6 +409,37 @@ func _build_walk_grid() -> AStarGrid2D:
 		if not solid.has(cell):
 			grid.set_point_solid(cell, false)
 	return grid
+
+## Tiles taken by props that block like walls (a sarcophagus, the blackjack
+## table: StaticBody2D on the walls layer), so NPCs walk round them. Gates are
+## left to their rooms.
+func _prop_cells() -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	for prop: StaticBody2D in find_children("*", "StaticBody2D", true, false):
+		if prop is RoomGate or prop.is_queued_for_deletion() or _in_preview(prop) \
+				or not (prop.collision_layer & CombatServer.WALL_LAYER):
+			continue
+		for shape in prop.get_children():
+			var box := Rect2()
+			if shape is CollisionShape2D and shape.shape:
+				box = shape.shape.get_rect()
+			elif shape is CollisionPolygon2D and not shape.polygon.is_empty():
+				box = Rect2(shape.polygon[0], Vector2.ZERO)
+				for point in shape.polygon:
+					box = box.expand(point)
+			else:
+				continue
+			var area: Rect2 = _map_transform(shape) * box
+			var from := Vector2i((area.position / MapRoom.TILE).floor())
+			var to := Vector2i((area.end / MapRoom.TILE).floor())
+			for x in range(from.x, to.x + 1):
+				for y in range(from.y, to.y + 1):
+					out.append(Vector2i(x, y))
+	return out
+
+## Something that blocks NPCs went away (the blackjack table): find paths anew.
+func forget_walk_grid() -> void:
+	_walk = null
 
 ## A walking path between two map positions (tile centres), or empty when
 ## there is none.
@@ -542,6 +575,15 @@ func _map_point(node: Node2D) -> Vector2:
 		pos = (current as Node2D).transform * pos
 		current = current.get_parent()
 	return pos
+
+## A node's transform in the map's own coordinates (works outside the tree too).
+func _map_transform(node: Node2D) -> Transform2D:
+	var xform := Transform2D.IDENTITY
+	var current: Node = node
+	while current and current != self and current is Node2D:
+		xform = (current as Node2D).transform * xform
+		current = current.get_parent()
+	return xform
 
 func _spawns_needed() -> int:
 	# In the editor GameRules' script is not running; read the value as plain data.

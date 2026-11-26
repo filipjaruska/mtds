@@ -112,7 +112,8 @@ Events happen during a match: the strip under the clock shows the next one
 
 - **Big** events (a boss, a room game) are the match's landmarks: one at about
   a third of the way through and one at about two thirds, in random order
-  (`big_event_marks` in `src/game_rules.tres`), each once per match.
+  (`big_event_marks` in `src/game_rules.tres`), each once per match. A map
+  with more big events than that gets a random two each match.
 - **Small** events (a roaming NPC) keep their own timing (when the first one
   comes, how often after that, chance, how many at once and per match) and can
   come any time.

@@ -54,6 +54,7 @@ var _chooser := 0
 var _chooser_since := 0
 var _picked := {}
 var _path := PackedVector2Array()
+var _stuck_seconds := 0.0
 var _pause_until := 0
 var _leave_at := 0
 var _flee_from := Vector2.ZERO
@@ -118,29 +119,34 @@ func _physics_process(delta: float) -> void:
 			_run(delta, speed * (1.8 if state == State.FLEEING else 1.0))
 
 ## Walk a path to a random spot, rest a moment, pick another.
-func _wander(now: int, delta: float, speed: float) -> void:
+func _wander(now: int, delta: float, pace: float) -> void:
 	if _path.is_empty():
 		if now < _pause_until:
 			return
 		_path = map.find_path(body.position, map.random_walkable_point(rng, body.position))
 		_pause_until = now + rng.randi_range(800, 2200)
 		return
-	_follow(delta, speed)
+	_follow(delta, pace)
 
-func _follow(delta: float, speed: float) -> void:
+func _follow(delta: float, pace: float) -> void:
 	var next := _path[0]
 	var step := next - body.position
-	if step.length() <= speed * delta:
+	if step.length() <= pace * delta:
 		body.position = next
 		_path.remove_at(0)
 		if _path.is_empty():
 			_pause_until = Time.get_ticks_msec() + rng.randi_range(800, 2200)
 		return
-	body.velocity = step.normalized() * speed
+	body.velocity = step.normalized() * pace
 	body.move_and_slide()
+	# Pushed against something the walk grid does not know: try another way.
+	_stuck_seconds = _stuck_seconds + delta if body.get_real_velocity().length() < pace * 0.2 else 0.0
+	if _stuck_seconds > 0.6:
+		_stuck_seconds = 0.0
+		_path = PackedVector2Array()
 
 ## Away from whoever shot him (or just away), along the walk grid.
-func _run(delta: float, speed: float) -> void:
+func _run(delta: float, pace: float) -> void:
 	if _path.is_empty():
 		var best := body.position
 		var best_distance := -1.0
@@ -153,7 +159,7 @@ func _run(delta: float, speed: float) -> void:
 		_path = map.find_path(body.position, best)
 		if _path.is_empty():
 			return
-	_follow(delta, speed)
+	_follow(delta, pace)
 
 func _player(peer: int) -> Node2D:
 	return map.get_node_or_null(str(peer)) as Node2D if peer > 0 else null
