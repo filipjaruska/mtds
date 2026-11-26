@@ -64,15 +64,15 @@ func test_a_whole_game() -> void:
 		check_eq(game.steps.size(), seen.size() + 1, "a step per card, plus turning the dealer's card")
 
 func test_seats_spread_round_the_table() -> void:
-	check_eq(BlackjackRules.spread_seats(1, 8).size(), 1)
+	check_eq(RoomGameEvent.spread_seats(1, 8).size(), 1)
 	for players in range(1, 9):
-		var seats := BlackjackRules.spread_seats(players, 8)
+		var seats := RoomGameEvent.spread_seats(players, 8)
 		var taken := {}
 		for seat in seats:
 			check(seat >= 0 and seat < 8, "a seat at the table")
 			taken[seat] = true
 		check_eq(taken.size(), players, "%d players, %d different seats: %s" % [players, players, seats])
-	check_eq(BlackjackRules.spread_seats(10, 8).size(), 8, "no more players than seats")
+	check_eq(RoomGameEvent.spread_seats(10, 8).size(), 8, "no more players than seats")
 
 func test_what_the_table_shows() -> void:
 	var rng := RandomNumberGenerator.new()

@@ -1,14 +1,15 @@
 extends "res://tests/test_case.gd"
-## Tutankhamun: when he leaves his tomb, whom he shoots, and his staff.
+## A boss (Tutankhamun): when he leaves his lair, whom he shoots; and his staff.
 
-const State := TutankhamunRules.State
+const State := BossRules.State
 
 func test_held_in_his_tomb_until_his_time_is_up() -> void:
-	check_eq(TutankhamunRules.next_state(State.BOUND, 100.0, 5000, 6000), State.BOUND)
-	check_eq(TutankhamunRules.next_state(State.BOUND, 100.0, 6000, 6000), State.ROAMING, "free once the minute is up")
-	check_eq(TutankhamunRules.next_state(State.ROAMING, 100.0, 9000, 6000), State.ROAMING)
-	check_eq(TutankhamunRules.next_state(State.BOUND, 0.0, 1000, 6000), State.DEAD, "no health: dead")
-	check_eq(TutankhamunRules.next_state(State.DEAD, 100.0, 9000, 6000), State.DEAD, "dead stays dead")
+	check_eq(BossRules.next_state(State.BOUND, 100.0, 5000, 6000), State.BOUND)
+	check_eq(BossRules.next_state(State.BOUND, 100.0, 6000, 6000), State.ROAMING, "free once the minute is up")
+	check_eq(BossRules.next_state(State.ROAMING, 100.0, 9000, 6000), State.ROAMING)
+	check_eq(BossRules.next_state(State.BOUND, 0.0, 1000, 6000), State.DEAD, "no health: dead")
+	check_eq(BossRules.next_state(State.DEAD, 100.0, 9000, 6000), State.DEAD, "dead stays dead")
+	check_eq(BossRules.next_state(State.BOUND, 100.0, 99999, -1), State.BOUND, "a guard never leaves")
 
 func test_shoots_the_nearest_player_he_can_see() -> void:
 	var candidates := [
@@ -16,13 +17,13 @@ func test_shoots_the_nearest_player_he_can_see() -> void:
 		{"id": 3, "position": Vector2(100, 0), "visible": false},
 		{"id": 4, "position": Vector2(200, 0), "visible": true},
 	]
-	check_eq(TutankhamunRules.pick_target(Vector2.ZERO, candidates, 650.0), 4, "nearest one in sight")
-	check_eq(TutankhamunRules.pick_target(Vector2.ZERO, candidates, 150.0), 0, "nobody close enough")
-	check_eq(TutankhamunRules.pick_target(Vector2.ZERO, [], 650.0), 0)
+	check_eq(BossRules.pick_target(Vector2.ZERO, candidates, 650.0), 4, "nearest one in sight")
+	check_eq(BossRules.pick_target(Vector2.ZERO, candidates, 150.0), 0, "nobody close enough")
+	check_eq(BossRules.pick_target(Vector2.ZERO, [], 650.0), 0)
 
 func test_closes_in_then_stands() -> void:
-	check(TutankhamunRules.should_close_in(Vector2.ZERO, Vector2(500, 0), 320.0))
-	check(not TutankhamunRules.should_close_in(Vector2.ZERO, Vector2(300, 0), 320.0))
+	check(BossRules.should_close_in(Vector2.ZERO, Vector2(500, 0), 320.0))
+	check(not BossRules.should_close_in(Vector2.ZERO, Vector2(300, 0), 320.0))
 
 func test_staff_costs_health_not_ammo() -> void:
 	var def := WeaponDefs.get_def(&"pharaoh_staff")

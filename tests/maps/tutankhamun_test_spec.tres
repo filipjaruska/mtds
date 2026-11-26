@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="EventSpec" format=3]
 
 [ext_resource type="Script" path="res://src/systems/events/event_spec.gd" id="1_spec"]
-[ext_resource type="PackedScene" path="res://src/entities/npcs/tutankhamun/tutankhamun.tscn" id="2_scene"]
+[ext_resource type="PackedScene" path="res://src/entities/events/tutankhamun/tutankhamun.tscn" id="2_scene"]
 
 [resource]
 script = ExtResource("1_spec")

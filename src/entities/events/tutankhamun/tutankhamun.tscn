@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/entities/npcs/tutankhamun/tutankhamun_event.gd" id="1_event"]
-[ext_resource type="Script" path="res://src/entities/npcs/tutankhamun/tutankhamun_body.gd" id="2_body"]
+[ext_resource type="Script" path="res://src/entities/events/boss/boss_event.gd" id="1_event"]
+[ext_resource type="Script" path="res://src/entities/events/npc_body.gd" id="2_body"]
 [ext_resource type="Texture2D" path="res://src/assets/icon.svg" id="3_icon"]
 [ext_resource type="Texture2D" path="res://src/assets/weapons/pharaoh_staff/pharaoh_staff (tmp).svg" id="4_staff"]
 
@@ -12,12 +12,26 @@ radius = 26.0
 properties/0/path = NodePath("Body:position")
 properties/0/spawn = true
 properties/0/replication_mode = 1
-properties/1/path = NodePath("Body/Look/Staff:rotation")
+properties/1/path = NodePath("Body/Look/Weapon:rotation")
 properties/1/spawn = true
 properties/1/replication_mode = 1
 
 [node name="Tutankhamun" type="Node2D"]
 script = ExtResource("1_event")
+boss_name = "Tutankhamun"
+lair = &"tutankhamun"
+hp_max = 500.0
+speed = 110.0
+held_seconds = 60.0
+sight = 650.0
+fire_seconds = 1.2
+keep_distance = 320.0
+weapon = &"pharaoh_staff"
+drop_weapon = &"pharaoh_staff"
+drop_cards = Array[StringName]([&"swift_feet"])
+lines_wake = Array[String](["Who disturbs my sleep?", "Three thousand years... and you woke me.", "Kneel before the Pharaoh!"])
+lines_free = Array[String](["No tomb can hold me!", "Egypt shall rise again!"])
+lines_die = Array[String](["My curse... lives on...", "Not again..."])
 
 [node name="Body" type="CharacterBody2D" parent="."]
 collision_layer = 0
@@ -45,9 +59,9 @@ modulate = Color(2.0, 1.6, 0.6, 1)
 scale = Vector2(0.2, 0.2)
 texture = ExtResource("3_icon")
 
-[node name="Staff" type="Node2D" parent="Body/Look"]
+[node name="Weapon" type="Node2D" parent="Body/Look"]
 
-[node name="Sprite" type="Sprite2D" parent="Body/Look/Staff"]
+[node name="Sprite" type="Sprite2D" parent="Body/Look/Weapon"]
 position = Vector2(30, 14)
 scale = Vector2(1.2, 1.2)
 texture = ExtResource("4_staff")

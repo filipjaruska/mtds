@@ -1,17 +1,18 @@
 extends RefCounted
-class_name TutankhamunRules
-## Pure rules for Tutankhamun: when he may leave his tomb and whom he shoots.
-## Nothing here touches nodes or the network.
+class_name BossRules
+## Pure rules for a boss (Tutankhamun...): when he may leave his lair and whom
+## he shoots. Nothing here touches nodes or the network.
 
-## BOUND: awake but held in his tomb. ROAMING: hunting round the map. DEAD: down,
-## his staff and a card on the floor.
+## BOUND: awake but held in his lair. ROAMING: hunting round the map. DEAD:
+## down, his drops on the floor.
 enum State { BOUND, ROAMING, DEAD }
 
-## His state after `now` (msec) with `hp` left; he roams once `free_at` passes.
+## His state after `now` (msec) with `hp` left; he roams once `free_at` passes
+## (free_at < 0: never, he guards his lair).
 static func next_state(state: State, hp: float, now: int, free_at: int) -> State:
 	if state == State.DEAD or hp <= 0.0:
 		return State.DEAD
-	if state == State.BOUND and now >= free_at:
+	if state == State.BOUND and free_at >= 0 and now >= free_at:
 		return State.ROAMING
 	return state
 

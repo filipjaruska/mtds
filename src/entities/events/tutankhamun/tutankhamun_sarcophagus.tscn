@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/entities/npcs/tutankhamun/tutankhamun_sarcophagus.gd" id="1_script"]
+[ext_resource type="Script" path="res://src/entities/events/boss/boss_lair.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://src/assets/npcs/tutankhamun/sarcophagus (tmp).svg" id="2_coffin"]
 [ext_resource type="Texture2D" path="res://src/assets/npcs/tutankhamun/sarcophagus_lid (tmp).svg" id="3_lid"]
 
@@ -9,6 +9,7 @@ size = Vector2(60, 140)
 
 [node name="TutankhamunSarcophagus" type="Node2D"]
 script = ExtResource("1_script")
+boss = &"tutankhamun"
 
 [node name="Coffin" type="Sprite2D" parent="."]
 z_index = -4

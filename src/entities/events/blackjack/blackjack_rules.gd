@@ -79,13 +79,6 @@ static func _deal(table: Dictionary, hand: Array[int], seat: int, face_up: bool)
 	table.in_play.append(drawn.card)
 	table.steps.append([seat, hand.size() - 1, face_up])
 
-## Which of `seats` seats (indices) `players` players take: spread round the table.
-static func spread_seats(players: int, seats: int) -> Array[int]:
-	var out: Array[int] = []
-	for i in range(mini(players, seats)):
-		out.append(clampi(roundi((i + 0.5) * seats / float(players) - 0.5), 0, seats - 1))
-	return out
-
 ## What the table shows of `hand` (seat `seat`) after the first `shown` steps:
 ## each card as itself when face up, -1 face down; cards not dealt yet are left out.
 static func showing(hand: Array, seat: int, steps: Array, shown: int) -> Array[int]:

@@ -216,13 +216,13 @@ func _shady_fella(map: Node, player: Node2D) -> void:
 	if event == null:
 		return
 	check(event.offer.size() == 3, "he offers 3 cards: %s" % [event.offer])
-	var fella: Node2D = event.fella
+	var fella: Node2D = event.body
 	player.global_position = fella.global_position + Vector2(70, 0)
 	await frames(5)
 	await tap("interact")
 	await frames(3)
 	check(input_manager.choosing_card, "the trade opened")
-	check(event.state == ShadyFellaRules.State.BUSY, "he waits while you choose")
+	check(event.state == RoamingNpcRules.State.BUSY, "he waits while you choose")
 	var first: StringName = event.offer[0]
 	await tap("powerup_slot_1")
 	await frames(4)
@@ -238,7 +238,7 @@ func _shady_fella(map: Node, player: Node2D) -> void:
 	await frames(3)
 	var dropped_before := map.get_children().filter(func(c): return String(c.name).begins_with("DroppedCard_")).size()
 	map.get_node("Combat").fire(player, player.global_position, PackedFloat32Array([0.0]), &"pistol", 600.0)
-	check(await wait_until(func(): return event.state == ShadyFellaRules.State.FLEEING, 2.0), "shot: he runs")
+	check(await wait_until(func(): return event.state == RoamingNpcRules.State.FLEEING, 2.0), "shot: he runs")
 	var dropped_after := map.get_children().filter(func(c): return String(c.name).begins_with("DroppedCard_")).size()
 	check(dropped_after == dropped_before + 1, "one of his cards dropped")
 	check(await wait_until(func(): return not is_instance_valid(event), 6.0), "and he is gone")
@@ -280,7 +280,7 @@ func _blackjack(game_manager) -> void:
 	check(pm.get_used_inventory_slots() > 0, "given a stake: %s" % [pm.inventory])
 	check(await wait_until(func(): return event.phase == event.Phase.RESULT, 20.0), "the result is in")
 	await frames(3)
-	var won: bool = event.results[0]
+	var won: bool = event.results[0] != event.LOSE_ALL
 	check((pm.get_used_inventory_slots() > 0) == won, "won keeps the cards, lost loses them (won=%s, hand %s)" % [won, pm.inventory])
 	var table = event.table
 	check(await wait_until(func(): return not is_instance_valid(event), 10.0), "the event ends")
@@ -307,12 +307,12 @@ func _tutankhamun(game_manager) -> void:
 	director.start_now(1)
 	await frames(3)
 	var event = director.get_node_or_null("Event_1")
-	check(event != null and event.sarcophagus != null, "Tutankhamun found his sarcophagus")
-	if event == null or event.sarcophagus == null:
+	check(event != null and event.home != null, "Tutankhamun found his sarcophagus")
+	if event == null or event.home == null:
 		map.free()
 		return
-	check(event.body.visible and event.sarcophagus.opened, "he wakes and the lid comes off")
-	check(event.state == TutankhamunRules.State.BOUND, "held in his tomb")
+	check(event.body.visible and event.home.opened, "he wakes and the lid comes off")
+	check(event.state == BossRules.State.BOUND, "held in his tomb")
 	player.global_position = event.body.global_position + Vector2(-260, 0)
 	check(await wait_until(func(): return health.current_health < 100.0, 4.0), "his fireball hit the player")
 	check(health.is_burning(), "and set them burning")
@@ -321,13 +321,13 @@ func _tutankhamun(game_manager) -> void:
 	var after_hit: float = health.current_health
 	await wait_until(func(): return false, 1.2)
 	check(health.current_health < after_hit, "burning keeps hurting (%s -> %s)" % [after_hit, health.current_health])
-	check(event.tomb.has_point(event.body.global_position), "still in his tomb")
+	check(event.held_area.has_point(event.body.global_position), "still in his tomb")
 	event.free_at_msec = 0
-	check(await wait_until(func(): return event.state == TutankhamunRules.State.ROAMING, 2.0), "free after his time in the tomb")
+	check(await wait_until(func(): return event.state == BossRules.State.ROAMING, 2.0), "free after his time in the tomb")
 	var where: Vector2 = event.body.global_position
 	event.body.take_hit(10000.0, 1)
 	await frames(3)
-	check(event.state == TutankhamunRules.State.DEAD, "killed")
+	check(event.state == BossRules.State.DEAD, "killed")
 	var staff_pickup: Node2D = null
 	var card_pickup: Node2D = null
 	for child in map.get_children():

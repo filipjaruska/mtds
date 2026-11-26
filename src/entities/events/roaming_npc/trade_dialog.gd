@@ -1,5 +1,5 @@
 extends CanvasLayer
-## Shady Fella's offer on the choosing player's screen: his cards side by side
+## A roaming NPC's offer (Shady Fella's) on the choosing player's screen: his cards side by side
 ## above the hand. Pick one with its card key (1, 2, 3...) or a click. The
 ## player can still move; walking away, getting hurt, Esc or taking too long
 ## closes it. While it is open the trigger and card keys belong to it.
@@ -7,9 +7,10 @@ extends CanvasLayer
 signal picked(index: int)
 signal closed
 
-const RULES: GameRules = preload("res://src/game_rules.tres")
-
 var offer: Array[StringName] = []
+var title := ""
+var line := ""
+var choose_seconds := 8.0
 
 var _row: HBoxContainer
 var _timer_bar: ColorRect
@@ -36,13 +37,13 @@ func _ready() -> void:
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 8)
 	panel.add_child(column)
-	var title := UiPalette.label("Shady Fella", UiPalette.L, UiPalette.ACCENT)
+	var title := UiPalette.label(title, UiPalette.L, UiPalette.ACCENT)
 	title.uppercase = true
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
-	var line := UiPalette.label("Pick one. Quick, before someone sees.", UiPalette.S, UiPalette.TEXT_DIM)
-	line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(line)
+	var sub := UiPalette.label(line, UiPalette.S, UiPalette.TEXT_DIM)
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(sub)
 	_row = HBoxContainer.new()
 	_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_row.add_theme_constant_override("separation", 16)
@@ -94,8 +95,8 @@ func show_offer(cards: Array[StringName]) -> void:
 
 func _process(_delta: float) -> void:
 	var elapsed := (Time.get_ticks_msec() - _opened_msec) / 1000.0
-	_timer_bar.size.x = _timer_back.size.x * clampf(1.0 - elapsed / RULES.shady_choose_seconds, 0.0, 1.0)
-	if elapsed > RULES.shady_choose_seconds:
+	_timer_bar.size.x = _timer_back.size.x * clampf(1.0 - elapsed / choose_seconds, 0.0, 1.0)
+	if elapsed > choose_seconds:
 		close()
 		return
 	for i in range(mini(offer.size(), 4)):

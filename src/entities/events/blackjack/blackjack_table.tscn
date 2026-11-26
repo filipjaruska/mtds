@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/entities/blackjack/blackjack_table.gd" id="1_table"]
+[ext_resource type="Script" path="res://src/entities/events/room_game/room_game_table.gd" id="1_table"]
 [ext_resource type="Texture2D" path="res://src/assets/blackjack/blackjack_table (tmp).svg" id="2_felt"]
 [ext_resource type="Texture2D" path="res://src/assets/icon.svg" id="3_icon"]
 
@@ -18,34 +18,34 @@ collision_mask = 0
 [node name="Shape" type="CollisionPolygon2D" parent="Body"]
 polygon = PackedVector2Array(-170, -90, -164, -46, -147, -5, -120, 30, -85, 57, -44, 74, 0, 80, 44, 74, 85, 57, 120, 30, 147, -5, 164, -46, 170, -90)
 
-[node name="Dealer" type="Node2D" parent="."]
+[node name="Host" type="Node2D" parent="."]
 position = Vector2(0, -140)
 
-[node name="Vest" type="Sprite2D" parent="Dealer"]
+[node name="Vest" type="Sprite2D" parent="Host"]
 modulate = Color(0.16, 0.1, 0.12, 1)
 scale = Vector2(0.44, 0.44)
 texture = ExtResource("3_icon")
 
-[node name="Shirt" type="Sprite2D" parent="Dealer"]
+[node name="Shirt" type="Sprite2D" parent="Host"]
 modulate = Color(2.6, 2.6, 2.5, 1)
 rotation = 0.785398
 scale = Vector2(0.26, 0.26)
 texture = ExtResource("3_icon")
 
-[node name="BowTie" type="Sprite2D" parent="Dealer"]
+[node name="BowTie" type="Sprite2D" parent="Host"]
 modulate = Color(1.6, 0.25, 0.25, 1)
 position = Vector2(0, 10)
 rotation = 0.785398
 scale = Vector2(0.1, 0.1)
 texture = ExtResource("3_icon")
 
-[node name="Visor" type="Sprite2D" parent="Dealer"]
+[node name="Visor" type="Sprite2D" parent="Host"]
 modulate = Color(0.35, 1.4, 0.55, 0.85)
 position = Vector2(0, -8)
 scale = Vector2(0.22, 0.22)
 texture = ExtResource("3_icon")
 
-[node name="DealerCards" type="Marker2D" parent="."]
+[node name="HostSpot" type="Marker2D" parent="."]
 position = Vector2(0, -50)
 
 [node name="Seats" type="Node2D" parent="."]
@@ -53,47 +53,47 @@ position = Vector2(0, -50)
 [node name="Seat1" type="Marker2D" parent="Seats"]
 position = Vector2(-214, -12)
 
-[node name="Cards" type="Marker2D" parent="Seats/Seat1"]
+[node name="Spot" type="Marker2D" parent="Seats/Seat1"]
 position = Vector2(82, -30)
 
 [node name="Seat2" type="Marker2D" parent="Seats"]
 position = Vector2(-175, 57)
 
-[node name="Cards" type="Marker2D" parent="Seats/Seat2"]
+[node name="Spot" type="Marker2D" parent="Seats/Seat2"]
 position = Vector2(68, -57)
 
 [node name="Seat3" type="Marker2D" parent="Seats"]
 position = Vector2(-114, 107)
 
-[node name="Cards" type="Marker2D" parent="Seats/Seat3"]
+[node name="Spot" type="Marker2D" parent="Seats/Seat3"]
 position = Vector2(44, -76)
 
 [node name="Seat4" type="Marker2D" parent="Seats"]
 position = Vector2(-40, 135)
 
-[node name="Cards" type="Marker2D" parent="Seats/Seat4"]
+[node name="Spot" type="Marker2D" parent="Seats/Seat4"]
 position = Vector2(16, -87)
 
 [node name="Seat5" type="Marker2D" parent="Seats"]
 position = Vector2(40, 135)
 
-[node name="Cards" type="Marker2D" parent="Seats/Seat5"]
+[node name="Spot" type="Marker2D" parent="Seats/Seat5"]
 position = Vector2(-16, -87)
 
 [node name="Seat6" type="Marker2D" parent="Seats"]
 position = Vector2(114, 107)
 
-[node name="Cards" type="Marker2D" parent="Seats/Seat6"]
+[node name="Spot" type="Marker2D" parent="Seats/Seat6"]
 position = Vector2(-44, -76)
 
 [node name="Seat7" type="Marker2D" parent="Seats"]
 position = Vector2(175, 57)
 
-[node name="Cards" type="Marker2D" parent="Seats/Seat7"]
+[node name="Spot" type="Marker2D" parent="Seats/Seat7"]
 position = Vector2(-68, -57)
 
 [node name="Seat8" type="Marker2D" parent="Seats"]
 position = Vector2(214, -12)
 
-[node name="Cards" type="Marker2D" parent="Seats/Seat8"]
+[node name="Spot" type="Marker2D" parent="Seats/Seat8"]
 position = Vector2(-82, -30)

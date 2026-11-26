@@ -108,39 +108,47 @@ still missing. `git test` checks every map and tries 30 layouts of each.
 
 Events happen during a match: the strip under the clock shows the next one
 ("Shady Fella  in 0:42") and the one running now. A map lists its events in
-**Events** on its root node; each is an `EventSpec` (scene, name, when it first
-comes, how often after that, chance, how many at once and per match).
+**Events** on its root node; each is an `EventSpec`: its scene, name and size.
 
-- **Shady Fella** (`src/entities/npcs/shady_fella/`) wanders the map with 3
-  cards. Walk up and press interact to pick one (each player gets one; the
-  next player picks from what is left). Shoot him and one of his cards drops
-  while he runs off. Tuning: the Shady Fella group in `src/game_rules.tres`.
-- **Blackjack** (`src/entities/blackjack/`), once per match: the blackjack
-  room's doors open for 30 seconds and nobody can fight inside. Whoever is in
-  when they shut sits at the table; anyone without cards is given two. The
-  game deals itself: players draw to 17, then the dealer does. Beat the dealer
-  and you keep your cards, otherwise you lose them (ties lose). Then everyone
-  is sent back out to spawn points, and the room stays open without its table.
-  A map gets it with a semi-permanent room whose gate is `blackjack`, a
-  `blackjack_table.tscn` in it, and `blackjack_spec.tres` in its Events. A
-  card area (PowerupSpawner) in the room with Enabled off starts once the game
-  is over: something to come back for. In the catacombs the room has a swap
-  group of its own and three places down the middle of the map.
-  Tuning: the Blackjack group in `src/game_rules.tres`.
-- **Tutankhamun** (`src/entities/npcs/tutankhamun/`), once per match: his
-  tomb is a normal room with a sarcophagus in it until he wakes. Then he is
-  held in his tomb for a minute, shooting anyone he sees; if he is still
-  standing after that he roams the map and hunts players. His fireballs ignore
-  armor and set players burning for 3 seconds, so their health does not come
-  back. Killed, he drops his staff, the Pharaoh's Staff (fireballs that cost
-  the shooter 4 health each instead of ammo), and a Swift Feet card. A map gets
-  him with `tutankhamun_sarcophagus.tscn` in a room and `tutankhamun_spec.tres`
-  in its Events. Tuning: the Tutankhamun group in `src/game_rules.tres`; the
-  staff in `src/entities/weapons/defs/pharaoh_staff.tres`.
+- **Big** events (a boss, a room game) are the match's landmarks: one at about
+  a third of the way through and one at about two thirds, in random order
+  (`big_event_marks` in `src/game_rules.tres`), each once per match.
+- **Small** events (a roaming NPC) keep their own timing (when the first one
+  comes, how often after that, chance, how many at once and per match) and can
+  come any time.
+
+All events live in `src/entities/events/`. There are three kinds; a new event
+of a kind is mostly a new theme: a scene with its own look, name, lines and
+numbers (set on the scene's root node, in the inspector).
+
+| Kind | Script | What it does | Themes |
+|---|---|---|---|
+| Roaming NPC | `roaming_npc/` | wanders with a few cards: walk up and pick one, or shoot him and one drops while he runs off | Shady Fella |
+| Boss | `boss/` | wakes in his lair (a `BossLair` prop in a room), is held there for a while (or always: a guard), then hunts players; drops a weapon and cards | Tutankhamun |
+| Room game | `room_game/` | a semi-permanent room opens, no fighting inside; whoever is in when the doors shut plays a quick game at the table (a `RoomGameTable`) and loses, keeps or wins cards; then everyone is sent out and the room stays open | Blackjack |
+
+- **Shady Fella** (`shady_fella/`) wanders the map with 3 cards. Each player
+  gets one; the next player picks from what is left.
+- **Tutankhamun** (`tutankhamun/`): his tomb is a normal room with a
+  sarcophagus in it until he wakes. He is held in it for a minute, shooting
+  anyone he sees, then roams. His fireballs ignore armor and set players
+  burning for 3 seconds, so their health does not come back. Killed, he drops
+  the Pharaoh's Staff (fireballs that cost the shooter 4 health each instead
+  of ammo; `src/entities/weapons/defs/pharaoh_staff.tres`) and a Swift Feet card.
+- **Blackjack** (`blackjack/`): the room's doors open for 30 seconds. At the
+  table anyone without cards is given two; players and the dealer draw to 17.
+  Beat the dealer and you keep your cards, otherwise you lose them (ties
+  lose). A card area (PowerupSpawner) in the room with Enabled off starts once
+  the game is over: something to come back for. In the catacombs the room has
+  a swap group of its own and three places down the middle of the map.
+
+To put one on a map: its prop in a room (a `BossLair` for a boss, a
+`RoomGameTable` in a semi-permanent room for a room game, nothing for a
+roaming NPC) and its spec in the map's Events.
 
 Debug builds: F9 on the host starts the next event right away.
 
-A new event is a scene whose root extends `GameEvent` (`src/systems/events/`):
+A new kind of event is a scene whose root extends `GameEvent` (`src/systems/events/`):
 the host sets it up in `begin()`, syncs it through its own RPCs and calls
 `finish()` when it is over. Building blocks: `PeaceZone` (no fighting inside),
 `PowerupManager.grant_card` / `take_all_cards`, `GameMap.spawn_card_pickup`,

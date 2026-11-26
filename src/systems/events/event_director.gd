@@ -1,9 +1,14 @@
 extends Node2D
 class_name EventDirector
 ## Runs a map's in-game events (GameMap.events). The map adds it as "Events"
-## on every peer. The host decides when each event starts, by the event specs'
-## timing and chance, and starts it on every peer as Events/Event_<n>; every
-## peer knows what comes next (for the strip under the clock).
+## on every peer. The host decides when each event starts and starts it on
+## every peer as Events/Event_<n>; every peer knows what comes next (for the
+## strip under the clock).
+##   - Big events (EventSpec.size: a boss, a room game) happen once each, at
+##     the big-event marks: about a third and two thirds of the way through
+##     the match, in random order (EventSchedule).
+##   - Small events (a roaming NPC) go by their spec's timing and chance, any
+##     time in between or after.
 ##
 ## Debug builds: F9 on the host starts the next event right away.
 
@@ -22,14 +27,24 @@ var _runs: Array[int] = []
 var _count := 0
 var _rng := RandomNumberGenerator.new()
 var _announced := [-1, -1.0]
+const RULES: GameRules = preload("res://src/game_rules.tres")
 
 func _ready() -> void:
 	if not multiplayer.is_server():
 		return
 	_rng.randomize()
+	var big: Array[int] = []
+	for i in range(specs.size()):
+		if specs[i].size == EventSpec.Size.BIG:
+			big.append(i)
+	big.shuffle()
+	var big_at := EventSchedule.big_starts(big.size(), RULES.big_event_marks,
+		GameManager.get_match_duration(), RULES.big_event_jitter_seconds, _rng)
 	for spec in specs:
 		_next_start.append(_rng.randf_range(spec.first_after_min, maxf(spec.first_after_min, spec.first_after_max)))
 		_runs.append(0)
+	for k in range(big.size()):
+		_next_start[big[k]] = big_at[k]
 
 func _elapsed() -> float:
 	return GameManager.get_match_duration() - GameManager.match_time_remaining
@@ -49,11 +64,19 @@ func _process(_delta: float) -> void:
 
 func _can_run(index: int) -> bool:
 	var spec := specs[index]
-	if spec.max_runs > 0 and _runs[index] >= spec.max_runs:
+	if _runs_out(index):
 		return false
 	return active.filter(func(e): return e.spec == spec).size() < spec.max_active
 
+## No more runs of it this match (big events run once).
+func _runs_out(index: int) -> bool:
+	var spec := specs[index]
+	var most := 1 if spec.size == EventSpec.Size.BIG else spec.max_runs
+	return most > 0 and _runs[index] >= most
+
 func _wait(spec: EventSpec) -> float:
+	if spec.size == EventSpec.Size.BIG:
+		return INF
 	return _rng.randf_range(spec.every_min, maxf(spec.every_min, spec.every_max))
 
 ## Host: tell everyone which event comes next and when (when that changes).
@@ -61,7 +84,7 @@ func _announce_next(now: float) -> void:
 	var best := -1
 	var best_at := INF
 	for i in range(specs.size()):
-		if specs[i].max_runs > 0 and _runs[i] >= specs[i].max_runs:
+		if _runs_out(i):
 			continue
 		if _next_start[i] < best_at:
 			best_at = _next_start[i]

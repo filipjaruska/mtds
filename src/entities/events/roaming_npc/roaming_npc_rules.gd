@@ -1,7 +1,7 @@
 extends RefCounted
-class_name ShadyFellaRules
-## Pure rules for Shady Fella: what he offers and who may trade with him.
-## Nothing here touches nodes or the network.
+class_name RoamingNpcRules
+## Pure rules for a roaming NPC (Shady Fella...): what he offers and who may
+## trade with him. Nothing here touches nodes or the network.
 
 enum State { ROAMING, BUSY, FLEEING, LEAVING }
 

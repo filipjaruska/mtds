@@ -5,8 +5,21 @@ class_name EventSpec
 ## what it is, when it may happen and how it shows in the strip under the
 ## clock. The event itself is a scene whose root extends GameEvent.
 
+enum Size {
+	## Its own timing (When, below), any time in the match: a roaming NPC.
+	SMALL,
+	## A landmark of the match: it starts at one of the big-event marks (about a
+	## third and two thirds of the way in, GameRules) once. A boss, a room game.
+	BIG,
+}
+
 ## The event scene (its root extends GameEvent).
 @export var scene: PackedScene
+## Small: its own timing (When). Big: once, at a third or two thirds of the match.
+@export var size: Size = Size.SMALL:
+	set(value):
+		size = value
+		notify_property_list_changed()
 ## Name in the strip under the clock ("Shady Fella").
 @export var display_name: String = ""
 ## Icon in the strip (optional).
@@ -30,3 +43,8 @@ class_name EventSpec
 ## How long one usually lasts, for the bar in the strip. 0 = until it is over
 ## (the strip shows the event's own status instead, like cards left).
 @export_range(0.0, 600.0, 1.0, "suffix:s") var lasts_seconds: float = 0.0
+
+## Big events are timed by the match (GameRules), so their own timing is hidden.
+func _validate_property(property: Dictionary) -> void:
+	if size == Size.BIG and property.name in ["first_after_min", "first_after_max", "every_min", "every_max", "max_active", "max_runs"]:
+		property.usage = PROPERTY_USAGE_NO_EDITOR

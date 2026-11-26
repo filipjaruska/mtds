@@ -133,8 +133,8 @@ func _run_host() -> void:
 	if fella_event:
 		check(await wait_until(func(): return fella_event.offer.size() == 2, 15.0), "the client took one of his 3 cards")
 		check(await wait_until(func(): return client_pm.hand_ids.size() == 1, 4.0), "the host knows the client holds it: %s" % [client_pm.hand_ids])
-		fella_event.fella.take_hit(10.0, 1)
-		check(fella_event.state == ShadyFellaRules.State.FLEEING, "shot: he runs")
+		fella_event.body.take_hit(10.0, 1)
+		check(fella_event.state == RoamingNpcRules.State.FLEEING, "shot: he runs")
 
 	await seconds(6.0) # let the client finish its checks
 
@@ -158,7 +158,7 @@ func _run_host() -> void:
 		check(client_seat >= 0 and table_event.seated.has(1), "both at the table: %s" % [table_event.seated])
 		var client_hand = _player(client_id).get_node("PowerupManager")
 		if client_seat >= 0:
-			var won: bool = table_event.results[client_seat]
+			var won: bool = table_event.results[client_seat] != table_event.LOSE_ALL
 			check(await wait_until(func(): return client_hand.hand_ids.is_empty() != won, 4.0), "the host knows what the client kept (won=%s, %s)" % [won, client_hand.hand_ids])
 		check(await wait_until(func(): return not is_instance_valid(table_event), 10.0), "the blackjack event ended")
 		check(await wait_until(func(): return not area.has_point(_player(client_id).global_position), 3.0), "the client went back out")
@@ -172,7 +172,7 @@ func _run_host() -> void:
 	await seconds(2.0)
 	if tut:
 		tut.body.take_hit(10000.0, 1)
-		check(tut.state == TutankhamunRules.State.DEAD, "the host killed him")
+		check(tut.state == BossRules.State.DEAD, "the host killed him")
 	await seconds(4.0) # let the client finish its checks
 	finish()
 
@@ -242,7 +242,7 @@ func _run_client() -> void:
 	check(await wait_until(func(): return director.has_node("Event_1"), 15.0), "client sees Shady Fella")
 	var fella_event = director.get_node_or_null("Event_1")
 	if fella_event:
-		var fella: Node2D = fella_event.fella
+		var fella: Node2D = fella_event.body
 		check(await wait_until(func(): return fella_event.offer.size() == 3 and fella.position != Vector2.ZERO, 3.0), "his place and cards reached the client")
 		me.global_position = fella.global_position + Vector2(60, 0)
 		await seconds(0.5) # the host sees me arrive
@@ -253,7 +253,7 @@ func _run_client() -> void:
 		fella_event.request_pick.rpc_id(1, 0)
 		check(await wait_until(func(): return my_pm.inventory[0].def == first, 3.0), "client got %s: %s" % [first, my_pm.inventory])
 		check(await wait_until(func(): return not input_manager.choosing_card, 3.0), "the trade closed")
-		check(await wait_until(func(): return fella_event.state == ShadyFellaRules.State.FLEEING, 8.0), "client sees him run when shot")
+		check(await wait_until(func(): return fella_event.state == RoamingNpcRules.State.FLEEING, 8.0), "client sees him run when shot")
 		check(_map().get_children().any(func(c): return String(c.name).begins_with("DroppedCard_")), "client sees the card he dropped")
 		check(await wait_until(func(): return not is_instance_valid(fella_event), 6.0), "client sees him go")
 
@@ -278,7 +278,7 @@ func _run_client() -> void:
 		check(await wait_until(func(): return hand.get_used_inventory_slots() > 0, 3.0), "client was given a stake")
 		check(await wait_until(func(): return table_event.phase == table_event.Phase.RESULT, 25.0), "client sees the result")
 		if seat_index >= 0:
-			var won: bool = table_event.results[seat_index]
+			var won: bool = table_event.results[seat_index] != table_event.LOSE_ALL
 			check(await wait_until(func(): return (hand.get_used_inventory_slots() > 0) == won, 3.0), "client kept its cards only if it won (won=%s)" % won)
 		var table = table_event.table
 		check(await wait_until(func(): return not is_instance_valid(table_event), 10.0), "client sees the event end")
@@ -291,6 +291,6 @@ func _run_client() -> void:
 	check(await wait_until(func(): return director.has_node("Event_2"), 10.0), "client sees Tutankhamun wake")
 	var tut = director.get_node_or_null("Event_2")
 	if tut:
-		check(await wait_until(func(): return tut.body.visible and tut.sarcophagus.opened, 3.0), "client sees him step out of his sarcophagus")
+		check(await wait_until(func(): return tut.body.visible and tut.home.opened, 3.0), "client sees him step out of his sarcophagus")
 		check(await wait_until(func(): return _map().get_children().any(func(c): return String(c.name).begins_with("DroppedWeapon_") and c.weapon_def.id == &"pharaoh_staff"), 8.0), "client sees the staff he dropped")
 	finish()
