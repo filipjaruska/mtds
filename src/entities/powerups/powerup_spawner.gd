@@ -10,6 +10,9 @@ class_name PowerupSpawner
 @export var spawn_frequency: float = 15.0
 ## No new cards while this many are lying in the area.
 @export var max_powerups: int = 5
+## Off: no cards until something switches it on (set_enabled), like the card
+## area of the blackjack room, which starts once the game there is over.
+@export var enabled: bool = true
 @export_group("Spawn Area")
 ## Off: every card appears exactly at this node.
 @export var use_spawn_area: bool = true:
@@ -20,6 +23,8 @@ class_name PowerupSpawner
 	set(value):
 		spawn_area_size = value
 		queue_redraw()
+
+const FIRST_CARD_SECONDS := 2.0
 
 var spawn_timer: Timer
 var current_powerups: int = 0
@@ -34,8 +39,14 @@ func _ready() -> void:
 		spawn_timer.timeout.connect(_spawn_powerup)
 		spawn_timer.start(spawn_frequency)
 
+## Switches it on or off. Switched on, the first card comes after a moment.
+func set_enabled(on: bool) -> void:
+	enabled = on
+	if on and multiplayer.is_server() and is_inside_tree():
+		get_tree().create_timer(FIRST_CARD_SECONDS).timeout.connect(_spawn_powerup)
+
 func _spawn_powerup() -> void:
-	if current_powerups >= max_powerups:
+	if not enabled or current_powerups >= max_powerups or not is_inside_tree():
 		return
 	var def_id: StringName = powerup_def.id if powerup_def else PowerupDefs.random_id()
 	spawn_counter += 1

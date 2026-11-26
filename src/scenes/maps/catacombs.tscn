@@ -16,6 +16,9 @@
 [ext_resource type="Script" path="res://src/scenes/layout/room_link.gd" id="17_46fcp"]
 [ext_resource type="Script" path="res://src/scenes/spawn_point.gd" id="spawn_point"]
 [ext_resource type="Resource" path="res://src/entities/npcs/shady_fella/shady_fella_spec.tres" id="shady_fella"]
+[ext_resource type="PackedScene" path="res://src/entities/blackjack/blackjack_table.tscn" id="bj_table"]
+[ext_resource type="Resource" path="res://src/entities/blackjack/blackjack_spec.tres" id="bj_spec"]
+[ext_resource type="Script" path="res://src/scenes/layout/room_spot.gd" id="bj_spot"]
 
 [sub_resource type="Resource" id="Resource_xbxl2"]
 script = ExtResource("3_vg5cl")
@@ -25,7 +28,7 @@ tile_set = ExtResource("3_e3lsi")
 script = ExtResource("1_ed704")
 playerScene = ExtResource("2_kb018")
 layout_rules = SubResource("Resource_xbxl2")
-events = Array[Resource]([ExtResource("shady_fella")])
+events = Array[Resource]([ExtResource("shady_fella"), ExtResource("bj_spec")])
 
 [node name="Rooms" type="Node2D" parent="." unique_id=351502302]
 
@@ -55,7 +58,7 @@ position = Vector2(352, 608)
 script = ExtResource("7_kveh1")
 
 [node name="Chapel" type="Node2D" parent="Rooms" unique_id=1407415250]
-position = Vector2(2560, 64)
+position = Vector2(3712, 64)
 script = ExtResource("5_m6e2a")
 
 [node name="Floor" type="TileMapLayer" parent="Rooms/Chapel" unique_id=2124634038]
@@ -172,7 +175,7 @@ position = Vector2(288, 928)
 script = ExtResource("7_kveh1")
 
 [node name="Cistern" type="Node2D" parent="Rooms" unique_id=816276431]
-position = Vector2(2496, 1152)
+position = Vector2(3648, 1152)
 script = ExtResource("5_m6e2a")
 
 [node name="Floor" type="TileMapLayer" parent="Rooms/Cistern" unique_id=1285172700]
@@ -258,7 +261,7 @@ script = ExtResource("7_kveh1")
 facing = 1
 
 [node name="Charnel" type="Node2D" parent="Rooms" unique_id=243523400]
-position = Vector2(2880, 1920)
+position = Vector2(4032, 1920)
 script = ExtResource("5_m6e2a")
 swap_group = &"corner"
 
@@ -284,7 +287,7 @@ script = ExtResource("7_kveh1")
 facing = 0
 
 [node name="Catacomb" type="Node2D" parent="Rooms" unique_id=717542473]
-position = Vector2(2176, 2048)
+position = Vector2(3328, 2048)
 script = ExtResource("5_m6e2a")
 swap_group = &"side"
 
@@ -309,6 +312,57 @@ position = Vector2(544, 416)
 script = ExtResource("7_kveh1")
 facing = 1
 
+[node name="BlackjackRoom" type="Node2D" parent="Rooms" unique_id=1710709700]
+position = Vector2(2624, 960)
+script = ExtResource("5_m6e2a")
+swap_group = &"table"
+gated = true
+gate = &"blackjack"
+
+[node name="Floor" type="TileMapLayer" parent="Rooms/BlackjackRoom" unique_id=2110384264]
+z_index = -10
+tile_map_data = PackedByteArray("AAAFAAAAAAAAAAAAAAAGAAAAAAAAAAAAAAAHAAAAAAAAAAAAAAABAAEAAAAAAAAAAAACAAEAAAAAAAAAAAADAAEAAAAAAAAAAAAEAAEAAAAAAAAAAAAFAAEAAAAAAAAAAAAGAAEAAAAAAAAAAAAHAAEAAAAAAAAAAAAIAAEAAAAAAAAAAAAJAAEAAAAAAAAAAAAKAAEAAAAAAAAAAAABAAIAAAAAAAAAAAACAAIAAAAAAAAAAAADAAIAAAAAAAAAAAAEAAIAAAAAAAAAAAAFAAIAAAAAAAAAAAAGAAIAAAAAAAAAAAAHAAIAAAAAAAAAAAAIAAIAAAAAAAAAAAAJAAIAAAAAAAAAAAAKAAIAAAAAAAAAAAABAAMAAAAAAAAAAAACAAMAAAAAAAAAAAADAAMAAAAAAAAAAAAEAAMAAAAAAAAAAAAFAAMAAAAAAAAAAAAGAAMAAAAAAAAAAAAHAAMAAAAAAAAAAAAIAAMAAAAAAAAAAAAJAAMAAAAAAAAAAAAKAAMAAAAAAAAAAAAAAAQAAAAAAAAAAAABAAQAAAAAAAAAAAACAAQAAAAAAAAAAAADAAQAAAAAAAAAAAAEAAQAAAAAAAAAAAAFAAQAAAAAAAAAAAAGAAQAAAAAAAAAAAAHAAQAAAAAAAAAAAAIAAQAAAAAAAAAAAAJAAQAAAAAAAAAAAAKAAQAAAAAAAAAAAALAAQAAAAAAAAAAAAAAAUAAAAAAAAAAAABAAUAAAAAAAAAAAACAAUAAAAAAAAAAAADAAUAAAAAAAAAAAAEAAUAAAAAAAAAAAAFAAUAAAAAAAAAAAAGAAUAAAAAAAAAAAAHAAUAAAAAAAAAAAAIAAUAAAAAAAAAAAAJAAUAAAAAAAAAAAAKAAUAAAAAAAAAAAALAAUAAAAAAAAAAAAAAAYAAAAAAAAAAAABAAYAAAAAAAAAAAACAAYAAAAAAAAAAAADAAYAAAAAAAAAAAAEAAYAAAAAAAAAAAAFAAYAAAAAAAAAAAAGAAYAAAAAAAAAAAAHAAYAAAAAAAAAAAAIAAYAAAAAAAAAAAAJAAYAAAAAAAAAAAAKAAYAAAAAAAAAAAALAAYAAAAAAAAAAAABAAcAAAAAAAAAAAACAAcAAAAAAAAAAAADAAcAAAAAAAAAAAAEAAcAAAAAAAAAAAAFAAcAAAAAAAAAAAAGAAcAAAAAAAAAAAAHAAcAAAAAAAAAAAAIAAcAAAAAAAAAAAAJAAcAAAAAAAAAAAAKAAcAAAAAAAAAAAABAAgAAAAAAAAAAAACAAgAAAAAAAAAAAADAAgAAAAAAAAAAAAEAAgAAAAAAAAAAAAFAAgAAAAAAAAAAAAGAAgAAAAAAAAAAAAHAAgAAAAAAAAAAAAIAAgAAAAAAAAAAAAJAAgAAAAAAAAAAAAKAAgAAAAAAAAAAAABAAkAAAAAAAAAAAACAAkAAAAAAAAAAAADAAkAAAAAAAAAAAAEAAkAAAAAAAAAAAAFAAkAAAAAAAAAAAAGAAkAAAAAAAAAAAAHAAkAAAAAAAAAAAAIAAkAAAAAAAAAAAAJAAkAAAAAAAAAAAAKAAkAAAAAAAAAAAAFAAoAAAAAAAAAAAAGAAoAAAAAAAAAAAAHAAoAAAAAAAAAAAA=")
+tile_set = ExtResource("3_e3lsi")
+
+[node name="Walls" type="TileMapLayer" parent="Rooms/BlackjackRoom" unique_id=1287231547]
+tile_map_data = PackedByteArray("AAAAAAAAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAgAAAAAAAAADAAAAAgAAAAAAAAAEAAAAAgAAAAAAAAAIAAAAAgAAAAAAAAAJAAAAAgAAAAAAAAAKAAAAAgAAAAAAAAALAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAALAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAALAAIAAgAAAAAAAAAAAAMAAgAAAAAAAAALAAMAAgAAAAAAAAAAAAcAAgAAAAAAAAALAAcAAgAAAAAAAAAAAAgAAgAAAAAAAAALAAgAAgAAAAAAAAAAAAkAAgAAAAAAAAALAAkAAgAAAAAAAAAAAAoAAgAAAAAAAAABAAoAAgAAAAAAAAACAAoAAgAAAAAAAAADAAoAAgAAAAAAAAAEAAoAAgAAAAAAAAAIAAoAAgAAAAAAAAAJAAoAAgAAAAAAAAAKAAoAAgAAAAAAAAALAAoAAgAAAAAAAAA=")
+tile_set = ExtResource("3_e3lsi")
+
+[node name="Doors" type="Node2D" parent="Rooms/BlackjackRoom" unique_id=1308049626]
+
+[node name="North" type="Marker2D" parent="Rooms/BlackjackRoom/Doors" unique_id=1057872905]
+position = Vector2(416, 32)
+script = ExtResource("7_kveh1")
+facing = 0
+
+[node name="East" type="Marker2D" parent="Rooms/BlackjackRoom/Doors" unique_id=194320954]
+position = Vector2(736, 352)
+script = ExtResource("7_kveh1")
+facing = 1
+
+[node name="South" type="Marker2D" parent="Rooms/BlackjackRoom/Doors" unique_id=1869909741]
+position = Vector2(416, 672)
+script = ExtResource("7_kveh1")
+facing = 2
+
+[node name="West" type="Marker2D" parent="Rooms/BlackjackRoom/Doors" unique_id=2047507086]
+position = Vector2(32, 352)
+script = ExtResource("7_kveh1")
+facing = 3
+
+[node name="BlackjackTable" parent="Rooms/BlackjackRoom" unique_id=2057587151 instance=ExtResource("bj_table")]
+position = Vector2(384, 330)
+
+[node name="BlackjackSpot1" type="Marker2D" parent="Rooms" unique_id=314889485]
+position = Vector2(3040, 352)
+script = ExtResource("bj_spot")
+group = &"table"
+
+[node name="BlackjackSpot2" type="Marker2D" parent="Rooms" unique_id=2021080276]
+position = Vector2(2720, 2336)
+script = ExtResource("bj_spot")
+group = &"table"
+
 [node name="SpawnLocations" type="Node2D" parent="." unique_id=550940006]
 
 [node name="0" type="Marker2D" parent="SpawnLocations" unique_id=1794089317 groups=["PlayerSpawnLocation"]]
@@ -316,11 +370,11 @@ position = Vector2(288, 480)
 script = ExtResource("spawn_point")
 
 [node name="1" type="Marker2D" parent="SpawnLocations" unique_id=1762638050 groups=["PlayerSpawnLocation"]]
-position = Vector2(3616, 2592)
+position = Vector2(4768, 2592)
 script = ExtResource("spawn_point")
 
 [node name="2" type="Marker2D" parent="SpawnLocations" unique_id=905461275 groups=["PlayerSpawnLocation"]]
-position = Vector2(3616, 224)
+position = Vector2(4768, 224)
 script = ExtResource("spawn_point")
 
 [node name="3" type="Marker2D" parent="SpawnLocations" unique_id=944559915 groups=["PlayerSpawnLocation"]]
@@ -332,7 +386,7 @@ position = Vector2(224, 992)
 script = ExtResource("spawn_point")
 
 [node name="5" type="Marker2D" parent="SpawnLocations" unique_id=95446959 groups=["PlayerSpawnLocation"]]
-position = Vector2(2656, 1632)
+position = Vector2(3808, 1632)
 script = ExtResource("spawn_point")
 
 [node name="6" type="Marker2D" parent="SpawnLocations" unique_id=2032038599 groups=["PlayerSpawnLocation"]]
@@ -340,13 +394,13 @@ position = Vector2(1184, 288)
 script = ExtResource("spawn_point")
 
 [node name="7" type="Marker2D" parent="SpawnLocations" unique_id=1504307692 groups=["PlayerSpawnLocation"]]
-position = Vector2(2592, 2208)
+position = Vector2(3744, 2208)
 script = ExtResource("spawn_point")
 
 [node name="WeaponDrops" type="Node2D" parent="." unique_id=134795936]
 
 [node name="M1903Chapel" parent="WeaponDrops" unique_id=1949902645 instance=ExtResource("7_y8o3a")]
-position = Vector2(2848, 544)
+position = Vector2(4000, 544)
 weapon_def = ExtResource("10_m1903")
 respawn_time = 30.0
 
@@ -359,7 +413,7 @@ position = Vector2(544, 1632)
 weapon_def = ExtResource("8_ke45c")
 
 [node name="M4Cistern" parent="WeaponDrops" unique_id=789123446 instance=ExtResource("7_y8o3a")]
-position = Vector2(3040, 1632)
+position = Vector2(4192, 1632)
 weapon_def = ExtResource("9_m4")
 
 [node name="KatanaTomb" parent="WeaponDrops" unique_id=1434809452 instance=ExtResource("7_y8o3a")]
@@ -372,13 +426,13 @@ position = Vector2(1632, 2272)
 weapon_def = ExtResource("8_ke45c")
 
 [node name="MP5Catacomb" parent="WeaponDrops" unique_id=1507574479 instance=ExtResource("7_y8o3a")]
-position = Vector2(2336, 2272)
+position = Vector2(3488, 2272)
 weapon_def = ExtResource("11_mp5")
 
 [node name="CardDrops" type="Node2D" parent="." unique_id=1360647334]
 
 [node name="CardsChapelApse" parent="CardDrops" unique_id=1753930314 instance=ExtResource("9_vg5cl")]
-position = Vector2(3328, 736)
+position = Vector2(4480, 736)
 spawn_frequency = 20.0
 max_powerups = 1
 spawn_area_size = Vector2(256, 192)
@@ -390,10 +444,17 @@ max_powerups = 2
 spawn_area_size = Vector2(384, 256)
 
 [node name="CardsCatacomb" parent="CardDrops" unique_id=773542431 instance=ExtResource("9_vg5cl")]
-position = Vector2(2432, 2528)
+position = Vector2(3584, 2528)
 spawn_frequency = 20.0
 max_powerups = 1
 spawn_area_size = Vector2(256, 192)
+
+[node name="CardsBlackjack" parent="CardDrops" unique_id=1834180320 instance=ExtResource("9_vg5cl")]
+position = Vector2(3008, 1312)
+spawn_frequency = 30.0
+max_powerups = 1
+spawn_area_size = Vector2(320, 192)
+enabled = false
 
 [node name="Links" type="Node2D" parent="." unique_id=1391083009]
 
@@ -466,3 +527,29 @@ script = ExtResource("17_46fcp")
 from = NodePath("../../Rooms/Cistern")
 to = NodePath("../../Rooms/Charnel")
 chance = 0.6
+
+[node name="GreatHall_Blackjack" type="Node2D" parent="Links" unique_id=1872455502]
+script = ExtResource("17_46fcp")
+from = NodePath("../../Rooms/GreatHall")
+to = NodePath("../../Rooms/BlackjackRoom")
+
+[node name="Cistern_Blackjack" type="Node2D" parent="Links" unique_id=1143411873]
+script = ExtResource("17_46fcp")
+from = NodePath("../../Rooms/Cistern")
+to = NodePath("../../Rooms/BlackjackRoom")
+
+[node name="Gallery_Blackjack" type="Node2D" parent="Links" unique_id=1036465819]
+script = ExtResource("17_46fcp")
+from = NodePath("../../Rooms/Gallery")
+to = NodePath("../../Rooms/BlackjackRoom")
+chance = 0.6
+
+[node name="Vault_Blackjack" type="Node2D" parent="Links" unique_id=774579218]
+script = ExtResource("17_46fcp")
+from = NodePath("../../Rooms/Vault")
+to = NodePath("../../Rooms/BlackjackRoom")
+
+[node name="Catacomb_Blackjack" type="Node2D" parent="Links" unique_id=806571549]
+script = ExtResource("17_46fcp")
+from = NodePath("../../Rooms/Catacomb")
+to = NodePath("../../Rooms/BlackjackRoom")

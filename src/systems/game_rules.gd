@@ -84,3 +84,17 @@ class_name GameRules
 @export_range(0.5, 15.0, 0.5, "suffix:s") var shady_flee_seconds: float = 3.0
 ## How long he stays when nobody shoots him or takes his last card.
 @export_range(10.0, 600.0, 5.0, "suffix:s") var shady_stay_seconds: float = 90.0
+
+@export_group("Blackjack")
+## How long the blackjack room stays open before its doors shut and the game starts.
+@export_range(5.0, 120.0, 1.0, "suffix:s") var blackjack_open_seconds: float = 30.0
+## Time between two cards being dealt or turned over at the table.
+@export_range(0.1, 2.0, 0.05, "suffix:s") var blackjack_deal_step_seconds: float = 0.6
+## How long the result shows before the players are sent back out.
+@export_range(1.0, 15.0, 0.5, "suffix:s") var blackjack_result_seconds: float = 4.0
+## Cards given to a player at the table who holds none: their stake.
+@export_range(1, 4) var blackjack_starting_cards: int = 2
+## Players draw while their total is under this. 0: they keep their first two cards.
+@export_range(0, 21) var blackjack_player_stand_on: int = 17
+## The dealer draws while under this.
+@export_range(2, 21) var blackjack_dealer_stand_on: int = 17

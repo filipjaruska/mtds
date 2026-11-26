@@ -84,6 +84,9 @@ func _run() -> void:
 	await _powerups(map, player, holder)
 	await _event_blocks(map, player, holder)
 	await _shady_fella(map, player)
+	map.free()
+	await frames(2)
+	await _blackjack(game_manager)
 
 	print("SMOKE: %d failures" % _failures.size())
 	quit(1 if not _failures.is_empty() else 0)
@@ -239,3 +242,52 @@ func _shady_fella(map: Node, player: Node2D) -> void:
 	check(dropped_after == dropped_before + 1, "one of his cards dropped")
 	check(await wait_until(func(): return not is_instance_valid(event), 6.0), "and he is gone")
 	check(director.active.is_empty(), "no event running")
+
+## The blackjack room on its own test map: opens, locks the player in, deals,
+## keeps or takes the cards, sends the player out, and stays open afterwards.
+func _blackjack(game_manager) -> void:
+	game_manager.map_seed = 3
+	var map: Node = load("res://tests/maps/blackjack_test.tscn").instantiate()
+	root.add_child(map)
+	await frames(5)
+	var player: Node2D = map.get_node("1")
+	var director = map.get_node("Events")
+	var room = map.get_node("Rooms/BlackjackRoom")
+	check(room.is_closed(), "the blackjack room starts closed")
+	check(not room.gates.is_empty(), "with gates in its doorways")
+	director.start_now(0)
+	await frames(3)
+	var event = director.get_node_or_null("Event_1")
+	check(event != null and event.table != null, "the blackjack event found its room and table")
+	if event == null or event.table == null:
+		return
+	check(not room.is_closed(), "the doors open")
+	var area: Rect2 = event.room_area()
+	player.global_position = area.get_center() + Vector2(0, 220)
+	var pm = player.get_node("PowerupManager")
+	check(pm.get_used_inventory_slots() == 0, "the player comes with no cards")
+	check(not map.get_node("CardDrops/CardsBlackjack").enabled, "no cards in the room before the game")
+	await frames(4)
+	check(PeaceZone.covers(player), "no fighting in the room")
+	event.lock_now()
+	check(await wait_until(func(): return event.phase == event.Phase.PLAYING, 2.0), "the doors shut and the game starts")
+	check(room.is_closed(), "locked in")
+	check(event.seated == ([1] as Array[int]), "the player sits at the table: %s" % [event.seated])
+	await frames(3)
+	var seat: Vector2 = event.table.seats()[event.seats[0]].global_position
+	check(player.global_position.distance_to(seat) < 2.0, "moved to the seat")
+	check(pm.get_used_inventory_slots() > 0, "given a stake: %s" % [pm.inventory])
+	check(await wait_until(func(): return event.phase == event.Phase.RESULT, 20.0), "the result is in")
+	await frames(3)
+	var won: bool = event.results[0]
+	check((pm.get_used_inventory_slots() > 0) == won, "won keeps the cards, lost loses them (won=%s, hand %s)" % [won, pm.inventory])
+	var table = event.table
+	check(await wait_until(func(): return not is_instance_valid(event), 10.0), "the event ends")
+	await frames(3)
+	check(not area.has_point(player.global_position), "sent back out: %s" % player.global_position)
+	check(not is_instance_valid(table), "the table is gone")
+	check(not room.is_closed() and room.gates.all(func(g): return g.is_open()), "the room stays open")
+	var cards = map.get_node("CardDrops")
+	check(await wait_until(func(): return cards.get_children().any(func(c): return String(c.name).begins_with("Powerup_CardsBlackjack_")), 4.0), "a card turns up in the room afterwards")
+	check(not director._can_run(0), "once per match")
+	map.free()

@@ -7,11 +7,13 @@ extends SceneTree
 const PORT := 18734
 const MAP_PATH := "res://tests/maps/test_arena.tscn"
 const MAP_NAME := "TestArena"
+const BLACKJACK_MAP := "res://tests/maps/blackjack_test.tscn"
 
 var _failures: Array[String] = []
 var _started := false
 var _role := "host"
 var _chat_log: Array = [] # [peer id, text] as received
+var _map_name := MAP_NAME
 
 func _process(_delta: float) -> bool:
 	if not _started:
@@ -47,7 +49,7 @@ func finish() -> void:
 	quit(1 if not _failures.is_empty() else 0)
 
 func _map() -> Node:
-	return root.get_node_or_null(MAP_NAME)
+	return root.get_node_or_null(_map_name)
 
 func _player(id: int) -> Node:
 	var map := _map()
@@ -135,6 +137,32 @@ func _run_host() -> void:
 		check(fella_event.state == ShadyFellaRules.State.FLEEING, "shot: he runs")
 
 	await seconds(6.0) # let the client finish its checks
+
+	# Blackjack: a new match on a map with the room. Both players go in, the
+	# host shuts the doors, the cards are dealt (see _run_client).
+	lobby.start_game.rpc(BLACKJACK_MAP, 3)
+	_map_name = "BlackjackTest"
+	check(await wait_until(func(): return _player(1) != null and _player(client_id) != null, 5.0), "blackjack map started")
+	await seconds(1.0)
+	director = _map().get_node("Events")
+	director.start_now(0)
+	check(await wait_until(func(): return director.has_node("Event_1"), 2.0), "blackjack started on the host")
+	var table_event = director.get_node_or_null("Event_1")
+	if table_event:
+		var area: Rect2 = table_event.room_area()
+		_player(1).global_position = area.get_center() + Vector2(-100, 220)
+		check(await wait_until(func(): return table_event.players_inside().size() == 2, 10.0), "both players in the room: %s" % [table_event.players_inside()])
+		table_event.lock_now()
+		check(await wait_until(func(): return table_event.phase == table_event.Phase.RESULT, 25.0), "the game was played")
+		var client_seat: int = table_event.seated.find(client_id)
+		check(client_seat >= 0 and table_event.seated.has(1), "both at the table: %s" % [table_event.seated])
+		var client_hand = _player(client_id).get_node("PowerupManager")
+		if client_seat >= 0:
+			var won: bool = table_event.results[client_seat]
+			check(await wait_until(func(): return client_hand.hand_ids.is_empty() != won, 4.0), "the host knows what the client kept (won=%s, %s)" % [won, client_hand.hand_ids])
+		check(await wait_until(func(): return not is_instance_valid(table_event), 10.0), "the blackjack event ended")
+		check(await wait_until(func(): return not area.has_point(_player(client_id).global_position), 3.0), "the client went back out")
+	await seconds(4.0) # let the client finish its checks
 	finish()
 
 func _run_client() -> void:
@@ -217,4 +245,33 @@ func _run_client() -> void:
 		check(await wait_until(func(): return fella_event.state == ShadyFellaRules.State.FLEEING, 8.0), "client sees him run when shot")
 		check(_map().get_children().any(func(c): return String(c.name).begins_with("DroppedCard_")), "client sees the card he dropped")
 		check(await wait_until(func(): return not is_instance_valid(fella_event), 6.0), "client sees him go")
+
+	# Blackjack on the next map (see _run_host): walk in, play, get sent out.
+	_map_name = "BlackjackTest"
+	check(await wait_until(func(): return _player(my_id) != null and _map().has_node("Events/Event_1"), 20.0), "client sees the blackjack room open")
+	var table_event = _map().get_node_or_null("Events/Event_1")
+	if table_event:
+		me = _player(my_id)
+		var room = _map().get_node("Rooms/BlackjackRoom")
+		check(await wait_until(func(): return not room.is_closed(), 3.0), "the doors open on the client")
+		var area: Rect2 = table_event.room_area()
+		me.global_position = area.get_center() + Vector2(100, 220)
+		check(await wait_until(func(): return table_event.phase == table_event.Phase.PLAYING, 15.0), "client sees the game start")
+		check(room.is_closed(), "locked in on the client")
+		check(table_event.seated.has(my_id), "client sits at the table")
+		var seat_index: int = table_event.seated.find(my_id)
+		if seat_index >= 0:
+			var seat: Vector2 = table_event.table.seats()[table_event.seats[seat_index]].global_position
+			check(await wait_until(func(): return me.global_position.distance_to(seat) < 2.0, 3.0), "client moved to its seat")
+		var hand = me.get_node("PowerupManager")
+		check(await wait_until(func(): return hand.get_used_inventory_slots() > 0, 3.0), "client was given a stake")
+		check(await wait_until(func(): return table_event.phase == table_event.Phase.RESULT, 25.0), "client sees the result")
+		if seat_index >= 0:
+			var won: bool = table_event.results[seat_index]
+			check(await wait_until(func(): return (hand.get_used_inventory_slots() > 0) == won, 3.0), "client kept its cards only if it won (won=%s)" % won)
+		var table = table_event.table
+		check(await wait_until(func(): return not is_instance_valid(table_event), 10.0), "client sees the event end")
+		check(not area.has_point(me.global_position), "client sent back out: %s" % me.global_position)
+		check(not is_instance_valid(table), "client sees the table gone")
+		check(not room.is_closed(), "the room stays open on the client")
 	finish()

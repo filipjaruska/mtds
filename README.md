@@ -115,6 +115,18 @@ comes, how often after that, chance, how many at once and per match).
   cards. Walk up and press interact to pick one (each player gets one; the
   next player picks from what is left). Shoot him and one of his cards drops
   while he runs off. Tuning: the Shady Fella group in `src/game_rules.tres`.
+- **Blackjack** (`src/entities/blackjack/`), once per match: the blackjack
+  room's doors open for 30 seconds and nobody can fight inside. Whoever is in
+  when they shut sits at the table; anyone without cards is given two. The
+  game deals itself: players draw to 17, then the dealer does. Beat the dealer
+  and you keep your cards, otherwise you lose them (ties lose). Then everyone
+  is sent back out to spawn points, and the room stays open without its table.
+  A map gets it with a semi-permanent room whose gate is `blackjack`, a
+  `blackjack_table.tscn` in it, and `blackjack_spec.tres` in its Events. A
+  card area (PowerupSpawner) in the room with Enabled off starts once the game
+  is over: something to come back for. In the catacombs the room has a swap
+  group of its own and three places down the middle of the map.
+  Tuning: the Blackjack group in `src/game_rules.tres`.
 
 Debug builds: F9 on the host starts the next event right away.
 

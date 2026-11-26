@@ -168,6 +168,19 @@ func apply_knockback(impulse: Vector2) -> void:
 		return
 	_knockback = impulse
 
+## Host -> owner: moved somewhere by an event (a seat at the blackjack table,
+## back out to a spawn point). The owner moves its own player; its synchronizer
+## tells everyone.
+@rpc("any_peer", "call_local", "reliable")
+func teleport(to: Vector2) -> void:
+	if multiplayer.get_remote_sender_id() != 1 or not player_root.is_multiplayer_authority():
+		return
+	player_root.global_position = to
+	player_root.velocity = Vector2.ZERO
+	_knockback = Vector2.ZERO
+	if current_state == PlayerState.DASHING:
+		_change_state(PlayerState.NORMAL)
+
 func _on_dash_timer_timeout():
 	_change_state(PlayerState.NORMAL)
 
