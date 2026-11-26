@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="PowerupDef" format=3]
+
+[ext_resource type="Script" path="res://src/entities/powerups/powerup_def.gd" id="1_def"]
+[ext_resource type="Texture2D" path="res://src/assets/cards/swift_feet (tmp).svg" id="2_card"]
+[ext_resource type="Script" path="res://src/entities/powerups/card_modifiers.gd" id="3_mods"]
+
+[sub_resource type="Resource" id="Resource_mods"]
+script = ExtResource("3_mods")
+move_speed_mult = 0.15
+
+[resource]
+script = ExtResource("1_def")
+id = &"swift_feet"
+display_name = "Swift Feet"
+card_texture = ExtResource("2_card")
+description = "Walk 15% faster."
+rarity_color = Color(0.18, 0.82, 0.91, 1)
+duration = 30.0
+max_uses = 0
+uses_per_stack = 0
+consume_use_on_fire = false
+max_stack_count = 4
+stack_multiplier = 2.0
+stack_bonus_per_card = 0.05
+modifiers = SubResource("Resource_mods")

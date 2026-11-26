@@ -83,7 +83,7 @@ and rooms in a swap group may trade places, so no two matches look the same.
    overlap another are skipped.
 7. **Semi-permanent rooms** (closed until an event opens them): tick Gated
    and give the gate a name. Their doorways get gates; nobody spawns inside.
-8. The katana lies in exactly one place per map (weapons marked One Location).
+8. Weapons marked One Location (the katana) may lie in one place per map at most.
 
 **Corridors:** Layout Rules set their width (a link can set its own; a
 doorway can be wider than its corridor, the rest is walled up), how much they
@@ -127,6 +127,16 @@ comes, how often after that, chance, how many at once and per match).
   is over: something to come back for. In the catacombs the room has a swap
   group of its own and three places down the middle of the map.
   Tuning: the Blackjack group in `src/game_rules.tres`.
+- **Tutankhamun** (`src/entities/npcs/tutankhamun/`), once per match: his
+  tomb is a normal room with a sarcophagus in it until he wakes. Then he is
+  held in his tomb for a minute, shooting anyone he sees; if he is still
+  standing after that he roams the map and hunts players. His fireballs ignore
+  armor and set players burning for 3 seconds, so their health does not come
+  back. Killed, he drops his staff, the Pharaoh's Staff (fireballs that cost
+  the shooter 4 health each instead of ammo), and a Swift Feet card. A map gets
+  him with `tutankhamun_sarcophagus.tscn` in a room and `tutankhamun_spec.tres`
+  in its Events. Tuning: the Tutankhamun group in `src/game_rules.tres`; the
+  staff in `src/entities/weapons/defs/pharaoh_staff.tres`.
 
 Debug builds: F9 on the host starts the next event right away.
 

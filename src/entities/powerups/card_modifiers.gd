@@ -16,11 +16,13 @@ class_name CardModifiers
 @export_range(0.0, 2.0, 0.01) var max_health_mult: float = 0.0
 ## Shorter dash cooldown. 0.25 = 25% shorter (capped at 90% in total).
 @export_range(0.0, 0.9, 0.01) var dash_cooldown_reduction: float = 0.0
+## Faster walking (and crouching). 0.15 = 15% faster.
+@export_range(0.0, 1.0, 0.01) var move_speed_mult: float = 0.0
 
 ## The non-zero values by name, e.g. {"damage_mult": 0.2}.
 func to_dict() -> Dictionary:
 	var out := {}
-	for key in ["damage_mult", "reload_mult", "damage_resist", "max_health_mult", "dash_cooldown_reduction"]:
+	for key in ["damage_mult", "reload_mult", "damage_resist", "max_health_mult", "dash_cooldown_reduction", "move_speed_mult"]:
 		var value: float = get(key)
 		if value != 0.0:
 			out[key] = value

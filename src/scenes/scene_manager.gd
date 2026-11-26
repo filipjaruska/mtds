@@ -128,6 +128,14 @@ func request_weapon_drop(def_id: StringName, pos: Vector2) -> void:
 	_dropped_pickup_count += 1
 	_spawn_weapon_pickup.rpc(def_id, pos, "DroppedWeapon_%d" % _dropped_pickup_count)
 
+## Host: put a weapon on the ground for anyone to pick up (Tutankhamun drops
+## his staff).
+func spawn_weapon_pickup(def_id: StringName, pos: Vector2) -> void:
+	if not multiplayer.is_server() or not WeaponDefs.has(def_id):
+		return
+	_dropped_pickup_count += 1
+	_spawn_weapon_pickup.rpc(def_id, pos, "DroppedWeapon_%d" % _dropped_pickup_count)
+
 ## Host: put a card on the ground for anyone to pick up (Shady Fella drops one
 ## when shot).
 func spawn_card_pickup(def_id: StringName, pos: Vector2) -> void:
@@ -552,8 +560,8 @@ func _in_gated_room(node: Node) -> bool:
 	return room != null and room.gated
 
 ## Problems with this map's layouts, tried with `seeds`, and with weapons marked
-## "one location" (`exactly_once`: maps in the lobby need each exactly once).
-func layout_problems(seeds: Array, exactly_once: bool) -> PackedStringArray:
+## "one location" (at most one spot per map).
+func layout_problems(seeds: Array) -> PackedStringArray:
 	var out := PackedStringArray()
 	var counts := {}
 	for node in find_children("*", "WeaponSpawner", true, false):
@@ -563,8 +571,8 @@ func layout_problems(seeds: Array, exactly_once: bool) -> PackedStringArray:
 		if not def.one_location:
 			continue
 		var n: int = counts.get(def.id, 0)
-		if n > 1 or (exactly_once and n != 1):
-			out.append("%s must be in exactly one place, found %d." % [def.display_name, n])
+		if n > 1:
+			out.append("%s may be in one place only, found %d." % [def.display_name, n])
 	if has_layout():
 		var painted := _painted_rooms()
 		for node in _loose_things():
@@ -598,7 +606,7 @@ func _get_configuration_warnings() -> PackedStringArray:
 		warnings.append("No walls: paint walls with a tile set whose physics layer is on layer 3 \"walls\" (like src/assets/maps/catacombs/tiles.tres), or shots and players pass through.")
 	# Two layouts, like the ones matches will get (the tests try many more);
 	# the editor runs this after every change, so it has to stay quick.
-	warnings.append_array(layout_problems([1, 2], false))
+	warnings.append_array(layout_problems([1, 2]))
 	return warnings
 
 ## Some painted tile is solid on the "walls" physics layer.

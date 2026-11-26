@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/entities/weapons/weapon_view.gd" id="1_view"]
+[ext_resource type="Texture2D" path="res://src/assets/weapons/pharaoh_staff/pharaoh_staff (tmp).svg" id="2_art"]
+
+[node name="PharaohStaff" type="Node2D" node_paths=PackedStringArray("muzzle", "sprite")]
+script = ExtResource("1_view")
+muzzle = NodePath("Sprite2D/Muzzle")
+sprite = NodePath("Sprite2D")
+casing_size = Vector2(0, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(14, 0)
+texture = ExtResource("2_art")
+
+[node name="Muzzle" type="Marker2D" parent="Sprite2D"]
+position = Vector2(30, 0)

@@ -63,9 +63,10 @@ func _predict(item: Dictionary) -> void:
 		return # a blade has no bullet; the swing is drawn by its WeaponView
 	var pierce: int = holder.stats_for(item.def).pierce if holder and WeaponDefs.has(item.def) else 0
 	var speed: float = WeaponDefs.get_def(item.def).bullet_speed if WeaponDefs.has(item.def) else BulletFx.DEFAULT_SPEED
+	var look: PackedScene = WeaponDefs.get_def(item.def).bullet_scene if WeaponDefs.has(item.def) else null
 	for rot in item.rotations:
 		var hit := cast_piercing(space, item.origin, rot, item.range, exclude, pierce)
-		BulletFx.spawn(get_parent(), item.origin, hit.end, hit.impact, speed)
+		BulletFx.spawn(get_parent(), item.origin, hit.end, hit.impact, speed, look)
 
 func _resolve(item: Dictionary) -> void:
 	var shooter_id: int = item.shooter_id
@@ -88,6 +89,10 @@ func _resolve(item: Dictionary) -> void:
 	var origin: Vector2 = item.origin
 	if origin.distance_to(shooter.global_position) > MAX_ORIGIN_DISTANCE:
 		origin = shooter.global_position
+	if def.health_cost > 0.0:
+		if health.current_health <= def.health_cost:
+			return # too weak to pay for the shot
+		health.pay_health(def.health_cost * shot_count)
 	# Damage comes from the host's view of the shooter's modifiers, not the request.
 	var stats := holder.stats_for(def.id)
 	var space := shooter.get_world_2d().direct_space_state
@@ -95,16 +100,23 @@ func _resolve(item: Dictionary) -> void:
 	if stats.melee:
 		_resolve_swing(shooter, shooter_id, def.id, holder.is_dual_wield_active(), item.rotations[0], stats, space, exclude)
 		return
+	_shoot(origin, item.rotations, def, stats, exclude, space, shooter_id)
+
+## Host: the shots' hits land as their bullets arrive; everyone but the shooter
+## (who drew its own) sees the bullets. `shooter_id` 0: no player fired (an NPC).
+func _shoot(origin: Vector2, rotations: PackedFloat32Array, def: WeaponDef, stats: Dictionary,
+		exclude: Array[RID], space: PhysicsDirectSpaceState2D, shooter_id: int) -> void:
 	var ends := PackedVector2Array()
 	var impacts := PackedByteArray()
-	for rot in item.rotations:
+	for rot in rotations:
 		var hit := cast_piercing(space, origin, rot, stats.max_range, exclude, stats.pierce)
 		ends.append(hit.end)
 		impacts.append(hit.impact)
 		for victim in hit.healths:
 			_on_arrival(origin, victim.global_position, def.bullet_speed, func() -> void:
 				if is_instance_valid(victim):
-					victim.apply_damage(stats.damage, stats.armor_penetration, shooter_id))
+					victim.apply_damage(stats.damage, stats.armor_penetration, shooter_id)
+					victim.apply_burn(stats.burn_damage_per_second, stats.burn_seconds, shooter_id))
 		if hit.shield:
 			var shield: RiotShield = hit.shield
 			_on_arrival(origin, hit.end, def.bullet_speed, func() -> void:
@@ -118,9 +130,18 @@ func _resolve(item: Dictionary) -> void:
 
 	for peer in multiplayer.get_peers():
 		if peer != shooter_id:
-			_show_tracers.rpc_id(peer, origin, ends, impacts, def.bullet_speed)
+			_show_tracers.rpc_id(peer, origin, ends, impacts, def.id)
 	if shooter_id != multiplayer.get_unique_id():
-		_spawn_tracers(origin, ends, impacts, def.bullet_speed)
+		_spawn_tracers(origin, ends, impacts, def.id)
+
+## Host: an NPC (Tutankhamun) fires `def_id` from `origin`. `exclude`: what the
+## shots pass through (the NPC's own body).
+func npc_fire(origin: Vector2, rotations: PackedFloat32Array, def_id: StringName, exclude: Array[RID]) -> void:
+	var def := WeaponDefs.get_def(def_id)
+	if not multiplayer.is_server() or def == null:
+		return
+	var space := get_viewport().world_2d.direct_space_state
+	_shoot(origin, rotations, def, WeaponRules.effective_stats(def), exclude, space, 0)
 
 ## Runs `effect` once a bullet from `from` would reach `to`, so damage lands
 ## when the visible bullet does. The thing it hits may be gone by then.
@@ -196,12 +217,15 @@ func _within_budget(shooter_id: int, shot_count: int, now: int) -> bool:
 	return result.allowed
 
 @rpc("authority", "call_remote", "unreliable")
-func _show_tracers(origin: Vector2, ends: PackedVector2Array, impacts: PackedByteArray, speed: float) -> void:
-	_spawn_tracers(origin, ends, impacts, speed)
+func _show_tracers(origin: Vector2, ends: PackedVector2Array, impacts: PackedByteArray, def_id: StringName) -> void:
+	_spawn_tracers(origin, ends, impacts, def_id)
 
-func _spawn_tracers(origin: Vector2, ends: PackedVector2Array, impacts: PackedByteArray, speed: float) -> void:
+func _spawn_tracers(origin: Vector2, ends: PackedVector2Array, impacts: PackedByteArray, def_id: StringName) -> void:
+	var def := WeaponDefs.get_def(def_id)
+	var speed := def.bullet_speed if def else BulletFx.DEFAULT_SPEED
+	var look: PackedScene = def.bullet_scene if def else null
 	for i in range(ends.size()):
-		BulletFx.spawn(get_parent(), origin, ends[i], impacts[i] if i < impacts.size() else BulletFx.Impact.NONE, speed)
+		BulletFx.spawn(get_parent(), origin, ends[i], impacts[i] if i < impacts.size() else BulletFx.Impact.NONE, speed, look)
 
 ## Returns {end: Vector2, health: HealthComponent or null, shield: RiotShield or null}.
 static func cast_shot(space: PhysicsDirectSpaceState2D, origin: Vector2, rotation: float, max_range: float, exclude: Array[RID]) -> Dictionary:

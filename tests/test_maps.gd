@@ -34,7 +34,7 @@ func test_maps_are_complete() -> void:
 func test_maps_work_for_many_layouts() -> void:
 	for path in _maps():
 		var map: GameMap = load(path).instantiate()
-		var problems := map.layout_problems(range(1, SEEDS + 1), true)
+		var problems := map.layout_problems(range(1, SEEDS + 1))
 		check(problems.is_empty(), "%s: %s" % [path.get_file(), " / ".join(problems)])
 		map.free()
 

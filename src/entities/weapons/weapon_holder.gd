@@ -94,6 +94,8 @@ func _handle_fire_input(now: int) -> void:
 		return
 	# No shooting in a no-fighting zone; reloading is fine.
 	if InputManager.is_shoot_pressed() and not PeaceZone.covers(player):
+		if not _can_pay(_stats_for(primary)):
+			return
 		if not _stats_for(primary).melee and _try_start_burst(now):
 			return
 		if LoadoutRules.is_dual(loadout) and _stats_for(primary).melee:
@@ -120,6 +122,14 @@ func _handle_fire_input(now: int) -> void:
 			loadout = LoadoutRules.with_active_state(loadout, result.state)
 			_apply_result(&"primary", result, stats)
 
+## Weapons that cost health (the Pharaoh's Staff) need more than the price.
+func _can_pay(stats: Dictionary) -> bool:
+	var cost: float = stats.get("health_cost", 0.0)
+	if cost <= 0.0:
+		return true
+	var health: HealthComponent = player.get_health_component()
+	return health != null and health.current_health > cost
+
 ## Dual blades strike together (one swing each), so a double kill is possible.
 func _swing_both_blades(now: int) -> void:
 	for hand in _hands():
@@ -139,7 +149,7 @@ func _try_start_burst(now: int) -> bool:
 	var ready_hands: Array[StringName] = []
 	for hand in _hands():
 		var state := LoadoutRules.hand_state(loadout, hand)
-		if state.ammo > 0 and WeaponRules.is_idle(state, now):
+		if state.ammo > 0 and WeaponRules.is_idle(state, now) and _stats_for(state).health_cost <= 0.0:
 			ready_hands.append(hand)
 	if ready_hands.is_empty():
 		return false
@@ -241,7 +251,7 @@ func _emit_hud() -> void:
 		EventManager.ammo_changed.emit(player, 0, 0, -1, -1)
 	else:
 		var primary_def := WeaponDefs.get_def(primary.def)
-		if primary_def.melee:
+		if primary_def.melee or primary_def.health_cost > 0.0:
 			# Breakable blades show the hits they have left; others show nothing.
 			var most: int = primary_def.durability if primary_def.durability > 0 else -1
 			var left: int = int(primary.ammo) if most > 0 else -1

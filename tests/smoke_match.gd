@@ -87,6 +87,7 @@ func _run() -> void:
 	map.free()
 	await frames(2)
 	await _blackjack(game_manager)
+	await _tutankhamun(game_manager)
 
 	print("SMOKE: %d failures" % _failures.size())
 	quit(1 if not _failures.is_empty() else 0)
@@ -247,7 +248,7 @@ func _shady_fella(map: Node, player: Node2D) -> void:
 ## keeps or takes the cards, sends the player out, and stays open afterwards.
 func _blackjack(game_manager) -> void:
 	game_manager.map_seed = 3
-	var map: Node = load("res://tests/maps/blackjack_test.tscn").instantiate()
+	var map: Node = load("res://tests/maps/events_test.tscn").instantiate()
 	root.add_child(map)
 	await frames(5)
 	var player: Node2D = map.get_node("1")
@@ -290,4 +291,67 @@ func _blackjack(game_manager) -> void:
 	var cards = map.get_node("CardDrops")
 	check(await wait_until(func(): return cards.get_children().any(func(c): return String(c.name).begins_with("Powerup_CardsBlackjack_")), 4.0), "a card turns up in the room afterwards")
 	check(not director._can_run(0), "once per match")
+	map.free()
+
+## Tutankhamun on the events test map: wakes in his tomb, shoots fire that
+## burns, stays in his tomb until his time is up, and drops his staff and a
+## card when killed. His staff costs health, not ammo.
+func _tutankhamun(game_manager) -> void:
+	game_manager.map_seed = 3
+	var map: Node = load("res://tests/maps/events_test.tscn").instantiate()
+	root.add_child(map)
+	await frames(5)
+	var player: Node2D = map.get_node("1")
+	var health = player.get_health_component()
+	var director = map.get_node("Events")
+	director.start_now(1)
+	await frames(3)
+	var event = director.get_node_or_null("Event_1")
+	check(event != null and event.sarcophagus != null, "Tutankhamun found his sarcophagus")
+	if event == null or event.sarcophagus == null:
+		map.free()
+		return
+	check(event.body.visible and event.sarcophagus.opened, "he wakes and the lid comes off")
+	check(event.state == TutankhamunRules.State.BOUND, "held in his tomb")
+	player.global_position = event.body.global_position + Vector2(-260, 0)
+	check(await wait_until(func(): return health.current_health < 100.0, 4.0), "his fireball hit the player")
+	check(health.is_burning(), "and set them burning")
+	# Out of his sight: the burn keeps hurting for a while.
+	player.global_position = Vector2(-2000, -2000)
+	var after_hit: float = health.current_health
+	await wait_until(func(): return false, 1.2)
+	check(health.current_health < after_hit, "burning keeps hurting (%s -> %s)" % [after_hit, health.current_health])
+	check(event.tomb.has_point(event.body.global_position), "still in his tomb")
+	event.free_at_msec = 0
+	check(await wait_until(func(): return event.state == TutankhamunRules.State.ROAMING, 2.0), "free after his time in the tomb")
+	var where: Vector2 = event.body.global_position
+	event.body.take_hit(10000.0, 1)
+	await frames(3)
+	check(event.state == TutankhamunRules.State.DEAD, "killed")
+	var staff_pickup: Node2D = null
+	var card_pickup: Node2D = null
+	for child in map.get_children():
+		if String(child.name).begins_with("DroppedWeapon_") and child.weapon_def.id == &"pharaoh_staff":
+			staff_pickup = child
+		if String(child.name).begins_with("DroppedCard_"):
+			card_pickup = child
+	check(staff_pickup != null and staff_pickup.global_position.distance_to(where) < 80.0, "he dropped his staff")
+	check(card_pickup != null, "and a card")
+	check(await wait_until(func(): return not is_instance_valid(event), 5.0), "and he is gone")
+	if staff_pickup == null:
+		map.free()
+		return
+	# The staff: fire costs health, there is no ammo.
+	await wait_until(func(): return not health.is_burning() and not health.is_dead, 6.0)
+	player.global_position = staff_pickup.global_position
+	await frames(4)
+	await tap("interact")
+	await frames(3)
+	var holder = player.get_weapon_holder()
+	check(LoadoutRules.active(holder.loadout).def == &"pharaoh_staff", "picked up the staff: %s" % [holder.loadout.slots])
+	var before: float = health.current_health
+	var ammo_before: int = LoadoutRules.active(holder.loadout).ammo
+	await tap("shoot")
+	check(await wait_until(func(): return health.current_health < before, 2.0), "a fireball costs health (%s -> %s)" % [before, health.current_health])
+	check(LoadoutRules.active(holder.loadout).ammo == ammo_before, "and no ammo")
 	map.free()

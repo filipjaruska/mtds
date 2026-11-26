@@ -32,9 +32,17 @@ class_name WeaponDef
 ## delays it by the travel time), so what you see is what hits.
 @export_range(500.0, 10000.0, 100.0, "suffix:px/s") var bullet_speed: float = 2600.0
 
+## Fire: a hit sets the player burning, this much damage per second for
+## burn_seconds. Burning ignores armor and keeps health from coming back.
+@export_range(0.0, 100.0, 0.5, "suffix:HP/s") var burn_damage_per_second: float = 0.0
+@export_range(0.0, 10.0, 0.5, "suffix:s") var burn_seconds: float = 0.0
+
 @export_group("Ammo")
 @export_range(1, 200) var mag_size: int = 10
 @export_range(0.1, 10.0, 0.1, "suffix:s") var reload_time: float = 2.0
+## Above 0 the weapon has no ammo: every shot costs the shooter this much health
+## instead (never the last point). It cannot be fired at that health or below.
+@export_range(0.0, 50.0, 0.5, "suffix:HP") var health_cost: float = 0.0
 
 @export_group("Movement")
 ## Movement speed multiplier applied briefly after each shot (1.0 = no slow).
@@ -52,13 +60,15 @@ class_name WeaponDef
 @export_range(0, 50) var durability: int = 0
 
 @export_group("Map")
-## Only one weapon spot per map may hold this weapon (the katana has its own
-## room). The map checks and tests enforce it.
+## At most one weapon spot per map may hold this weapon (the katana has its
+## own shrine). The map checks and tests enforce it.
 @export var one_location: bool = false
 
 @export_group("Visuals")
 ## Scene with a WeaponView root (sprite, animations, muzzle marker).
 @export var view_scene: PackedScene
+## The flying shot (a BulletFx scene, like fx/fireball.tscn). Empty: a bullet.
+@export var bullet_scene: PackedScene
 
 func get_display_name() -> String:
 	return display_name if not display_name.is_empty() else String(id).capitalize()

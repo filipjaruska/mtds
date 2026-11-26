@@ -28,8 +28,9 @@ var _arrived := false
 @onready var _trail: Line2D = $Trail
 @onready var _slug: Node2D = $Slug
 
-static func spawn(parent: Node, from: Vector2, to: Vector2, impact: int, speed: float = DEFAULT_SPEED) -> BulletFx:
-	var fx: BulletFx = load(SCENE_PATH).instantiate()
+## `look`: the weapon's own shot scene (WeaponDef.bullet_scene), else a bullet.
+static func spawn(parent: Node, from: Vector2, to: Vector2, impact: int, speed: float = DEFAULT_SPEED, look: PackedScene = null) -> BulletFx:
+	var fx: BulletFx = (look if look else load(SCENE_PATH)).instantiate()
 	fx._speed = maxf(speed, 1.0)
 	fx.top_level = true
 	fx._from = from

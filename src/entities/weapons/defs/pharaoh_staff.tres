@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponDef" format=3]
+
+[ext_resource type="Script" path="res://src/entities/weapons/weapon_def.gd" id="1_def"]
+[ext_resource type="PackedScene" path="res://src/entities/weapons/pharaoh_staff.tscn" id="2_view"]
+[ext_resource type="PackedScene" path="res://src/entities/weapons/fx/fireball.tscn" id="3_ball"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"pharaoh_staff"
+display_name = "Pharaoh's Staff"
+fire_rate = 2.0
+spread_degrees = 2.0
+damage = 14.0
+armor_penetration = 1.0
+burn_damage_per_second = 5.0
+burn_seconds = 3.0
+max_range = 650.0
+range_class = "standard"
+bullet_speed = 1100.0
+mag_size = 1
+reload_time = 0.1
+health_cost = 4.0
+move_speed_mult = 0.9
+slow_duration = 0.2
+view_scene = ExtResource("2_view")
+bullet_scene = ExtResource("3_ball")

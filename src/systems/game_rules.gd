@@ -98,3 +98,19 @@ class_name GameRules
 @export_range(0, 21) var blackjack_player_stand_on: int = 17
 ## The dealer draws while under this.
 @export_range(2, 21) var blackjack_dealer_stand_on: int = 17
+
+@export_group("Tutankhamun")
+## His health. Players' pistols do 10 a shot.
+@export_range(50.0, 5000.0, 10.0, "suffix:HP") var tut_hp: float = 500.0
+## How fast he walks (players run at about 200).
+@export_range(20.0, 400.0, 5.0, "suffix:px/s") var tut_speed: float = 110.0
+## How long he is held in his tomb after he wakes up.
+@export_range(0.0, 600.0, 5.0, "suffix:s") var tut_bound_seconds: float = 60.0
+## How far he sees (and shoots).
+@export_range(100.0, 1500.0, 10.0, "suffix:px") var tut_sight: float = 650.0
+## Time between his fireballs.
+@export_range(0.2, 5.0, 0.05, "suffix:s") var tut_fire_seconds: float = 1.2
+## Hunting: he walks up to this distance, then stands and shoots.
+@export_range(50.0, 1000.0, 10.0, "suffix:px") var tut_keep_distance: float = 320.0
+## The card he drops with his staff.
+@export var tut_drop_card: StringName = &"swift_feet"

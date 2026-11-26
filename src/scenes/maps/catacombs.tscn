@@ -12,12 +12,13 @@
 [ext_resource type="PackedScene" path="res://src/entities/powerups/powerup_spawner.tscn" id="9_vg5cl"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/m1903.tres" id="10_m1903"]
 [ext_resource type="Resource" path="res://src/entities/weapons/defs/mp5.tres" id="11_mp5"]
-[ext_resource type="Resource" path="res://src/entities/weapons/defs/katana.tres" id="12_katana"]
 [ext_resource type="Script" path="res://src/scenes/layout/room_link.gd" id="17_46fcp"]
 [ext_resource type="Script" path="res://src/scenes/spawn_point.gd" id="spawn_point"]
 [ext_resource type="Resource" path="res://src/entities/npcs/shady_fella/shady_fella_spec.tres" id="shady_fella"]
 [ext_resource type="PackedScene" path="res://src/entities/blackjack/blackjack_table.tscn" id="bj_table"]
 [ext_resource type="Resource" path="res://src/entities/blackjack/blackjack_spec.tres" id="bj_spec"]
+[ext_resource type="PackedScene" path="res://src/entities/npcs/tutankhamun/tutankhamun_sarcophagus.tscn" id="tut_coffin"]
+[ext_resource type="Resource" path="res://src/entities/npcs/tutankhamun/tutankhamun_spec.tres" id="tut_spec"]
 [ext_resource type="Script" path="res://src/scenes/layout/room_spot.gd" id="bj_spot"]
 
 [sub_resource type="Resource" id="Resource_xbxl2"]
@@ -28,7 +29,7 @@ tile_set = ExtResource("3_e3lsi")
 script = ExtResource("1_ed704")
 playerScene = ExtResource("2_kb018")
 layout_rules = SubResource("Resource_xbxl2")
-events = Array[Resource]([ExtResource("shady_fella"), ExtResource("bj_spec")])
+events = Array[Resource]([ExtResource("shady_fella"), ExtResource("bj_spec"), ExtResource("tut_spec")])
 
 [node name="Rooms" type="Node2D" parent="." unique_id=351502302]
 
@@ -229,6 +230,10 @@ position = Vector2(992, 352)
 script = ExtResource("7_kveh1")
 facing = 1
 
+[node name="Sarcophagus" parent="Rooms/Tomb" unique_id=1712093344 instance=ExtResource("tut_coffin")]
+position = Vector2(800, 352)
+wake_offset = Vector2(-110, 20)
+
 [node name="Vault" type="Node2D" parent="Rooms" unique_id=329280031]
 position = Vector2(1280, 1920)
 script = ExtResource("5_m6e2a")
@@ -415,11 +420,6 @@ weapon_def = ExtResource("8_ke45c")
 [node name="M4Cistern" parent="WeaponDrops" unique_id=789123446 instance=ExtResource("7_y8o3a")]
 position = Vector2(4192, 1632)
 weapon_def = ExtResource("9_m4")
-
-[node name="KatanaTomb" parent="WeaponDrops" unique_id=1434809452 instance=ExtResource("7_y8o3a")]
-position = Vector2(608, 2336)
-weapon_def = ExtResource("12_katana")
-respawn_time = 30.0
 
 [node name="ShotgunVault" parent="WeaponDrops" unique_id=88607590 instance=ExtResource("7_y8o3a")]
 position = Vector2(1632, 2272)

@@ -16,6 +16,7 @@ var base_dash_cooldown: float = RULES.dash_cooldown_seconds * 1000.0 # msec
 var dash_cooldown: float = base_dash_cooldown # msec, after card bonuses
 var dash_duration: float = RULES.dash_seconds
 var _dash_cooldown_reduction: float = 0.0
+var _move_bonus: float = 0.0 # cards (Swift Feet): 0.15 = 15% faster walking
 
 enum PlayerState {
 	NORMAL,
@@ -43,6 +44,8 @@ func _ready():
 		powerup_manager.active_changed.connect(func(_active: Array) -> void:
 			_dash_cooldown_reduction = minf(float(powerup_manager.get_modifiers().get("dash_cooldown_reduction", 0.0)), 0.9)
 			_recompute_dash_cooldown()
+			_move_bonus = minf(float(powerup_manager.get_modifiers().get("move_speed_mult", 0.0)), 1.0)
+			_recompute_current_speed()
 		)
 	_recompute_current_speed()
 	# Deferred: the sibling components must be ready first.
@@ -58,6 +61,8 @@ func _recompute_current_speed():
 		PlayerState.CROUCHING:
 			base_speed = crouch_speed
 	
+	if current_state != PlayerState.DASHING:
+		base_speed *= 1.0 + _move_bonus
 	current_speed = base_speed * slowness_factor
 
 func _setup_multiplayer_authority():

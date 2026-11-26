@@ -83,7 +83,7 @@ func test_inventory_merge() -> void:
 	check_eq(PowerupRules.empty_slot(merged), 3)
 
 func test_real_defs_load() -> void:
-	check_eq(PowerupDefs.ids().size(), 7, "all seven powerups registered")
+	check_eq(PowerupDefs.ids().size(), 8, "all eight powerups registered")
 	for id in PowerupDefs.ids():
 		check(not PowerupDefs.get_def(id).get_display_name().is_empty(), "%s has a name" % id)
 	check_eq(PowerupDefs.get_def(&"dual_wield").ability_kind(), &"dual_wield")

@@ -54,6 +54,9 @@ static func effective_stats(def: WeaponDef, mods: Dictionary = {}) -> Dictionary
 		"pierce": int(mods.get("pierce", 0)),
 		"melee": def.melee,
 		"arc_degrees": def.arc_degrees,
+		"health_cost": def.health_cost,
+		"burn_damage_per_second": def.burn_damage_per_second,
+		"burn_seconds": def.burn_seconds,
 	}
 
 ## A full magazine right now (Kill Reload). Cancels a reload in progress.
@@ -80,8 +83,8 @@ static func fire(state: Dictionary, stats: Dictionary, now: int, rng: RandomNumb
 	if not can_fire(state, now):
 		return _result(state)
 	var next := state.duplicate()
-	if not stats.get("melee", false): # a blade never runs dry
-		next.ammo -= 1
+	if not stats.get("melee", false) and stats.get("health_cost", 0.0) <= 0.0:
+		next.ammo -= 1 # a blade never runs dry; a staff takes health instead
 	next.next_shot_at = now + interval_msec(stats.fire_rate)
 	var shots := shot_offsets(stats.fire_pattern, stats.pellets, stats.spread_degrees, rng)
 	return _result(next, shots, [&"fired"])

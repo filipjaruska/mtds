@@ -7,7 +7,7 @@ extends SceneTree
 const PORT := 18734
 const MAP_PATH := "res://tests/maps/test_arena.tscn"
 const MAP_NAME := "TestArena"
-const BLACKJACK_MAP := "res://tests/maps/blackjack_test.tscn"
+const EVENTS_MAP := "res://tests/maps/events_test.tscn"
 
 var _failures: Array[String] = []
 var _started := false
@@ -140,8 +140,8 @@ func _run_host() -> void:
 
 	# Blackjack: a new match on a map with the room. Both players go in, the
 	# host shuts the doors, the cards are dealt (see _run_client).
-	lobby.start_game.rpc(BLACKJACK_MAP, 3)
-	_map_name = "BlackjackTest"
+	lobby.start_game.rpc(EVENTS_MAP, 3)
+	_map_name = "EventsTest"
 	check(await wait_until(func(): return _player(1) != null and _player(client_id) != null, 5.0), "blackjack map started")
 	await seconds(1.0)
 	director = _map().get_node("Events")
@@ -162,6 +162,17 @@ func _run_host() -> void:
 			check(await wait_until(func(): return client_hand.hand_ids.is_empty() != won, 4.0), "the host knows what the client kept (won=%s, %s)" % [won, client_hand.hand_ids])
 		check(await wait_until(func(): return not is_instance_valid(table_event), 10.0), "the blackjack event ended")
 		check(await wait_until(func(): return not area.has_point(_player(client_id).global_position), 3.0), "the client went back out")
+	await seconds(4.0) # let the client finish its blackjack checks
+
+	# Tutankhamun: wakes, the client sees him; the host kills him, the client
+	# sees his staff on the floor.
+	director.start_now(1)
+	check(await wait_until(func(): return director.has_node("Event_2"), 2.0), "Tutankhamun woke on the host")
+	var tut = director.get_node_or_null("Event_2")
+	await seconds(2.0)
+	if tut:
+		tut.body.take_hit(10000.0, 1)
+		check(tut.state == TutankhamunRules.State.DEAD, "the host killed him")
 	await seconds(4.0) # let the client finish its checks
 	finish()
 
@@ -247,7 +258,7 @@ func _run_client() -> void:
 		check(await wait_until(func(): return not is_instance_valid(fella_event), 6.0), "client sees him go")
 
 	# Blackjack on the next map (see _run_host): walk in, play, get sent out.
-	_map_name = "BlackjackTest"
+	_map_name = "EventsTest"
 	check(await wait_until(func(): return _player(my_id) != null and _map().has_node("Events/Event_1"), 20.0), "client sees the blackjack room open")
 	var table_event = _map().get_node_or_null("Events/Event_1")
 	if table_event:
@@ -274,4 +285,12 @@ func _run_client() -> void:
 		check(not area.has_point(me.global_position), "client sent back out: %s" % me.global_position)
 		check(not is_instance_valid(table), "client sees the table gone")
 		check(not room.is_closed(), "the room stays open on the client")
+
+	# Tutankhamun (see _run_host).
+	director = _map().get_node("Events")
+	check(await wait_until(func(): return director.has_node("Event_2"), 10.0), "client sees Tutankhamun wake")
+	var tut = director.get_node_or_null("Event_2")
+	if tut:
+		check(await wait_until(func(): return tut.body.visible and tut.sarcophagus.opened, 3.0), "client sees him step out of his sarcophagus")
+		check(await wait_until(func(): return _map().get_children().any(func(c): return String(c.name).begins_with("DroppedWeapon_") and c.weapon_def.id == &"pharaoh_staff"), 8.0), "client sees the staff he dropped")
 	finish()
